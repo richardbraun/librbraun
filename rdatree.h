@@ -29,6 +29,8 @@
 #ifndef _RDATREE_H
 #define _RDATREE_H
 
+#include <stddef.h>
+
 /*
  * Radix tree.
  */
