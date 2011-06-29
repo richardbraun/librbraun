@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
            sizeof(struct phys_free_list));
     printf("sizeof(struct phys_page): %zu\n", sizeof(struct phys_page));
     printf("sizeof(struct phys_seg): %zu\n", sizeof(struct phys_seg));
-    printf("allocating one page\n");
-    page = phys_alloc_pages(1);
+    printf("allocating two pages\n");
+    page = phys_alloc_pages(PAGE_SIZE * 2);
 
     if (page == NULL) {
         fprintf(stderr, "unable to allocate memory\n");
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
 
     phys_info();
 
-    printf("freeing the allocated page\n");
-    phys_free_pages(page, 1);
+    printf("freeing the allocated pages\n");
+    phys_free_pages(page, PAGE_SIZE * 2);
     phys_info();
 
     return 0;

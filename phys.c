@@ -69,10 +69,10 @@
 #define PHYS_MAX_SEGMENTS 2
 
 /*
- * Segment boundaries (in page frames).
+ * Segment boundaries.
  */
-#define PHYS_ISADMA_LIMIT   0x1000
-#define PHYS_NORMAL_LIMIT   0x30000
+#define PHYS_ISADMA_LIMIT   0x1000000
+#define PHYS_NORMAL_LIMIT   0x30000000
 
 /*
  * Number of segment lists.
@@ -93,8 +93,8 @@
 #define PHYS_NR_FREE_LISTS 11
 
 /*
- * The size of a CPU pool is computed by dividing the size of its containing
- * segment by this value.
+ * The size of a CPU pool is computed by dividing the number of pages in its
+ * containing segment by this value.
  */
 #define PHYS_CPU_POOL_RATIO 1024
 
@@ -147,8 +147,8 @@ struct phys_seg {
     struct phys_cpu_pool cpu_pools[NR_CPUS];
 
     struct list node;
-    phys_pfn_t start;
-    phys_pfn_t end;
+    phys_paddr_t start;
+    phys_paddr_t end;
     struct phys_page *pages;
     struct phys_page *pages_end;
     pthread_mutex_t lock;
@@ -178,15 +178,21 @@ static struct phys_seg phys_segs[PHYS_MAX_SEGMENTS];
  */
 static unsigned int phys_segs_size;
 
+/*
+ * Page/address conversion macros.
+ */
+#define phys_atop(addr) ((addr) / PAGE_SIZE)
+#define phys_ptoa(pfn)  ((pfn) * PAGE_SIZE)
+
 static void phys_page_init(struct phys_page *page, struct phys_seg *seg,
-                           phys_pfn_t pfn)
+                           phys_paddr_t pa)
 {
     page->seg = seg;
-    page->pfn = pfn;
+    page->phys_addr = pa;
     page->level = PHYS_LEVEL_ALLOCATED;
 }
 
-static inline struct phys_page * phys_page_lookup(phys_pfn_t pfn)
+static inline struct phys_page * phys_page_lookup(phys_paddr_t pa)
 {
     struct phys_seg *seg;
     unsigned int i;
@@ -194,8 +200,8 @@ static inline struct phys_page * phys_page_lookup(phys_pfn_t pfn)
     for (i = 0; i < phys_segs_size; i++) {
         seg = &phys_segs[i];
 
-        if ((pfn >= seg->start) && (pfn < seg->end))
-            return &seg->pages[pfn - seg->start];
+        if ((pa >= seg->start) && (pa < seg->end))
+            return &seg->pages[phys_atop(pa - seg->start)];
     }
 
     return NULL;
@@ -266,23 +272,24 @@ static void phys_seg_free_to_buddy(struct phys_seg *seg,
                                    unsigned int level)
 {
     struct phys_page *buddy;
-    phys_pfn_t size, pfn, buddy_pfn;
+    phys_paddr_t pa, buddy_pa;
+    unsigned int nr_pages;
 
     assert(page >= seg->pages);
     assert(page < seg->pages_end);
     assert(page->level == PHYS_LEVEL_ALLOCATED);
     assert(level < PHYS_NR_FREE_LISTS);
 
-    size = (1 << level);
-    pfn = page->pfn;
+    nr_pages = (1 << level);
+    pa = page->phys_addr;
 
     while (level < (PHYS_NR_FREE_LISTS - 1)) {
-        buddy_pfn = pfn ^ (1 << level);
+        buddy_pa = pa ^ phys_ptoa(1 << level);
 
-        if ((buddy_pfn < seg->start) || (buddy_pfn >= seg->end))
+        if ((buddy_pa < seg->start) || (buddy_pa >= seg->end))
             break;
 
-        buddy = &seg->pages[buddy_pfn - seg->start];
+        buddy = &seg->pages[phys_atop(buddy_pa - seg->start)];
 
         if (buddy->level != level)
             break;
@@ -290,17 +297,16 @@ static void phys_seg_free_to_buddy(struct phys_seg *seg,
         phys_free_list_remove(&seg->free_lists[level], buddy);
         buddy->level = PHYS_LEVEL_ALLOCATED;
         level++;
-        pfn &= -(1 << level);
-        page = &seg->pages[pfn - seg->start];
+        pa &= -phys_ptoa(1 << level);
+        page = &seg->pages[phys_atop(pa - seg->start)];
     }
 
     phys_free_list_insert(&seg->free_lists[level], page);
     page->level = level;
-    seg->nr_free_pages += size;
+    seg->nr_free_pages += nr_pages;
 }
 
-static void phys_cpu_pool_init(struct phys_cpu_pool *cpu_pool,
-                               phys_pfn_t size)
+static void phys_cpu_pool_init(struct phys_cpu_pool *cpu_pool, int size)
 {
     cpu_pool->size = size;
     cpu_pool->transfer_size = (size + PHYS_CPU_POOL_TRANSFER_RATIO - 1)
@@ -386,26 +392,26 @@ static void phys_cpu_pool_drain(struct phys_cpu_pool *cpu_pool,
     pthread_mutex_unlock(&seg->lock);
 }
 
-static inline phys_pfn_t phys_seg_start(struct phys_seg *seg)
+static inline phys_paddr_t phys_seg_start(struct phys_seg *seg)
 {
     return seg->start;
 }
 
-static inline phys_pfn_t phys_seg_end(struct phys_seg *seg)
+static inline phys_paddr_t phys_seg_end(struct phys_seg *seg)
 {
     return seg->end;
 }
 
-static inline phys_pfn_t phys_seg_size(struct phys_seg *seg)
+static inline phys_paddr_t phys_seg_size(struct phys_seg *seg)
 {
     return phys_seg_end(seg) - phys_seg_start(seg);
 }
 
-static phys_pfn_t phys_seg_compute_pool_size(phys_pfn_t seg_size)
+static int phys_seg_compute_pool_size(struct phys_seg *seg)
 {
-    phys_pfn_t size;
+    phys_paddr_t size;
 
-    size = seg_size / PHYS_CPU_POOL_RATIO;
+    size = phys_atop(phys_seg_size(seg)) / PHYS_CPU_POOL_RATIO;
 
     if (size == 0)
         size = 1;
@@ -417,17 +423,17 @@ static phys_pfn_t phys_seg_compute_pool_size(phys_pfn_t seg_size)
 
 static void phys_seg_init(struct phys_seg *seg, struct phys_page *pages)
 {
-    phys_pfn_t seg_size, pool_size;
+    phys_paddr_t pa;
+    int pool_size;
     unsigned int i;
 
-    seg_size = phys_seg_size(seg);
-    pool_size = phys_seg_compute_pool_size(seg_size);
+    pool_size = phys_seg_compute_pool_size(seg);
 
     for (i = 0; i < ARRAY_SIZE(seg->cpu_pools); i++)
         phys_cpu_pool_init(&seg->cpu_pools[i], pool_size);
 
     seg->pages = pages;
-    seg->pages_end = pages + seg_size;
+    seg->pages_end = pages + phys_atop(phys_seg_size(seg));
     pthread_mutex_init(&seg->lock, NULL);
 
     for (i = 0; i < ARRAY_SIZE(seg->free_lists); i++)
@@ -435,18 +441,18 @@ static void phys_seg_init(struct phys_seg *seg, struct phys_page *pages)
 
     seg->nr_free_pages = 0;
 
-    for (i = 0; i < seg_size; i++)
-        phys_page_init(&pages[i], seg, seg->start + i);
+    for (pa = phys_seg_start(seg); pa < phys_seg_end(seg); pa += PAGE_SIZE)
+        phys_page_init(&pages[phys_atop(pa - phys_seg_start(seg))], seg, pa);
 }
 
 /*
  * Return the level (i.e. the index in the free lists array) matching the
  * given size.
  */
-static inline unsigned int phys_get_level(phys_pfn_t size)
+static inline unsigned int phys_get_level(phys_size_t size)
 {
+    size = P2ROUND(size, PAGE_SIZE) / PAGE_SIZE;
     assert(size != 0);
-
     size--;
 
     if (size == 0)
@@ -455,7 +461,7 @@ static inline unsigned int phys_get_level(phys_pfn_t size)
         return (sizeof(size) * CHAR_BIT) - __builtin_clzl(size);
 }
 
-static struct phys_page * phys_seg_alloc(struct phys_seg *seg, phys_pfn_t size)
+static struct phys_page * phys_seg_alloc(struct phys_seg *seg, phys_size_t size)
 {
     struct phys_cpu_pool *cpu_pool;
     struct phys_page *page;
@@ -490,7 +496,7 @@ static struct phys_page * phys_seg_alloc(struct phys_seg *seg, phys_pfn_t size)
 }
 
 static void phys_seg_free(struct phys_seg *seg, struct phys_page *page,
-                          phys_pfn_t size)
+                          phys_size_t size)
 {
     struct phys_cpu_pool *cpu_pool;
     unsigned int level;
@@ -519,8 +525,8 @@ static void phys_seg_free(struct phys_seg *seg, struct phys_page *page,
  *
  * This function partially initializes a segment.
  */
-static void phys_load_segment(const char *name, phys_pfn_t start,
-                              phys_pfn_t end, unsigned int seg_list_prio)
+static void phys_load_segment(const char *name, phys_paddr_t start,
+                              phys_paddr_t end, unsigned int seg_list_prio)
 {
     static int initialized = 0;
     struct phys_seg *seg;
@@ -561,36 +567,36 @@ static void phys_load_segment(const char *name, phys_pfn_t start,
  */
 static void phys_load_segments(void)
 {
-    phys_pfn_t start, end;
+    phys_paddr_t start, end;
     size_t size;
     void *addr;
 
     /*
      * Load the ISADMA segment.
      */
-    size = PHYS_ISADMA_LIMIT * PAGE_SIZE;
+    size = PHYS_ISADMA_LIMIT;
     addr = mmap(NULL, size, PROT_READ | PROT_WRITE,
                 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
     if (addr == MAP_FAILED)
         error_die(ERR_NOMEM);
 
-    start = (unsigned long)addr / PAGE_SIZE;
-    end = start + (size / PAGE_SIZE);
+    start = (phys_paddr_t)addr;
+    end = start + size;
     phys_load_segment("isadma", start, end, PHYS_SEGLIST_ISADMA);
 
     /*
      * Load the normal segment.
      */
-    size = (PHYS_NORMAL_LIMIT - PHYS_ISADMA_LIMIT) * PAGE_SIZE;
+    size = PHYS_NORMAL_LIMIT - PHYS_ISADMA_LIMIT;
     addr = mmap(NULL, size, PROT_READ | PROT_WRITE,
                 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
     if (addr == MAP_FAILED)
         error_die(ERR_NOMEM);
 
-    start = (unsigned long)addr / PAGE_SIZE;
-    end = start + (size / PAGE_SIZE);
+    start = (phys_paddr_t)addr;
+    end = start + size;
     phys_load_segment("normal", start, end, PHYS_SEGLIST_NORMAL);
 }
 
@@ -599,7 +605,7 @@ void phys_init(void)
     struct phys_seg *seg, *map_seg;
     struct phys_page *page, *map;
     struct list *seg_list;
-    phys_pfn_t start, map_size;
+    phys_paddr_t map_size;
     unsigned int i;
 
     _pagesize = sysconf(_SC_PAGESIZE);
@@ -613,10 +619,9 @@ void phys_init(void)
     map_size = 0;
 
     for (i = 0; i < phys_segs_size; i++)
-        map_size += phys_seg_size(&phys_segs[i]);
+        map_size += phys_atop(phys_seg_size(&phys_segs[i]));
 
-    map_size = P2ROUND(map_size * sizeof(struct phys_page), PAGE_SIZE)
-               / PAGE_SIZE;
+    map_size = P2ROUND(map_size * sizeof(struct phys_page), PAGE_SIZE);
 
     /*
      * Find a segment from which to allocate the memory map.
@@ -634,7 +639,7 @@ found:
     /*
      * Allocate the memory map.
      */
-    map = (struct phys_page *)(phys_seg_start(map_seg) * PAGE_SIZE);
+    map = (struct phys_page *)phys_seg_start(map_seg);
 
     /*
      * Initialize the segments, associating them to the memory map. When
@@ -642,11 +647,9 @@ found:
      * with a block size of one (level 0). They are then released, which
      * populates the free lists.
      */
-    start = 0;
-
     for (i = 0; i < phys_segs_size; i++) {
         seg = &phys_segs[i];
-        phys_seg_init(seg, map + start);
+        phys_seg_init(seg, map);
 
         /*
          * Don't release the memory map pages.
@@ -660,7 +663,7 @@ found:
          * containing them.
          */
         if (seg == map_seg)
-            page = seg->pages + map_size;
+            page = seg->pages + phys_atop(map_size);
         else
             page = seg->pages;
 
@@ -669,11 +672,11 @@ found:
             page++;
         }
 
-        start += phys_seg_size(seg);
+        map += phys_atop(phys_seg_size(seg));
     }
 }
 
-struct phys_page * phys_alloc_pages(phys_pfn_t size)
+struct phys_page * phys_alloc_pages(phys_size_t size)
 {
     struct list *seg_list;
     struct phys_seg *seg;
@@ -692,12 +695,12 @@ struct phys_page * phys_alloc_pages(phys_pfn_t size)
     return NULL;
 }
 
-void phys_free_pages(struct phys_page *page, phys_pfn_t size)
+void phys_free_pages(struct phys_page *page, phys_size_t size)
 {
     phys_seg_free(page->seg, page, size);
 }
 
-phys_pfn_t phys_alloc(phys_pfn_t size)
+phys_paddr_t phys_alloc(phys_size_t size)
 {
     struct phys_page *page;
 
@@ -710,14 +713,14 @@ phys_pfn_t phys_alloc(phys_pfn_t size)
     if (page == NULL)
         return 0;
 
-    return page->pfn;
+    return page->phys_addr;
 }
 
-void phys_free(phys_pfn_t pfn, phys_pfn_t size)
+void phys_free(phys_paddr_t pa, phys_size_t size)
 {
     struct phys_page *page;
 
-    page = phys_page_lookup(pfn);
+    page = phys_page_lookup(pa);
     assert(page != NULL);
     phys_free_pages(page, size);
 }

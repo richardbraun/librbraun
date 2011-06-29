@@ -32,29 +32,34 @@
 #include "list.h"
 
 /*
- * Page frame number.
+ * Physical address.
  */
-typedef unsigned long phys_pfn_t;
+typedef unsigned long phys_paddr_t;
+
+/*
+ * Memory range size.
+ */
+typedef unsigned long phys_size_t;
 
 /*
  * Page descriptor.
  */
 struct phys_page {
     struct phys_seg *seg;
-    phys_pfn_t pfn;
+    phys_paddr_t phys_addr;
     unsigned int level;
     struct list node;
 };
 
 void phys_init(void);
 
-struct phys_page * phys_alloc_pages(phys_pfn_t size);
+struct phys_page * phys_alloc_pages(phys_size_t size);
 
-void phys_free_pages(struct phys_page *page, phys_pfn_t size);
+void phys_free_pages(struct phys_page *page, phys_size_t size);
 
-phys_pfn_t phys_alloc(phys_pfn_t size);
+phys_paddr_t phys_alloc(phys_size_t size);
 
-void phys_free(phys_pfn_t pfn, phys_pfn_t size);
+void phys_free(phys_paddr_t pa, phys_size_t size);
 
 void phys_info(void);
 

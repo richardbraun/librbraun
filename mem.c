@@ -417,20 +417,12 @@ static void mem_cache_free_to_slab(struct mem_cache *cache, void *buf);
 
 static void * mem_default_alloc(size_t size)
 {
-    phys_pfn_t pfn;
-
-    pfn = phys_alloc(P2ROUND(size, PAGE_SIZE) / PAGE_SIZE);
-    return (void *)(pfn * PAGE_SIZE);
+    return (void *)phys_alloc(size);
 }
 
 static void mem_default_free(void *ptr, size_t size)
 {
-    phys_pfn_t pfn;
-
-    pfn = (phys_pfn_t)ptr / PAGE_SIZE;
-    size = P2ROUND(size, PAGE_SIZE) / PAGE_SIZE;
-
-    phys_free(pfn, size);
+    phys_free((phys_paddr_t)ptr, size);
 }
 #else /* CONFIG_MEM_USE_PHYS */
 static void * mem_default_alloc(size_t size)
