@@ -45,10 +45,10 @@ typedef unsigned long phys_size_t;
  * Page descriptor.
  */
 struct phys_page {
+    struct list node;
     struct phys_seg *seg;
     phys_paddr_t phys_addr;
     unsigned int level;
-    struct list node;
 };
 
 void phys_init(void);
