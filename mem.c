@@ -1562,7 +1562,7 @@ static void * mem_gc(void *arg)
     return NULL;
 }
 
-void mem_init(void)
+void mem_setup(void)
 {
     static int mem_initialized = 0;
     struct mem_cpu_pool_type *cpu_pool_type;

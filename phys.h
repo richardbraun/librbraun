@@ -51,7 +51,7 @@ struct phys_page {
     unsigned int level;
 };
 
-void phys_init(void);
+void phys_setup(void);
 
 struct phys_page * phys_alloc_pages(phys_size_t size);
 

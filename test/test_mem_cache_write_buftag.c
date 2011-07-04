@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
-    mem_init();
+    mem_setup();
 
     obj_cache = mem_cache_create("obj", sizeof(struct obj), 0,
                                  obj_ctor, NULL, MEM_CACHE_VERIFY);

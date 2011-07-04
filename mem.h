@@ -91,9 +91,9 @@ void mem_cache_free(struct mem_cache *cache, void *obj);
 void mem_cache_info(struct mem_cache *cache);
 
 /*
- * Initialize the memory allocator module.
+ * Set up the memory allocator module.
  */
-void mem_init(void);
+void mem_setup(void);
 
 /*
  * Allocate size bytes of uninitialized memory.

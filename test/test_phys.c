@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
-    phys_init();
+    phys_setup();
 
     phys_info();
     printf("sizeof(struct phys_cpu_pool) = %zu\n",

@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     CPU_SET(0, &cpu_set);
     sched_setaffinity(0, sizeof(cpu_set), &cpu_set);
 
-    mem_init();
+    mem_setup();
 
     obj_cache = mem_cache_create("obj", sizeof(struct obj), 0,
                                  obj_ctor, NULL, MEM_CACHE_VERIFY);

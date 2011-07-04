@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
-    mem_init();
+    mem_setup();
 
     s = mem_alloc(STRING_SIZE);
 

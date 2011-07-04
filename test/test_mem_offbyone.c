@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     (void)argc;
     (void)argv;
 
-    mem_init();
+    mem_setup();
 
     printf("allocating memory:\n");
     s = mem_alloc(BUFSIZE);

@@ -600,7 +600,7 @@ static void phys_load_segments(void)
     phys_load_segment("normal", start, end, PHYS_SEGLIST_NORMAL);
 }
 
-void phys_init(void)
+void phys_setup(void)
 {
     struct phys_seg *seg, *map_seg;
     struct phys_page *page, *map;
