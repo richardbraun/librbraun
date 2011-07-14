@@ -46,7 +46,7 @@ void * malloc(size_t size)
 {
     struct btag *btag;
 
-    mem_init();
+    mem_setup();
 
     size += sizeof(*btag);
     btag = mem_alloc(size);
@@ -67,7 +67,7 @@ void * calloc(size_t nmemb, size_t size)
     size_t bytes;
     void *buf;
 
-    mem_init();
+    mem_setup();
 
     bytes = nmemb * size;
     buf = malloc(bytes);
@@ -86,7 +86,7 @@ void * realloc(void *ptr, size_t size)
     size_t old_size;
     char *buf;
 
-    mem_init();
+    mem_setup();
 
     if (ptr == NULL)
         return malloc(size);
@@ -113,7 +113,7 @@ int posix_memalign(void **ptr, size_t align, size_t size)
     struct btag *btag;
     char *buf;
 
-    mem_init();
+    mem_setup();
 
     if (!ISP2(align))
         return EINVAL;
@@ -138,7 +138,7 @@ void free(void *ptr)
 {
     struct btag *btag;
 
-    mem_init();
+    mem_setup();
 
     if (ptr == NULL)
         return;

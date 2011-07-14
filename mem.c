@@ -1585,7 +1585,7 @@ void mem_setup(void)
     assert(sizeof(union mem_bufctl) <= MEM_ALIGN_MIN);
 
 #ifdef CONFIG_MEM_USE_PHYS
-    phys_init();
+    phys_setup();
 #endif /* CONFIG_MEM_USE_PHYS */
 
     list_init(&mem_cache_list);
