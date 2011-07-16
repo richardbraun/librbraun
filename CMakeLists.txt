@@ -48,46 +48,46 @@ if(CONFIG_MEM_VERIFY)
 endif(CONFIG_MEM_VERIFY)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_library(braunr ${BRAUNR_SOURCES})
-target_link_libraries(braunr ${LIBS})
-set_target_properties(braunr PROPERTIES VERSION 1)
+add_library(rbraun ${BRAUNR_SOURCES})
+target_link_libraries(rbraun ${LIBS})
+set_target_properties(rbraun PROPERTIES VERSION 1)
 
 add_executable(test_avltree test/test_avltree.c)
-target_link_libraries(test_avltree braunr ${LIBS})
+target_link_libraries(test_avltree rbraun ${LIBS})
 
 add_executable(test_rbtree test/test_rbtree.c)
-target_link_libraries(test_rbtree braunr ${LIBS})
+target_link_libraries(test_rbtree rbraun ${LIBS})
 
 add_executable(test_rdatree test/test_rdatree.c)
-target_link_libraries(test_rdatree braunr ${LIBS})
+target_link_libraries(test_rdatree rbraun ${LIBS})
 
 add_executable(test_mem_cache test/test_mem_cache.c)
 target_link_libraries(test_mem_cache ${LIBS})
 
 add_executable(test_mem test/test_mem.c)
-target_link_libraries(test_mem braunr ${LIBS})
+target_link_libraries(test_mem rbraun ${LIBS})
 
 add_executable(test_mem_offbyone test/test_mem_offbyone.c)
-target_link_libraries(test_mem_offbyone braunr ${LIBS})
+target_link_libraries(test_mem_offbyone rbraun ${LIBS})
 
 add_executable(test_mem_cache_invalid_free test/test_mem_cache_invalid_free.c)
-target_link_libraries(test_mem_cache_invalid_free braunr ${LIBS})
+target_link_libraries(test_mem_cache_invalid_free rbraun ${LIBS})
 
 add_executable(test_mem_cache_double_free test/test_mem_cache_double_free.c)
-target_link_libraries(test_mem_cache_double_free braunr ${LIBS})
+target_link_libraries(test_mem_cache_double_free rbraun ${LIBS})
 
 add_executable(test_mem_cache_write_free test/test_mem_cache_write_free.c)
-target_link_libraries(test_mem_cache_write_free braunr ${LIBS})
+target_link_libraries(test_mem_cache_write_free rbraun ${LIBS})
 
 add_executable(test_mem_cache_write_beyond test/test_mem_cache_write_beyond.c)
-target_link_libraries(test_mem_cache_write_beyond braunr ${LIBS})
+target_link_libraries(test_mem_cache_write_beyond rbraun ${LIBS})
 
 add_executable(test_mem_cache_write_buftag test/test_mem_cache_write_buftag.c)
-target_link_libraries(test_mem_cache_write_buftag braunr ${LIBS})
+target_link_libraries(test_mem_cache_write_buftag rbraun ${LIBS})
 
 add_executable(test_phys test/test_phys.c)
-target_link_libraries(test_phys braunr ${LIBS})
+target_link_libraries(test_phys rbraun ${LIBS})
 
 add_executable(test_xprintf test/test_xprintf.c)
-target_link_libraries(test_xprintf braunr ${LIBS})
+target_link_libraries(test_xprintf rbraun ${LIBS})
 set_target_properties(test_xprintf PROPERTIES COMPILE_FLAGS -Wno-format)
