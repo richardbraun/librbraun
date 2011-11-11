@@ -66,7 +66,7 @@ typedef void (*mem_cache_ctor_t)(void *);
  */
 struct mem_cache * mem_cache_create(const char *name, size_t obj_size,
                                     size_t align, mem_cache_ctor_t ctor,
-                                    struct mem_source *source, int flags);
+                                    const struct mem_source *source, int flags);
 
 /*
  * Destroy a cache.

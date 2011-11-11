@@ -868,7 +868,7 @@ static void mem_cache_compute_sizes(struct mem_cache *cache, int flags)
 
 static void mem_cache_init(struct mem_cache *cache, const char *name,
                            size_t obj_size, size_t align, mem_cache_ctor_t ctor,
-                           struct mem_source *source, int flags)
+                           const struct mem_source *source, int flags)
 {
     struct mem_cpu_pool_type *cpu_pool_type;
     size_t i, buf_size;
@@ -942,7 +942,7 @@ static void mem_cache_init(struct mem_cache *cache, const char *name,
 
 struct mem_cache * mem_cache_create(const char *name, size_t obj_size,
                                     size_t align, mem_cache_ctor_t ctor,
-                                    struct mem_source *source, int flags)
+                                    const struct mem_source *source, int flags)
 {
     struct mem_cache *cache;
 
