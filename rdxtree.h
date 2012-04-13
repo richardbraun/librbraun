@@ -23,18 +23,21 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *
- * Radix (with allocation) tree.
+ * Radix tree.
+ *
+ * In addition to the standard insertion operation, this implementation
+ * can allocate keys for the caller at insertion time.
  */
 
-#ifndef _RDATREE_H
-#define _RDATREE_H
+#ifndef _RDXTREE_H
+#define _RDXTREE_H
 
 #include <stddef.h>
 
 /*
  * Radix tree.
  */
-struct rdatree {
+struct rdxtree {
     int height;
     void *root;
 };
@@ -42,9 +45,9 @@ struct rdatree {
 /*
  * Radix tree iterator.
  *
- * Don't use directly - use rdatree_for_each() instead.
+ * Don't use directly - use rdxtree_for_each() instead.
  */
-struct rdatree_iter {
+struct rdxtree_iter {
     void *node;
     void **slot;
 };
@@ -52,12 +55,12 @@ struct rdatree_iter {
 /*
  * Static tree initializer.
  */
-#define RDATREE_INITIALIZER { 0, NULL }
+#define RDXTREE_INITIALIZER { 0, NULL }
 
 /*
  * Initialize a tree.
  */
-static inline void rdatree_init(struct rdatree *tree)
+static inline void rdxtree_init(struct rdxtree *tree)
 {
     tree->height = 0;
     tree->root = NULL;
@@ -66,7 +69,7 @@ static inline void rdatree_init(struct rdatree *tree)
 /*
  * Initialize an iterator.
  */
-static inline void rdatree_iter_init(struct rdatree_iter *iter)
+static inline void rdxtree_iter_init(struct rdxtree_iter *iter)
 {
     iter->node = NULL;
     iter->slot = NULL;
@@ -77,7 +80,7 @@ static inline void rdatree_iter_init(struct rdatree_iter *iter)
  *
  * The ptr parameter must not be null.
  */
-int rdatree_insert(struct rdatree *tree, unsigned long key, void *ptr);
+int rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr);
 
 /*
  * Insert a pointer in a tree, for which a new key is allocated.
@@ -85,21 +88,21 @@ int rdatree_insert(struct rdatree *tree, unsigned long key, void *ptr);
  * The ptr and keyp parameters must not be null. The newly allocated key is
  * stored at the address pointed to by the keyp parameter.
  */
-int rdatree_insert_alloc(struct rdatree *tree, void *ptr, unsigned long *keyp);
+int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp);
 
 /*
  * Remove a pointer from a tree.
  *
  * The matching pointer is returned if successfull, null otherwise.
  */
-void * rdatree_remove(struct rdatree *tree, unsigned long key);
+void * rdxtree_remove(struct rdxtree *tree, unsigned long key);
 
 /*
  * Look up a pointer in a tree.
  *
  * The matching pointer is returned if successfull, null otherwise.
  */
-void * rdatree_lookup(struct rdatree *tree, unsigned long key);
+void * rdxtree_lookup(struct rdxtree *tree, unsigned long key);
 
 /*
  * Look up a slot in a tree.
@@ -110,18 +113,18 @@ void * rdatree_lookup(struct rdatree *tree, unsigned long key);
  *
  * A slot for the matching pointer is returned if successfull, null otherwise.
  *
- * See rdatree_replace_slot().
+ * See rdxtree_replace_slot().
  */
-void ** rdatree_lookup_slot(struct rdatree *tree, unsigned long key);
+void ** rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key);
 
 /*
  * Replace a pointer in a tree.
  *
  * The ptr parameter must not be null. The previous pointer is returned.
  *
- * See rdatree_lookup_slot().
+ * See rdxtree_lookup_slot().
  */
-void * rdatree_replace_slot(void **slot, void *ptr);
+void * rdxtree_replace_slot(void **slot, void *ptr);
 
 /*
  * Walk pointers in a tree.
@@ -130,23 +133,23 @@ void * rdatree_replace_slot(void **slot, void *ptr);
  *
  * The next pointer is returned if there is one, null otherwise.
  */
-void * rdatree_iter_next(struct rdatree *tree, struct rdatree_iter *iter);
+void * rdxtree_iter_next(struct rdxtree *tree, struct rdxtree_iter *iter);
 
 /*
  * Forge a loop to process all pointers of a tree.
  */
-#define rdatree_for_each(tree, iter, ptr)                           \
-for (rdatree_iter_init(iter), ptr = rdatree_iter_next(tree, iter);  \
+#define rdxtree_for_each(tree, iter, ptr)                           \
+for (rdxtree_iter_init(iter), ptr = rdxtree_iter_next(tree, iter);  \
      ptr != NULL;                                                   \
-     ptr = rdatree_iter_next(tree, iter))
+     ptr = rdxtree_iter_next(tree, iter))
 
 /*
  * Remove all pointers from a tree.
  *
  * The common way to destroy a tree and its pointers is to loop over all
- * the pointers using rdatree_for_each(), freeing them, then call this
+ * the pointers using rdxtree_for_each(), freeing them, then call this
  * function.
  */
-void rdatree_remove_all(struct rdatree *tree);
+void rdxtree_remove_all(struct rdxtree *tree);
 
-#endif /* _RDATREE_H */
+#endif /* _RDXTREE_H */

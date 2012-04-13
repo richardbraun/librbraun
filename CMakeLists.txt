@@ -23,7 +23,7 @@ set(BRAUNR_SOURCES
   list.c
   avltree.c
   rbtree.c
-  rdatree.c
+  rdxtree.c
   mem.c
   phys.c
   xprintf.c
@@ -58,8 +58,8 @@ target_link_libraries(test_avltree rbraun ${LIBS})
 add_executable(test_rbtree test/test_rbtree.c)
 target_link_libraries(test_rbtree rbraun ${LIBS})
 
-add_executable(test_rdatree test/test_rdatree.c)
-target_link_libraries(test_rdatree rbraun ${LIBS})
+add_executable(test_rdxtree test/test_rdxtree.c)
+target_link_libraries(test_rdxtree rbraun ${LIBS})
 
 add_executable(test_mem_cache test/test_mem_cache.c)
 target_link_libraries(test_mem_cache ${LIBS})

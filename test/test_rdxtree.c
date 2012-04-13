@@ -28,19 +28,19 @@
 #include <stdarg.h>
 
 #include "../macros.h"
-#include "../rdatree.c"
+#include "../rdxtree.c"
 
 #define TITLE(str) printf("%s: %s\n", __func__, str)
 
-#if RDATREE_RADIX < 6
+#if RDXTREE_RADIX < 6
 #define BM_FORMAT "%lx"
-#elif RDATREE_RADIX == 6 /* RDATREE_RADIX < 6 */
+#elif RDXTREE_RADIX == 6 /* RDXTREE_RADIX < 6 */
 #ifdef __LP64__
 #define BM_FORMAT "%lx"
 #else /* __LP64__ */
 #define BM_FORMAT "%llx"
 #endif /* __LP64__ */
-#endif /* RDATREE_RADIX < 6 */
+#endif /* RDXTREE_RADIX < 6 */
 
 struct obj {
     unsigned long id;
@@ -61,7 +61,7 @@ static void obj_destroy(struct obj *obj)
     free(obj);
 }
 
-static void print_subtree(struct rdatree_node *node, int height, size_t index,
+static void print_subtree(struct rdxtree_node *node, int height, size_t index,
                           size_t level);
 
 static void print_value(void *ptr, size_t index, size_t level)
@@ -80,7 +80,7 @@ static void print_value(void *ptr, size_t index, size_t level)
     printf("%zu:%lu\n", index, obj->id);
 }
 
-static void print_values(struct rdatree_node *node, size_t index, size_t level)
+static void print_values(struct rdxtree_node *node, size_t index, size_t level)
 {
     size_t i;
 
@@ -93,7 +93,7 @@ static void print_values(struct rdatree_node *node, size_t index, size_t level)
         print_value(node->slots[i], i, level + 1);
 }
 
-static void print_node(struct rdatree_node *node, int height, size_t index,
+static void print_node(struct rdxtree_node *node, int height, size_t index,
                        size_t level)
 {
     size_t i;
@@ -107,7 +107,7 @@ static void print_node(struct rdatree_node *node, int height, size_t index,
         print_subtree(node->slots[i], height - 1, i, level + 1);
 }
 
-static void print_subtree(struct rdatree_node *node, int height, size_t index,
+static void print_subtree(struct rdxtree_node *node, int height, size_t index,
                           size_t level)
 {
     if (node == NULL)
@@ -119,7 +119,7 @@ static void print_subtree(struct rdatree_node *node, int height, size_t index,
         print_node(node, height, index, level);
 }
 
-static void print_tree(struct rdatree *tree)
+static void print_tree(struct rdxtree *tree)
 {
     if (tree->height == 0)
         print_value(tree->root, 0, 0);
@@ -127,28 +127,28 @@ static void print_tree(struct rdatree *tree)
         print_subtree(tree->root, tree->height, 0, 0);
 }
 
-static void destroy_tree(struct rdatree *tree)
+static void destroy_tree(struct rdxtree *tree)
 {
-    struct rdatree_iter iter;
+    struct rdxtree_iter iter;
     struct obj *obj;
 
-    rdatree_for_each(tree, &iter, obj)
+    rdxtree_for_each(tree, &iter, obj)
         obj_destroy(obj);
 
-    rdatree_remove_all(tree);
+    rdxtree_remove_all(tree);
 }
 
 static void test_1(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     int error;
 
     TITLE("insert 0");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(0);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -156,15 +156,15 @@ static void test_1(void)
 
 static void test_2(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     int error;
 
     TITLE("insert 1");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(1);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -172,18 +172,18 @@ static void test_2(void)
 
 static void test_3(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     int error;
 
     TITLE("insert 0 and 1");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(0);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     obj = obj_create(1);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -191,18 +191,18 @@ static void test_3(void)
 
 static void test_4(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     int error;
 
     TITLE("insert 1 and 0");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(1);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     obj = obj_create(0);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -210,18 +210,18 @@ static void test_4(void)
 
 static void test_5(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     int error;
 
     TITLE("insert 0 and 4096");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(4096);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     obj = obj_create(0);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -229,18 +229,18 @@ static void test_5(void)
 
 static void test_6(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     int error;
 
     TITLE("insert 4096 and 0");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(4096);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     obj = obj_create(0);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -248,18 +248,18 @@ static void test_6(void)
 
 static void test_7(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     void *ptr;
     int error;
 
     TITLE("insert and remove 0");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(0);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
-    ptr = rdatree_remove(&tree, obj->id);
+    ptr = rdxtree_remove(&tree, obj->id);
     assert(ptr == obj);
     obj_destroy(obj);
     print_tree(&tree);
@@ -267,18 +267,18 @@ static void test_7(void)
 
 static void test_8(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     void *ptr;
     int error;
 
     TITLE("insert and remove 4096");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(4096);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
-    ptr = rdatree_remove(&tree, obj->id);
+    ptr = rdxtree_remove(&tree, obj->id);
     assert(ptr == obj);
     obj_destroy(obj);
     print_tree(&tree);
@@ -286,24 +286,24 @@ static void test_8(void)
 
 static void test_9(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj1, *obj2;
     void *ptr;
     int error;
 
     TITLE("insert 0 and 4096 and remove in reverse order");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj1 = obj_create(0);
-    error = rdatree_insert(&tree, obj1->id, obj1);
+    error = rdxtree_insert(&tree, obj1->id, obj1);
     assert(!error);
     obj2 = obj_create(4096);
-    error = rdatree_insert(&tree, obj2->id, obj2);
+    error = rdxtree_insert(&tree, obj2->id, obj2);
     assert(!error);
-    ptr = rdatree_remove(&tree, obj2->id);
+    ptr = rdxtree_remove(&tree, obj2->id);
     assert(ptr == obj2);
     obj_destroy(obj2);
-    ptr = rdatree_remove(&tree, obj1->id);
+    ptr = rdxtree_remove(&tree, obj1->id);
     assert(ptr == obj1);
     obj_destroy(obj1);
     print_tree(&tree);
@@ -311,24 +311,24 @@ static void test_9(void)
 
 static void test_10(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj1, *obj2;
     void *ptr;
     int error;
 
     TITLE("insert 0 and 4096 and remove in same order");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj1 = obj_create(0);
-    error = rdatree_insert(&tree, obj1->id, obj1);
+    error = rdxtree_insert(&tree, obj1->id, obj1);
     assert(!error);
     obj2 = obj_create(4096);
-    error = rdatree_insert(&tree, obj2->id, obj2);
+    error = rdxtree_insert(&tree, obj2->id, obj2);
     assert(!error);
-    ptr = rdatree_remove(&tree, obj1->id);
+    ptr = rdxtree_remove(&tree, obj1->id);
     assert(ptr == obj1);
     obj_destroy(obj1);
-    ptr = rdatree_remove(&tree, obj2->id);
+    ptr = rdxtree_remove(&tree, obj2->id);
     assert(ptr == obj2);
     obj_destroy(obj2);
     print_tree(&tree);
@@ -336,23 +336,23 @@ static void test_10(void)
 
 static void test_11(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     unsigned long i;
     int error;
 
     TITLE("insert [0..4096] and remove in reverse order");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
 
     for (i = 0; i <= 4096; i++) {
         obj = obj_create(i);
-        error = rdatree_insert(&tree, i, obj);
+        error = rdxtree_insert(&tree, i, obj);
         assert(!error);
     }
 
     for (i = 4096; i <= 4096; i--) {
-        obj = rdatree_remove(&tree, i);
+        obj = rdxtree_remove(&tree, i);
         obj_destroy(obj);
     }
 
@@ -361,23 +361,23 @@ static void test_11(void)
 
 static void test_12(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     unsigned long i;
     int error;
 
     TITLE("insert [0..4096] and remove in same order");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
 
     for (i = 0; i <= 4096; i++) {
         obj = obj_create(i);
-        error = rdatree_insert(&tree, i, obj);
+        error = rdxtree_insert(&tree, i, obj);
         assert(!error);
     }
 
     for (i = 0; i <= 4096; i++) {
-        obj = rdatree_remove(&tree, i);
+        obj = rdxtree_remove(&tree, i);
         obj_destroy(obj);
     }
 
@@ -386,69 +386,69 @@ static void test_12(void)
 
 static void test_13(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     unsigned long i;
     int error;
 
     TITLE("allocate");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(0);
-    error = rdatree_insert_alloc(&tree, obj, &obj->id);
+    error = rdxtree_insert_alloc(&tree, obj, &obj->id);
     assert(!error);
     assert(obj->id == 0);
     print_tree(&tree);
     i = obj->id;
-    obj = rdatree_lookup(&tree, i);
+    obj = rdxtree_lookup(&tree, i);
     assert(obj->id == i);
     destroy_tree(&tree);
 }
 
 static void test_14(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     unsigned long i;
     int error;
 
     TITLE("insert 0, allocate");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj = obj_create(0);
-    error = rdatree_insert(&tree, obj->id, obj);
+    error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     obj = obj_create(0);
-    error = rdatree_insert_alloc(&tree, obj, &obj->id);
+    error = rdxtree_insert_alloc(&tree, obj, &obj->id);
     assert(!error);
     assert(obj->id == 1);
     print_tree(&tree);
     i = obj->id;
-    obj = rdatree_lookup(&tree, i);
+    obj = rdxtree_lookup(&tree, i);
     assert(obj->id == i);
     destroy_tree(&tree);
 }
 
 static void test_15(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     unsigned long i;
     int error;
 
     TITLE("insert [0..4095], remove 0, allocate");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
 
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
-        error = rdatree_insert(&tree, i, obj);
+        error = rdxtree_insert(&tree, i, obj);
         assert(!error);
     }
 
-    obj = rdatree_remove(&tree, 0);
+    obj = rdxtree_remove(&tree, 0);
     assert(obj->id == 0);
-    error = rdatree_insert_alloc(&tree, obj, &obj->id);
+    error = rdxtree_insert_alloc(&tree, obj, &obj->id);
     assert(!error);
     assert(obj->id == 0);
     destroy_tree(&tree);
@@ -456,24 +456,24 @@ static void test_15(void)
 
 static void test_16(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     unsigned long i;
     int error;
 
     TITLE("insert [0..4095], remove 1, allocate");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
 
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
-        error = rdatree_insert(&tree, i, obj);
+        error = rdxtree_insert(&tree, i, obj);
         assert(!error);
     }
 
-    obj = rdatree_remove(&tree, 1);
+    obj = rdxtree_remove(&tree, 1);
     assert(obj->id == 1);
-    error = rdatree_insert_alloc(&tree, obj, &obj->id);
+    error = rdxtree_insert_alloc(&tree, obj, &obj->id);
     assert(!error);
     assert(obj->id == 1);
     destroy_tree(&tree);
@@ -481,36 +481,36 @@ static void test_16(void)
 
 static void test_17(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     unsigned long i;
     int error;
 
     TITLE("insert [0..63] and [128..191], allocate x65");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
 
     for (i = 0; i < 64; i++) {
         obj = obj_create(i);
-        error = rdatree_insert(&tree, i, obj);
+        error = rdxtree_insert(&tree, i, obj);
         assert(!error);
     }
 
     for (i = 128; i < 192; i++) {
         obj = obj_create(i);
-        error = rdatree_insert(&tree, i, obj);
+        error = rdxtree_insert(&tree, i, obj);
         assert(!error);
     }
 
     for (i = 64; i < 128; i++) {
         obj = obj_create(0);
-        error = rdatree_insert_alloc(&tree, obj, &obj->id);
+        error = rdxtree_insert_alloc(&tree, obj, &obj->id);
         assert(!error);
         assert(obj->id == i);
     }
 
     obj = obj_create(0);
-    error = rdatree_insert_alloc(&tree, obj, &obj->id);
+    error = rdxtree_insert_alloc(&tree, obj, &obj->id);
     assert(!error);
     assert(obj->id == 192);
     destroy_tree(&tree);
@@ -518,23 +518,23 @@ static void test_17(void)
 
 static void test_18(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj;
     unsigned long i;
     int error;
 
     TITLE("insert [0..4095], allocate");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
 
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
-        error = rdatree_insert(&tree, i, obj);
+        error = rdxtree_insert(&tree, i, obj);
         assert(!error);
     }
 
     obj = obj_create(0);
-    error = rdatree_insert_alloc(&tree, obj, &obj->id);
+    error = rdxtree_insert_alloc(&tree, obj, &obj->id);
     assert(!error);
     assert(obj->id == 4096);
     destroy_tree(&tree);
@@ -542,50 +542,50 @@ static void test_18(void)
 
 static void test_19(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj1, *obj2, *tmp;
     void **slot;
     int error;
 
     TITLE("insert 0, replace");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj1 = obj_create(0);
-    error = rdatree_insert(&tree, 0, obj1);
+    error = rdxtree_insert(&tree, 0, obj1);
     assert(!error);
-    slot = rdatree_lookup_slot(&tree, 0);
+    slot = rdxtree_lookup_slot(&tree, 0);
     assert(slot != NULL);
     obj2 = obj_create(0);
-    tmp = rdatree_replace_slot(slot, obj2);
+    tmp = rdxtree_replace_slot(slot, obj2);
     assert(obj1 == tmp);
     obj_destroy(obj1);
     print_tree(&tree);
-    tmp = rdatree_lookup(&tree, 0);
+    tmp = rdxtree_lookup(&tree, 0);
     assert(obj2 == tmp);
     destroy_tree(&tree);
 }
 
 static void test_20(void)
 {
-    struct rdatree tree;
+    struct rdxtree tree;
     struct obj *obj1, *obj2, *tmp;
     void **slot;
     int error;
 
     TITLE("insert 4096, replace");
 
-    rdatree_init(&tree);
+    rdxtree_init(&tree);
     obj1 = obj_create(4096);
-    error = rdatree_insert(&tree, 4096, obj1);
+    error = rdxtree_insert(&tree, 4096, obj1);
     assert(!error);
-    slot = rdatree_lookup_slot(&tree, 4096);
+    slot = rdxtree_lookup_slot(&tree, 4096);
     assert(slot != NULL);
     obj2 = obj_create(4096);
-    tmp = rdatree_replace_slot(slot, obj2);
+    tmp = rdxtree_replace_slot(slot, obj2);
     assert(obj1 == tmp);
     obj_destroy(obj1);
     print_tree(&tree);
-    tmp = rdatree_lookup(&tree, 4096);
+    tmp = rdxtree_lookup(&tree, 4096);
     assert(obj2 == tmp);
     destroy_tree(&tree);
 }
