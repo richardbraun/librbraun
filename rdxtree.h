@@ -93,14 +93,14 @@ int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp);
 /*
  * Remove a pointer from a tree.
  *
- * The matching pointer is returned if successfull, null otherwise.
+ * The matching pointer is returned if successful, null otherwise.
  */
 void * rdxtree_remove(struct rdxtree *tree, unsigned long key);
 
 /*
  * Look up a pointer in a tree.
  *
- * The matching pointer is returned if successfull, null otherwise.
+ * The matching pointer is returned if successful, null otherwise.
  */
 void * rdxtree_lookup(struct rdxtree *tree, unsigned long key);
 
@@ -111,7 +111,7 @@ void * rdxtree_lookup(struct rdxtree *tree, unsigned long key);
  * a placeholder for fast replacements to avoid multiple lookups on the same
  * key.
  *
- * A slot for the matching pointer is returned if successfull, null otherwise.
+ * A slot for the matching pointer is returned if successful, null otherwise.
  *
  * See rdxtree_replace_slot().
  */
