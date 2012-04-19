@@ -83,12 +83,34 @@ static inline void rdxtree_iter_init(struct rdxtree_iter *iter)
 int rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr);
 
 /*
+ * Insert a pointer in a tree and obtain its slot.
+ *
+ * The ptr and slotp parameters must not be null. If successful, the slot of
+ * the newly inserted pointer is stored at the address pointed to by the slotp
+ * parameter.
+ */
+int rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
+                        void ***slotp);
+
+/*
  * Insert a pointer in a tree, for which a new key is allocated.
  *
  * The ptr and keyp parameters must not be null. The newly allocated key is
  * stored at the address pointed to by the keyp parameter.
  */
 int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp);
+
+/*
+ * Insert a pointer in a tree, for which a new key is allocated, and obtain
+ * its slot.
+ *
+ * The ptr, keyp and slotp parameters must not be null. The newly allocated
+ * key is stored at the address pointed to by the keyp parameter while the
+ * slot of the inserted pointer is stored at the address pointed to by the
+ * slotp parameter.
+ */
+int rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
+                              unsigned long *keyp, void ***slotp);
 
 /*
  * Remove a pointer from a tree.

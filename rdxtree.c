@@ -306,7 +306,8 @@ static void rdxtree_insert_bm_clear(struct rdxtree_node *node,
     }
 }
 
-int rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
+static int rdxtree_insert_prim(struct rdxtree *tree, unsigned long key,
+                               void *ptr, void ***slotp)
 {
     struct rdxtree_node *node, *prev;
     unsigned int index = index;
@@ -328,6 +329,10 @@ int rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
             return ERR_BUSY;
 
         tree->root = ptr;
+
+        if (slotp != NULL)
+            *slotp = &tree->root;
+
         return ERR_SUCCESS;
     }
 
@@ -368,10 +373,26 @@ int rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
 
     rdxtree_node_insert(prev, index, ptr);
     rdxtree_insert_bm_clear(prev, index);
+
+    if (slotp != NULL)
+        *slotp = &prev->slots[index];
+
     return ERR_SUCCESS;
 }
 
-int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
+int rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
+{
+    return rdxtree_insert_prim(tree, key, ptr, NULL);
+}
+
+int rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
+                        void ***slotp)
+{
+    return rdxtree_insert_prim(tree, key, ptr, slotp);
+}
+
+static int rdxtree_insert_alloc_prim(struct rdxtree *tree, void *ptr,
+                                     unsigned long *keyp, void ***slotp)
 {
     struct rdxtree_node *node, *prev;
     unsigned long key;
@@ -385,6 +406,10 @@ int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
         if (tree->root == NULL) {
             tree->root = ptr;
             *keyp = 0;
+
+            if (slotp != NULL)
+                *slotp = &tree->root;
+
             return ERR_SUCCESS;
         }
 
@@ -423,11 +448,15 @@ int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
 
     rdxtree_node_insert(prev, index, ptr);
     rdxtree_insert_bm_clear(prev, index);
+
+    if (slotp != NULL)
+        *slotp = &prev->slots[index];
+
     goto out;
 
 grow:
     key = rdxtree_max_key(height) + 1;
-    error = rdxtree_insert(tree, key, ptr);
+    error = rdxtree_insert_prim(tree, key, ptr, slotp);
 
     if (error)
         return error;
@@ -435,6 +464,17 @@ grow:
 out:
     *keyp = key;
     return ERR_SUCCESS;
+}
+
+int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
+{
+    return rdxtree_insert_alloc_prim(tree, ptr, keyp, NULL);
+}
+
+int rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
+                              unsigned long *keyp, void ***slotp)
+{
+    return rdxtree_insert_alloc_prim(tree, ptr, keyp, slotp);
 }
 
 static void rdxtree_remove_bm_set(struct rdxtree_node *node,
