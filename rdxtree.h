@@ -76,6 +76,14 @@ static inline void rdxtree_iter_init(struct rdxtree_iter *iter)
 }
 
 /*
+ * Return the slot currently referenced by an iterator.
+ */
+static inline void ** rdxtree_iter_slot(struct rdxtree_iter *iter)
+{
+    return iter->slot;
+}
+
+/*
  * Insert a pointer in a tree.
  *
  * The ptr parameter must not be null.
@@ -138,6 +146,14 @@ void * rdxtree_lookup(struct rdxtree *tree, unsigned long key);
  * See rdxtree_replace_slot().
  */
 void ** rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key);
+
+/*
+ * Look up a pointer in a tree and initialize an iterator at its key.
+ *
+ * The matching pointer is returned if successful, null otherwise.
+ */
+void * rdxtree_lookup_iter(struct rdxtree *tree, unsigned long key,
+                           struct rdxtree_iter *iter);
 
 /*
  * Replace a pointer in a tree.
