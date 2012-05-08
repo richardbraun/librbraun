@@ -531,8 +531,7 @@ void * rdxtree_remove(struct rdxtree *tree, unsigned long key)
     return node;
 }
 
-static void ** rdxtree_lookup_prim(struct rdxtree *tree, unsigned long key,
-                                   struct rdxtree_node **nodep)
+static void ** rdxtree_lookup_prim(struct rdxtree *tree, unsigned long key)
 {
     struct rdxtree_node *node, *prev;
     unsigned int index;
@@ -546,9 +545,6 @@ static void ** rdxtree_lookup_prim(struct rdxtree *tree, unsigned long key,
     if (height == 0) {
         if (tree->root == NULL)
             return NULL;
-
-        if (nodep != NULL)
-            *nodep = NULL;
 
         return &tree->root;
     }
@@ -570,9 +566,6 @@ static void ** rdxtree_lookup_prim(struct rdxtree *tree, unsigned long key,
     if (node == NULL)
         return NULL;
 
-    if (nodep != NULL)
-        *nodep = prev;
-
     return &prev->slots[index];
 }
 
@@ -580,23 +573,13 @@ void * rdxtree_lookup(struct rdxtree *tree, unsigned long key)
 {
     void **slot;
 
-    slot = rdxtree_lookup_prim(tree, key, NULL);
+    slot = rdxtree_lookup_prim(tree, key);
     return (slot == NULL) ? NULL : *slot;
 }
 
 void ** rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key)
 {
-    return rdxtree_lookup_prim(tree, key, NULL);
-}
-
-void * rdxtree_lookup_iter(struct rdxtree *tree, unsigned long key,
-                           struct rdxtree_iter *iter)
-{
-    struct rdxtree_node **node_ptr;
-
-    node_ptr = (struct rdxtree_node **)&iter->node;
-    iter->slot = rdxtree_lookup_prim(tree, key, node_ptr);
-    return (iter->slot == NULL) ? NULL : *iter->slot;
+    return rdxtree_lookup_prim(tree, key);
 }
 
 void * rdxtree_replace_slot(void **slot, void *ptr)
