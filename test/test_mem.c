@@ -32,7 +32,8 @@
 #define STRING      "This is a test string."
 #define STRING_SIZE (STRLEN(STRING) + 1)
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     char *s;
 

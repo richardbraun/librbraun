@@ -36,8 +36,9 @@
  * The parent parameter must not be null, and must be the parent of the
  * given node.
  */
-static inline int avltree_index(const struct avltree_node *node,
-                                const struct avltree_node *parent)
+static inline int
+avltree_index(const struct avltree_node *node,
+              const struct avltree_node *parent)
 {
     assert(parent != NULL);
     assert((node == NULL) || (avltree_parent(node) == parent));
@@ -54,7 +55,8 @@ static inline int avltree_index(const struct avltree_node *node,
  * Convert an index of the children array (0 or 1) into a balance value
  * (-1 or 1).
  */
-static inline int avltree_i2b(int index)
+static inline int
+avltree_i2b(int index)
 {
     assert(avltree_check_index(index));
     return (index - 1) | 1;
@@ -63,7 +65,8 @@ static inline int avltree_i2b(int index)
 /*
  * Return the balance of a node.
  */
-static inline int avltree_balance(const struct avltree_node *node)
+static inline int
+avltree_balance(const struct avltree_node *node)
 {
     int balance;
 
@@ -76,8 +79,8 @@ static inline int avltree_balance(const struct avltree_node *node)
 /*
  * Set the parent of a node, retaining its current balance.
  */
-static inline void avltree_set_parent(struct avltree_node *node,
-                                      struct avltree_node *parent)
+static inline void
+avltree_set_parent(struct avltree_node *node, struct avltree_node *parent)
 {
     assert(avltree_check_alignment(node));
     assert(avltree_check_alignment(parent));
@@ -88,7 +91,8 @@ static inline void avltree_set_parent(struct avltree_node *node,
 /*
  * Set the balance of a node, retaining its current parent.
  */
-static inline void avltree_set_balance(struct avltree_node *node, int balance)
+static inline void
+avltree_set_balance(struct avltree_node *node, int balance)
 {
     assert((-1 <= balance) && (balance <= 1));
     node->parent = (node->parent & AVLTREE_PARENT_MASK) | (balance + 1);
@@ -104,8 +108,8 @@ static inline void avltree_set_balance(struct avltree_node *node, int balance)
  * Return true if the overall height of the subtree rooted at node has
  * decreased, false otherwise.
  */
-static int avltree_rotate(struct avltree *tree, struct avltree_node *node,
-                          int balance)
+static int
+avltree_rotate(struct avltree *tree, struct avltree_node *node, int balance)
 {
     struct avltree_node *parent, *lnode, *lrnode, *lrlnode, *lrrnode;
     int left, right, lweight, rweight, lbalance;
@@ -207,8 +211,9 @@ static int avltree_rotate(struct avltree *tree, struct avltree_node *node,
     return 1;
 }
 
-void avltree_insert_rebalance(struct avltree *tree, struct avltree_node *parent,
-                              int index, struct avltree_node *node)
+void
+avltree_insert_rebalance(struct avltree *tree, struct avltree_node *parent,
+                         int index, struct avltree_node *node)
 {
     int old_balance, new_balance;
 
@@ -272,7 +277,8 @@ void avltree_insert_rebalance(struct avltree *tree, struct avltree_node *parent,
     avltree_rotate(tree, node, new_balance);
 }
 
-void avltree_remove(struct avltree *tree, struct avltree_node *node)
+void
+avltree_remove(struct avltree *tree, struct avltree_node *node)
 {
     struct avltree_node *child, *parent;
     int left, right, index, old_balance, new_balance;
@@ -403,8 +409,8 @@ update_balance:
     }
 }
 
-struct avltree_node * avltree_nearest(struct avltree_node *parent, int index,
-                                      int direction)
+struct avltree_node *
+avltree_nearest(struct avltree_node *parent, int index, int direction)
 {
     assert(avltree_check_index(direction));
 
@@ -419,8 +425,8 @@ struct avltree_node * avltree_nearest(struct avltree_node *parent, int index,
     return avltree_walk(parent, direction);
 }
 
-struct avltree_node * avltree_firstlast(const struct avltree *tree,
-                                        int direction)
+struct avltree_node *
+avltree_firstlast(const struct avltree *tree, int direction)
 {
     struct avltree_node *prev, *cur;
 
@@ -434,7 +440,8 @@ struct avltree_node * avltree_firstlast(const struct avltree *tree,
     return prev;
 }
 
-struct avltree_node * avltree_walk(struct avltree_node *node, int direction)
+struct avltree_node *
+avltree_walk(struct avltree_node *node, int direction)
 {
     int left, right;
 
@@ -475,7 +482,8 @@ struct avltree_node * avltree_walk(struct avltree_node *node, int direction)
 /*
  * Return the left-most deepest child node of the given node.
  */
-static struct avltree_node * avltree_find_deepest(struct avltree_node *node)
+static struct avltree_node *
+avltree_find_deepest(struct avltree_node *node)
 {
     struct avltree_node *parent;
 
@@ -494,7 +502,8 @@ static struct avltree_node * avltree_find_deepest(struct avltree_node *node)
     }
 }
 
-struct avltree_node * avltree_postwalk_deepest(const struct avltree *tree)
+struct avltree_node *
+avltree_postwalk_deepest(const struct avltree *tree)
 {
     struct avltree_node *node;
 
@@ -506,7 +515,8 @@ struct avltree_node * avltree_postwalk_deepest(const struct avltree *tree)
     return avltree_find_deepest(node);
 }
 
-struct avltree_node * avltree_postwalk_unlink(struct avltree_node *node)
+struct avltree_node *
+avltree_postwalk_unlink(struct avltree_node *node)
 {
     struct avltree_node *parent;
     int index;

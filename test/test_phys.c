@@ -29,7 +29,8 @@
 
 #include "../phys.c"
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     struct phys_page *page;
 

@@ -60,7 +60,8 @@ struct rbtree;
 /*
  * Initialize a tree.
  */
-static inline void rbtree_init(struct rbtree *tree)
+static inline void
+rbtree_init(struct rbtree *tree)
 {
     tree->root = NULL;
 }
@@ -70,7 +71,8 @@ static inline void rbtree_init(struct rbtree *tree)
  *
  * A node is in no tree when its parent points to itself.
  */
-static inline void rbtree_node_init(struct rbtree_node *node)
+static inline void
+rbtree_node_init(struct rbtree_node *node)
 {
     assert(rbtree_check_alignment(node));
 
@@ -82,7 +84,8 @@ static inline void rbtree_node_init(struct rbtree_node *node)
 /*
  * Return true if node is in no tree.
  */
-static inline int rbtree_node_unlinked(const struct rbtree_node *node)
+static inline int
+rbtree_node_unlinked(const struct rbtree_node *node)
 {
     return rbtree_parent(node) == node;
 }
@@ -96,7 +99,8 @@ static inline int rbtree_node_unlinked(const struct rbtree_node *node)
 /*
  * Return true if tree is empty.
  */
-static inline int rbtree_empty(const struct rbtree *tree)
+static inline int
+rbtree_empty(const struct rbtree *tree)
 {
     return tree->root == NULL;
 }

@@ -80,7 +80,8 @@ struct rbtree {
 /*
  * Return true if the given pointer is suitably aligned.
  */
-static inline int rbtree_check_alignment(const struct rbtree_node *node)
+static inline int
+rbtree_check_alignment(const struct rbtree_node *node)
 {
     return ((unsigned long)node & (~RBTREE_PARENT_MASK)) == 0;
 }
@@ -88,7 +89,8 @@ static inline int rbtree_check_alignment(const struct rbtree_node *node)
 /*
  * Return true if the given index is a valid child index.
  */
-static inline int rbtree_check_index(int index)
+static inline int
+rbtree_check_index(int index)
 {
     return index == (index & 1);
 }
@@ -99,7 +101,8 @@ static inline int rbtree_check_index(int index)
  *
  * This function is mostly used when looking up a node.
  */
-static inline int rbtree_d2i(int diff)
+static inline int
+rbtree_d2i(int diff)
 {
     return !(diff <= 0);
 }
@@ -107,7 +110,8 @@ static inline int rbtree_d2i(int diff)
 /*
  * Return the parent of a node.
  */
-static inline struct rbtree_node * rbtree_parent(const struct rbtree_node *node)
+static inline struct rbtree_node *
+rbtree_parent(const struct rbtree_node *node)
 {
     return (struct rbtree_node *)(node->parent & RBTREE_PARENT_MASK);
 }
@@ -115,7 +119,8 @@ static inline struct rbtree_node * rbtree_parent(const struct rbtree_node *node)
 /*
  * Translate an insertion point into a slot.
  */
-static inline unsigned long rbtree_slot(struct rbtree_node *parent, int index)
+static inline unsigned long
+rbtree_slot(struct rbtree_node *parent, int index)
 {
     assert(rbtree_check_alignment(parent));
     assert(rbtree_check_index(index));
@@ -125,7 +130,8 @@ static inline unsigned long rbtree_slot(struct rbtree_node *parent, int index)
 /*
  * Extract the parent address from a slot.
  */
-static inline struct rbtree_node * rbtree_slot_parent(unsigned long slot)
+static inline struct rbtree_node *
+rbtree_slot_parent(unsigned long slot)
 {
     return (struct rbtree_node *)(slot & RBTREE_SLOT_PARENT_MASK);
 }
@@ -133,7 +139,8 @@ static inline struct rbtree_node * rbtree_slot_parent(unsigned long slot)
 /*
  * Extract the index from a slot.
  */
-static inline int rbtree_slot_index(unsigned long slot)
+static inline int
+rbtree_slot_index(unsigned long slot)
 {
     return slot & RBTREE_SLOT_INDEX_MASK;
 }

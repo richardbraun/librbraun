@@ -184,15 +184,16 @@ static unsigned int phys_segs_size;
 #define phys_atop(addr) ((addr) / PAGE_SIZE)
 #define phys_ptoa(pfn)  ((pfn) * PAGE_SIZE)
 
-static void phys_page_init(struct phys_page *page, struct phys_seg *seg,
-                           phys_paddr_t pa)
+static void
+phys_page_init(struct phys_page *page, struct phys_seg *seg, phys_paddr_t pa)
 {
     page->seg = seg;
     page->phys_addr = pa;
     page->level = PHYS_LEVEL_ALLOCATED;
 }
 
-static inline struct phys_page * phys_page_lookup(phys_paddr_t pa)
+static inline struct phys_page *
+phys_page_lookup(phys_paddr_t pa)
 {
     struct phys_seg *seg;
     unsigned int i;
@@ -207,14 +208,15 @@ static inline struct phys_page * phys_page_lookup(phys_paddr_t pa)
     return NULL;
 }
 
-static void phys_free_list_init(struct phys_free_list *free_list)
+static void
+phys_free_list_init(struct phys_free_list *free_list)
 {
     free_list->size = 0;
     list_init(&free_list->blocks);
 }
 
-static inline void phys_free_list_insert(struct phys_free_list *free_list,
-                                         struct phys_page *page)
+static inline void
+phys_free_list_insert(struct phys_free_list *free_list, struct phys_page *page)
 {
     assert(page->level == PHYS_LEVEL_ALLOCATED);
 
@@ -222,8 +224,8 @@ static inline void phys_free_list_insert(struct phys_free_list *free_list,
     list_insert(&free_list->blocks, &page->node);
 }
 
-static inline void phys_free_list_remove(struct phys_free_list *free_list,
-                                         struct phys_page *page)
+static inline void
+phys_free_list_remove(struct phys_free_list *free_list, struct phys_page *page)
 {
     assert(free_list->size != 0);
     assert(!list_empty(&free_list->blocks));
@@ -233,8 +235,8 @@ static inline void phys_free_list_remove(struct phys_free_list *free_list,
     list_remove(&page->node);
 }
 
-static struct phys_page * phys_seg_alloc_from_buddy(struct phys_seg *seg,
-                                                    unsigned int level)
+static struct phys_page *
+phys_seg_alloc_from_buddy(struct phys_seg *seg, unsigned int level)
 {
     struct phys_free_list *free_list;
     struct phys_page *page, *buddy;
@@ -267,9 +269,9 @@ static struct phys_page * phys_seg_alloc_from_buddy(struct phys_seg *seg,
     return page;
 }
 
-static void phys_seg_free_to_buddy(struct phys_seg *seg,
-                                   struct phys_page *page,
-                                   unsigned int level)
+static void
+phys_seg_free_to_buddy(struct phys_seg *seg, struct phys_page *page,
+                       unsigned int level)
 {
     struct phys_page *buddy;
     phys_paddr_t pa, buddy_pa;
@@ -306,7 +308,8 @@ static void phys_seg_free_to_buddy(struct phys_seg *seg,
     seg->nr_free_pages += nr_pages;
 }
 
-static void phys_cpu_pool_init(struct phys_cpu_pool *cpu_pool, int size)
+static void
+phys_cpu_pool_init(struct phys_cpu_pool *cpu_pool, int size)
 {
     cpu_pool->size = size;
     cpu_pool->transfer_size = (size + PHYS_CPU_POOL_TRANSFER_RATIO - 1)
@@ -325,7 +328,8 @@ static void phys_cpu_pool_init(struct phys_cpu_pool *cpu_pool, int size)
  * allocator operations in any other way, as CPU pools are always valid, and
  * their access is serialized by a lock.
  */
-static inline struct phys_cpu_pool * phys_cpu_pool_get(struct phys_seg *seg)
+static inline struct phys_cpu_pool *
+phys_cpu_pool_get(struct phys_seg *seg)
 {
     return &seg->cpu_pools[cpu_id()];
 }
@@ -342,16 +346,16 @@ phys_cpu_pool_pop(struct phys_cpu_pool *cpu_pool)
     return page;
 }
 
-static inline void phys_cpu_pool_push(struct phys_cpu_pool *cpu_pool,
-                                      struct phys_page *page)
+static inline void
+phys_cpu_pool_push(struct phys_cpu_pool *cpu_pool, struct phys_page *page)
 {
     assert(cpu_pool->nr_pages < cpu_pool->size);
     cpu_pool->nr_pages++;
     list_insert(&cpu_pool->pages, &page->node);
 }
 
-static int phys_cpu_pool_fill(struct phys_cpu_pool *cpu_pool,
-                              struct phys_seg *seg)
+static int
+phys_cpu_pool_fill(struct phys_cpu_pool *cpu_pool, struct phys_seg *seg)
 {
     struct phys_page *page;
     int i;
@@ -374,8 +378,8 @@ static int phys_cpu_pool_fill(struct phys_cpu_pool *cpu_pool,
     return i;
 }
 
-static void phys_cpu_pool_drain(struct phys_cpu_pool *cpu_pool,
-                                struct phys_seg *seg)
+static void
+phys_cpu_pool_drain(struct phys_cpu_pool *cpu_pool, struct phys_seg *seg)
 {
     struct phys_page *page;
     int i;
@@ -392,22 +396,26 @@ static void phys_cpu_pool_drain(struct phys_cpu_pool *cpu_pool,
     pthread_mutex_unlock(&seg->lock);
 }
 
-static inline phys_paddr_t phys_seg_start(struct phys_seg *seg)
+static inline phys_paddr_t
+phys_seg_start(struct phys_seg *seg)
 {
     return seg->start;
 }
 
-static inline phys_paddr_t phys_seg_end(struct phys_seg *seg)
+static inline phys_paddr_t
+phys_seg_end(struct phys_seg *seg)
 {
     return seg->end;
 }
 
-static inline phys_paddr_t phys_seg_size(struct phys_seg *seg)
+static inline phys_paddr_t
+phys_seg_size(struct phys_seg *seg)
 {
     return phys_seg_end(seg) - phys_seg_start(seg);
 }
 
-static int phys_seg_compute_pool_size(struct phys_seg *seg)
+static int
+phys_seg_compute_pool_size(struct phys_seg *seg)
 {
     phys_paddr_t size;
 
@@ -421,7 +429,8 @@ static int phys_seg_compute_pool_size(struct phys_seg *seg)
     return size;
 }
 
-static void phys_seg_init(struct phys_seg *seg, struct phys_page *pages)
+static void
+phys_seg_init(struct phys_seg *seg, struct phys_page *pages)
 {
     phys_paddr_t pa;
     int pool_size;
@@ -449,7 +458,8 @@ static void phys_seg_init(struct phys_seg *seg, struct phys_page *pages)
  * Return the level (i.e. the index in the free lists array) matching the
  * given size.
  */
-static inline unsigned int phys_get_level(phys_size_t size)
+static inline unsigned int
+phys_get_level(phys_size_t size)
 {
     size = P2ROUND(size, PAGE_SIZE) / PAGE_SIZE;
     assert(size != 0);
@@ -461,7 +471,8 @@ static inline unsigned int phys_get_level(phys_size_t size)
         return (sizeof(size) * CHAR_BIT) - __builtin_clzl(size);
 }
 
-static struct phys_page * phys_seg_alloc(struct phys_seg *seg, phys_size_t size)
+static struct phys_page *
+phys_seg_alloc(struct phys_seg *seg, phys_size_t size)
 {
     struct phys_cpu_pool *cpu_pool;
     struct phys_page *page;
@@ -495,8 +506,8 @@ static struct phys_page * phys_seg_alloc(struct phys_seg *seg, phys_size_t size)
     return page;
 }
 
-static void phys_seg_free(struct phys_seg *seg, struct phys_page *page,
-                          phys_size_t size)
+static void
+phys_seg_free(struct phys_seg *seg, struct phys_page *page, phys_size_t size)
 {
     struct phys_cpu_pool *cpu_pool;
     unsigned int level;
@@ -525,8 +536,9 @@ static void phys_seg_free(struct phys_seg *seg, struct phys_page *page,
  *
  * This function partially initializes a segment.
  */
-static void phys_load_segment(const char *name, phys_paddr_t start,
-                              phys_paddr_t end, unsigned int seg_list_prio)
+static void
+phys_load_segment(const char *name, phys_paddr_t start, phys_paddr_t end,
+                  unsigned int seg_list_prio)
 {
     static int initialized = 0;
     struct phys_seg *seg;
@@ -565,7 +577,8 @@ static void phys_load_segment(const char *name, phys_paddr_t start,
  * this implementation, an Intel machine with two segments of RAM is
  * virtualized.
  */
-static void phys_load_segments(void)
+static void
+phys_load_segments(void)
 {
     phys_paddr_t start, end;
     size_t size;
@@ -600,7 +613,8 @@ static void phys_load_segments(void)
     phys_load_segment("normal", start, end, PHYS_SEGLIST_NORMAL);
 }
 
-void phys_setup(void)
+void
+phys_setup(void)
 {
     struct phys_seg *seg, *map_seg;
     struct phys_page *page, *map;
@@ -676,7 +690,8 @@ found:
     }
 }
 
-struct phys_page * phys_alloc_pages(phys_size_t size)
+struct phys_page *
+phys_alloc_pages(phys_size_t size)
 {
     struct list *seg_list;
     struct phys_seg *seg;
@@ -695,12 +710,14 @@ struct phys_page * phys_alloc_pages(phys_size_t size)
     return NULL;
 }
 
-void phys_free_pages(struct phys_page *page, phys_size_t size)
+void
+phys_free_pages(struct phys_page *page, phys_size_t size)
 {
     phys_seg_free(page->seg, page, size);
 }
 
-phys_paddr_t phys_alloc(phys_size_t size)
+phys_paddr_t
+phys_alloc(phys_size_t size)
 {
     struct phys_page *page;
 
@@ -716,7 +733,8 @@ phys_paddr_t phys_alloc(phys_size_t size)
     return page->phys_addr;
 }
 
-void phys_free(phys_paddr_t pa, phys_size_t size)
+void
+phys_free(phys_paddr_t pa, phys_size_t size)
 {
     struct phys_page *page;
 
@@ -725,7 +743,8 @@ void phys_free(phys_paddr_t pa, phys_size_t size)
     phys_free_pages(page, size);
 }
 
-void phys_info(void)
+void
+phys_info(void)
 {
     struct phys_seg *seg;
     unsigned int i, j;

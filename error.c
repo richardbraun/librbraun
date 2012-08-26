@@ -53,7 +53,8 @@ static const char *errormsg_table[] = {
 
 #define ERRORMSG_TABLE_SIZE ARRAY_SIZE(errormsg_table)
 
-const char * error_str(unsigned int error)
+const char *
+error_str(unsigned int error)
 {
     if (error >= ERRORMSG_TABLE_SIZE)
         return "invalid error code";
@@ -61,7 +62,8 @@ const char * error_str(unsigned int error)
     return errormsg_table[error];
 }
 
-unsigned int error_from_errno(int errno_code)
+unsigned int
+error_from_errno(int errno_code)
 {
     switch (errno_code) {
     case 0:
@@ -84,7 +86,8 @@ unsigned int error_from_errno(int errno_code)
     }
 }
 
-void error_die(unsigned int error)
+void
+error_die(unsigned int error)
 {
     fprintf(stderr, "process terminating, reason: %s\n", error_str(error));
     abort();

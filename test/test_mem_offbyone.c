@@ -30,7 +30,8 @@
 
 #define BUFSIZE 200
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     char *s;
 

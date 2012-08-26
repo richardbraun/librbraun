@@ -85,7 +85,8 @@ struct avltree {
 /*
  * Return true if the given pointer is suitably aligned.
  */
-static inline int avltree_check_alignment(const struct avltree_node *node)
+static inline int
+avltree_check_alignment(const struct avltree_node *node)
 {
     return ((unsigned long)node & AVLTREE_BALANCE_MASK) == 0;
 }
@@ -93,7 +94,8 @@ static inline int avltree_check_alignment(const struct avltree_node *node)
 /*
  * Return true if the given index is a valid child index.
  */
-static inline int avltree_check_index(int index)
+static inline int
+avltree_check_index(int index)
 {
     return index == (index & 1);
 }
@@ -104,7 +106,8 @@ static inline int avltree_check_index(int index)
  *
  * This function is mostly used when looking up a node.
  */
-static inline int avltree_d2i(int diff)
+static inline int
+avltree_d2i(int diff)
 {
     return !(diff <= 0);
 }
@@ -121,7 +124,8 @@ avltree_parent(const struct avltree_node *node)
 /*
  * Translate an insertion point into a slot.
  */
-static inline unsigned long avltree_slot(struct avltree_node *parent, int index)
+static inline unsigned long
+avltree_slot(struct avltree_node *parent, int index)
 {
     assert(avltree_check_alignment(parent));
     assert(avltree_check_index(index));
@@ -131,7 +135,8 @@ static inline unsigned long avltree_slot(struct avltree_node *parent, int index)
 /*
  * Extract the parent address from a slot.
  */
-static inline struct avltree_node * avltree_slot_parent(unsigned long slot)
+static inline struct avltree_node *
+avltree_slot_parent(unsigned long slot)
 {
     return (struct avltree_node *)(slot & AVLTREE_SLOT_PARENT_MASK);
 }
@@ -139,7 +144,8 @@ static inline struct avltree_node * avltree_slot_parent(unsigned long slot)
 /*
  * Extract the index from a slot.
  */
-static inline int avltree_slot_index(unsigned long slot)
+static inline int
+avltree_slot_index(unsigned long slot)
 {
     return slot & AVLTREE_SLOT_INDEX_MASK;
 }

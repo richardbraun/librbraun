@@ -90,7 +90,8 @@ static pthread_mutex_t xprint_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static const char digits[] = "0123456789ABCDEF";
 
-static inline char * xputchar(char *str, char *end, char c)
+static inline char *
+xputchar(char *str, char *end, char c)
 {
     if (str < end)
         *str = c;
@@ -100,12 +101,14 @@ static inline char * xputchar(char *str, char *end, char c)
     return str;
 }
 
-static inline int xisdigit(char c)
+static inline int
+xisdigit(char c)
 {
     return (c >= '0') && (c <= '9');
 }
 
-int xprintf(const char *format, ...)
+int
+xprintf(const char *format, ...)
 {
     va_list ap;
     int length;
@@ -117,7 +120,8 @@ int xprintf(const char *format, ...)
     return length;
 }
 
-int xvprintf(const char *format, va_list ap)
+int
+xvprintf(const char *format, va_list ap)
 {
     size_t size;
     int length;
@@ -133,7 +137,8 @@ int xvprintf(const char *format, va_list ap)
     return length;
 }
 
-int xsprintf(char *str, const char *format, ...)
+int
+xsprintf(char *str, const char *format, ...)
 {
     va_list ap;
     int length;
@@ -145,12 +150,14 @@ int xsprintf(char *str, const char *format, ...)
     return length;
 }
 
-int xvsprintf(char *str, const char *format, va_list ap)
+int
+xvsprintf(char *str, const char *format, va_list ap)
 {
     return xvsnprintf(str, XPRINT_NOLIMIT, format, ap);
 }
 
-int xsnprintf(char *str, size_t size, const char *format, ...)
+int
+xsnprintf(char *str, size_t size, const char *format, ...)
 {
     va_list ap;
     int length;
@@ -162,7 +169,8 @@ int xsnprintf(char *str, size_t size, const char *format, ...)
     return length;
 }
 
-int xvsnprintf(char *str, size_t size, const char *format, va_list ap)
+int
+xvsnprintf(char *str, size_t size, const char *format, va_list ap)
 {
     unsigned long long n;
     int i, len, found, flags, width, precision, modifier, specifier, shift;

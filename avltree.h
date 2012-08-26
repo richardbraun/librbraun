@@ -65,7 +65,8 @@ struct avltree;
 /*
  * Initialize a tree.
  */
-static inline void avltree_init(struct avltree *tree)
+static inline void
+avltree_init(struct avltree *tree)
 {
     tree->root = NULL;
 }
@@ -75,7 +76,8 @@ static inline void avltree_init(struct avltree *tree)
  *
  * A node is in no tree when its parent points to itself.
  */
-static inline void avltree_node_init(struct avltree_node *node)
+static inline void
+avltree_node_init(struct avltree_node *node)
 {
     assert(avltree_check_alignment(node));
 
@@ -87,7 +89,8 @@ static inline void avltree_node_init(struct avltree_node *node)
 /*
  * Return true if node is in no tree.
  */
-static inline int avltree_node_unlinked(const struct avltree_node *node)
+static inline int
+avltree_node_unlinked(const struct avltree_node *node)
 {
     return avltree_parent(node) == node;
 }
@@ -101,7 +104,8 @@ static inline int avltree_node_unlinked(const struct avltree_node *node)
 /*
  * Return true if tree is empty.
  */
-static inline int avltree_empty(const struct avltree *tree)
+static inline int
+avltree_empty(const struct avltree *tree)
 {
     return tree->root == NULL;
 }

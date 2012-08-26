@@ -43,7 +43,8 @@ MACRO_BEGIN                                             \
     assert(strcmp(stra, strb) == 0);                    \
 MACRO_END
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     (void)argc;
     (void)argv;

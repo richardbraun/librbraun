@@ -76,7 +76,8 @@ static inline void list_init(struct list *list)
  *
  * An entry is in no list when its node members point to NULL.
  */
-static inline void list_node_init(struct list *node)
+static inline void
+list_node_init(struct list *node)
 {
     node->prev = NULL;
     node->next = NULL;
@@ -85,7 +86,8 @@ static inline void list_node_init(struct list *node)
 /*
  * Return true if node is in no list.
  */
-static inline int list_node_unlinked(const struct list *node)
+static inline int
+list_node_unlinked(const struct list *node)
 {
     return node->prev == NULL;
 }
@@ -99,7 +101,8 @@ static inline int list_node_unlinked(const struct list *node)
 /*
  * Return the first node of a list.
  */
-static inline struct list * list_first(const struct list *list)
+static inline struct list *
+list_first(const struct list *list)
 {
     return list->next;
 }
@@ -107,7 +110,8 @@ static inline struct list * list_first(const struct list *list)
 /*
  * Return the last node of a list.
  */
-static inline struct list * list_last(const struct list *list)
+static inline struct list *
+list_last(const struct list *list)
 {
     return list->prev;
 }
@@ -115,7 +119,8 @@ static inline struct list * list_last(const struct list *list)
 /*
  * Return the node next to the given node.
  */
-static inline struct list * list_next(const struct list *node)
+static inline struct list *
+list_next(const struct list *node)
 {
     return node->next;
 }
@@ -123,7 +128,8 @@ static inline struct list * list_next(const struct list *node)
 /*
  * Return the node previous to the given node.
  */
-static inline struct list * list_prev(const struct list *node)
+static inline struct list *
+list_prev(const struct list *node)
 {
     return node->prev;
 }
@@ -143,7 +149,8 @@ static inline struct list * list_prev(const struct list *node)
 /*
  * Return true if node is after the last or before the first node of the list.
  */
-static inline int list_end(const struct list *list, const struct list *node)
+static inline int
+list_end(const struct list *list, const struct list *node)
 {
     return list == node;
 }
@@ -151,7 +158,8 @@ static inline int list_end(const struct list *list, const struct list *node)
 /*
  * Return true if list is empty.
  */
-static inline int list_empty(const struct list *list)
+static inline int
+list_empty(const struct list *list)
 {
     return list == list->next;
 }
@@ -159,7 +167,8 @@ static inline int list_empty(const struct list *list)
 /*
  * Return true if list contains exactly one node.
  */
-static inline int list_singular(const struct list *list)
+static inline int
+list_singular(const struct list *list)
 {
     return (list != list->next) && (list->next == list->prev);
 }
@@ -170,8 +179,8 @@ static inline int list_singular(const struct list *list)
  *
  * If list2 is empty, or node is list2 or list2->next, nothing is done.
  */
-static inline void list_split(struct list *list1, struct list *list2,
-                              struct list *node)
+static inline void
+list_split(struct list *list1, struct list *list2, struct list *node)
 {
     if (list_empty(list2) || (list2->next == node) || list_end(list2, node))
         return;
@@ -191,7 +200,8 @@ static inline void list_split(struct list *list1, struct list *list2,
  *
  * After completion, list2 is stale.
  */
-static inline void list_concat(struct list *list1, const struct list *list2)
+static inline void
+list_concat(struct list *list1, const struct list *list2)
 {
     struct list *last1, *first2, *last2;
 
@@ -218,8 +228,8 @@ static inline void list_concat(struct list *list1, const struct list *list2)
  *
  * After completion, old_head is stale.
  */
-static inline void list_set_head(struct list *new_head,
-                                 const struct list *old_head)
+static inline void
+list_set_head(struct list *new_head, const struct list *old_head)
 {
     if (list_empty(old_head)) {
         list_init(new_head);
@@ -234,8 +244,8 @@ static inline void list_set_head(struct list *new_head,
 /*
  * Add a node between two nodes.
  */
-static inline void list_add(struct list *prev, struct list *next,
-                            struct list *node)
+static inline void
+list_add(struct list *prev, struct list *next, struct list *node)
 {
     next->prev = node;
     node->next = next;
@@ -247,7 +257,8 @@ static inline void list_add(struct list *prev, struct list *next,
 /*
  * Insert a node at the head of a list.
  */
-static inline void list_insert(struct list *list, struct list *node)
+static inline void
+list_insert(struct list *list, struct list *node)
 {
     list_add(list, list->next, node);
 }
@@ -255,7 +266,8 @@ static inline void list_insert(struct list *list, struct list *node)
 /*
  * Insert a node at the tail of a list.
  */
-static inline void list_insert_tail(struct list *list, struct list *node)
+static inline void
+list_insert_tail(struct list *list, struct list *node)
 {
     list_add(list->prev, list, node);
 }
@@ -263,7 +275,8 @@ static inline void list_insert_tail(struct list *list, struct list *node)
 /*
  * Insert a node before another node.
  */
-static inline void list_insert_before(struct list *next, struct list *node)
+static inline void
+list_insert_before(struct list *next, struct list *node)
 {
     list_add(next->prev, next, node);
 }
@@ -271,7 +284,8 @@ static inline void list_insert_before(struct list *next, struct list *node)
 /*
  * Insert a node after another node.
  */
-static inline void list_insert_after(struct list *prev, struct list *node)
+static inline void
+list_insert_after(struct list *prev, struct list *node)
 {
     list_add(prev, prev->next, node);
 }
@@ -281,7 +295,8 @@ static inline void list_insert_after(struct list *prev, struct list *node)
  *
  * After completion, the node is stale.
  */
-static inline void list_remove(struct list *node)
+static inline void
+list_remove(struct list *node)
 {
     node->prev->next = node->next;
     node->next->prev = node->prev;

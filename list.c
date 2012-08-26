@@ -44,8 +44,9 @@
  * the "right" list is actually the list_size first entries of input_list
  * after completion.
  */
-static void _list_divide(struct list *input_list, struct list *left_list,
-                         unsigned int list_size)
+static void
+_list_divide(struct list *input_list, struct list *left_list,
+             unsigned int list_size)
 {
     struct list *node;
     unsigned int i;
@@ -61,9 +62,10 @@ static void _list_divide(struct list *input_list, struct list *left_list,
 /*
  * Merge left_list and right_list at the tail of output_list.
  */
-static void _list_merge(struct list *left_list, struct list *right_list,
-                        struct list *output_list, unsigned int right_list_size,
-                        list_sort_cmp_fn_t cmp_fn)
+static void
+_list_merge(struct list *left_list, struct list *right_list,
+            struct list *output_list, unsigned int right_list_size,
+            list_sort_cmp_fn_t cmp_fn)
 {
     struct list *left, *right;
 
@@ -109,7 +111,8 @@ static void _list_merge(struct list *left_list, struct list *right_list,
         }
 }
 
-void list_sort(struct list *list, list_sort_cmp_fn_t cmp_fn)
+void
+list_sort(struct list *list, list_sort_cmp_fn_t cmp_fn)
 {
     struct list left_list, output_list;
     unsigned int list_size, nr_merges;

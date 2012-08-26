@@ -60,7 +60,8 @@ struct rdxtree_iter {
 /*
  * Initialize a tree.
  */
-static inline void rdxtree_init(struct rdxtree *tree)
+static inline void
+rdxtree_init(struct rdxtree *tree)
 {
     tree->height = 0;
     tree->root = NULL;
@@ -69,7 +70,8 @@ static inline void rdxtree_init(struct rdxtree *tree)
 /*
  * Initialize an iterator.
  */
-static inline void rdxtree_iter_init(struct rdxtree_iter *iter)
+static inline void
+rdxtree_iter_init(struct rdxtree_iter *iter)
 {
     iter->node = NULL;
     iter->slot = NULL;

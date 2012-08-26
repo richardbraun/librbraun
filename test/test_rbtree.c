@@ -39,7 +39,8 @@ struct obj {
     int id;
 };
 
-static inline int obj_cmp_lookup(int id, struct rbtree_node *node)
+static inline int
+obj_cmp_lookup(int id, struct rbtree_node *node)
 {
     struct obj *obj;
 
@@ -47,7 +48,8 @@ static inline int obj_cmp_lookup(int id, struct rbtree_node *node)
     return id - obj->id;
 }
 
-static void print_subtree(struct rbtree_node *node, int level)
+static void
+print_subtree(struct rbtree_node *node, int level)
 {
     struct obj *obj;
     char color;
@@ -68,17 +70,20 @@ static void print_subtree(struct rbtree_node *node, int level)
     print_subtree(node->children[RBTREE_LEFT], level + 1);
 }
 
-static void print_tree(struct rbtree *tree)
+static void
+print_tree(struct rbtree *tree)
 {
     print_subtree(tree->root, 0);
 }
 
-static int get_id(int i)
+static int
+get_id(int i)
 {
     return hash_int32(i, 6);
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     struct rbtree tree;
     struct rbtree_node *node, *tmp;

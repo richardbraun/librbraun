@@ -35,7 +35,8 @@ struct obj {
     char name[16];
 };
 
-static void obj_ctor(void *ptr)
+static void
+obj_ctor(void *ptr)
 {
     struct obj *obj;
 
@@ -43,7 +44,8 @@ static void obj_ctor(void *ptr)
     obj->nr_refs = 0;
 }
 
-static void obj_print(struct obj *obj, size_t size)
+static void
+obj_print(struct obj *obj, size_t size)
 {
     unsigned char *ptr, *end;
 
@@ -55,7 +57,8 @@ static void obj_print(struct obj *obj, size_t size)
     printf("\n");
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     struct mem_cache *obj_cache;
     struct obj *obj;

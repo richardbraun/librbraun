@@ -415,17 +415,20 @@ static void mem_cache_free_to_slab(struct mem_cache *cache, void *buf);
 #ifdef CONFIG_MEM_USE_PHYS
 #include "phys.h"
 
-static void * mem_default_alloc(size_t size)
+static void *
+mem_default_alloc(size_t size)
 {
     return (void *)phys_alloc(size);
 }
 
-static void mem_default_free(void *ptr, size_t size)
+static void
+mem_default_free(void *ptr, size_t size)
 {
     phys_free((phys_paddr_t)ptr, size);
 }
 #else /* CONFIG_MEM_USE_PHYS */
-static void * mem_default_alloc(size_t size)
+static void *
+mem_default_alloc(size_t size)
 {
     void *addr;
 
@@ -438,13 +441,15 @@ static void * mem_default_alloc(size_t size)
     return addr;
 }
 
-static void mem_default_free(void *ptr, size_t size)
+static void
+mem_default_free(void *ptr, size_t size)
 {
     munmap(ptr, size);
 }
 #endif /* CONFIG_MEM_USE_PHYS */
 
-static void * mem_buf_verify_bytes(void *buf, void *pattern, size_t size)
+static void *
+mem_buf_verify_bytes(void *buf, void *pattern, size_t size)
 {
     char *ptr, *pattern_ptr, *end;
 
@@ -457,7 +462,8 @@ static void * mem_buf_verify_bytes(void *buf, void *pattern, size_t size)
     return NULL;
 }
 
-static void * mem_buf_verify(void *buf, uint64_t pattern, size_t size)
+static void *
+mem_buf_verify(void *buf, uint64_t pattern, size_t size)
 {
     uint64_t *ptr, *end;
 
@@ -473,7 +479,8 @@ static void * mem_buf_verify(void *buf, uint64_t pattern, size_t size)
     return NULL;
 }
 
-static void mem_buf_fill(void *buf, uint64_t pattern, size_t size)
+static void
+mem_buf_fill(void *buf, uint64_t pattern, size_t size)
 {
     uint64_t *ptr, *end;
 
@@ -486,8 +493,8 @@ static void mem_buf_fill(void *buf, uint64_t pattern, size_t size)
         *ptr = pattern;
 }
 
-static void * mem_buf_verify_fill(void *buf, uint64_t old, uint64_t new,
-                                  size_t size)
+static void *
+mem_buf_verify_fill(void *buf, uint64_t old, uint64_t new, size_t size)
 {
     uint64_t *ptr, *end;
 
@@ -506,26 +513,26 @@ static void * mem_buf_verify_fill(void *buf, uint64_t old, uint64_t new,
     return NULL;
 }
 
-static inline union mem_bufctl * mem_buf_to_bufctl(void *buf,
-                                                   struct mem_cache *cache)
+static inline union mem_bufctl *
+mem_buf_to_bufctl(void *buf, struct mem_cache *cache)
 {
     return (union mem_bufctl *)(buf + cache->bufctl_dist);
 }
 
-static inline struct mem_buftag * mem_buf_to_buftag(void *buf,
-                                                    struct mem_cache *cache)
+static inline struct mem_buftag *
+mem_buf_to_buftag(void *buf, struct mem_cache *cache)
 {
     return (struct mem_buftag *)(buf + cache->buftag_dist);
 }
 
-static inline void * mem_bufctl_to_buf(union mem_bufctl *bufctl,
-                                       struct mem_cache *cache)
+static inline void *
+mem_bufctl_to_buf(union mem_bufctl *bufctl, struct mem_cache *cache)
 {
     return (void *)bufctl - cache->bufctl_dist;
 }
 
-static void mem_slab_create_verify(struct mem_slab *slab,
-                                   struct mem_cache *cache)
+static void
+mem_slab_create_verify(struct mem_slab *slab, struct mem_cache *cache)
 {
     struct mem_buftag *buftag;
     size_t buf_size;
@@ -549,7 +556,8 @@ static void mem_slab_create_verify(struct mem_slab *slab,
  *
  * The caller must drop all locks before calling this function.
  */
-static struct mem_slab * mem_slab_create(struct mem_cache *cache, size_t color)
+static struct mem_slab *
+mem_slab_create(struct mem_cache *cache, size_t color)
 {
     struct mem_slab *slab;
     union mem_bufctl *bufctl;
@@ -594,8 +602,8 @@ static struct mem_slab * mem_slab_create(struct mem_cache *cache, size_t color)
     return slab;
 }
 
-static void mem_slab_destroy_verify(struct mem_slab *slab,
-                                    struct mem_cache *cache)
+static void
+mem_slab_destroy_verify(struct mem_slab *slab, struct mem_cache *cache)
 {
     struct mem_buftag *buftag;
     size_t buf_size;
@@ -625,7 +633,8 @@ static void mem_slab_destroy_verify(struct mem_slab *slab,
  *
  * The caller must drop all locks before calling this function.
  */
-static void mem_slab_destroy(struct mem_slab *slab, struct mem_cache *cache)
+static void
+mem_slab_destroy(struct mem_slab *slab, struct mem_cache *cache)
 {
     void *slab_buf;
 
@@ -642,13 +651,14 @@ static void mem_slab_destroy(struct mem_slab *slab, struct mem_cache *cache)
         mem_cache_free(&mem_slab_cache, slab);
 }
 
-static inline int mem_slab_use_tree(int flags)
+static inline int
+mem_slab_use_tree(int flags)
 {
     return !(flags & MEM_CF_DIRECT) || (flags & MEM_CF_VERIFY);
 }
 
-static inline int mem_slab_cmp_lookup(const void *addr,
-                                      const struct avltree_node *node)
+static inline int
+mem_slab_cmp_lookup(const void *addr, const struct avltree_node *node)
 {
     struct mem_slab *slab;
 
@@ -662,8 +672,8 @@ static inline int mem_slab_cmp_lookup(const void *addr,
         return 1;
 }
 
-static inline int mem_slab_cmp_insert(const struct avltree_node *a,
-                                      const struct avltree_node *b)
+static inline int
+mem_slab_cmp_insert(const struct avltree_node *a, const struct avltree_node *b)
 {
     struct mem_slab *slab;
 
@@ -671,8 +681,8 @@ static inline int mem_slab_cmp_insert(const struct avltree_node *a,
     return mem_slab_cmp_lookup(slab->addr, b);
 }
 
-static void mem_cpu_pool_init(struct mem_cpu_pool *cpu_pool,
-                              struct mem_cache *cache)
+static void
+mem_cpu_pool_init(struct mem_cpu_pool *cpu_pool, struct mem_cache *cache)
 {
     pthread_mutex_init(&cpu_pool->lock, NULL);
     cpu_pool->flags = cache->flags;
@@ -692,13 +702,15 @@ static void mem_cpu_pool_init(struct mem_cpu_pool *cpu_pool,
  * allocator operations in any other way, as CPU pools are always valid, and
  * their access is serialized by a lock.
  */
-static inline struct mem_cpu_pool * mem_cpu_pool_get(struct mem_cache *cache)
+static inline struct mem_cpu_pool *
+mem_cpu_pool_get(struct mem_cache *cache)
 {
     return &cache->cpu_pools[cpu_id()];
 }
 
-static inline void mem_cpu_pool_build(struct mem_cpu_pool *cpu_pool,
-                                      struct mem_cache *cache, void **array)
+static inline void
+mem_cpu_pool_build(struct mem_cpu_pool *cpu_pool, struct mem_cache *cache,
+                   void **array)
 {
     cpu_pool->size = cache->cpu_pool_type->array_size;
     cpu_pool->transfer_size = (cpu_pool->size + MEM_CPU_POOL_TRANSFER_RATIO - 1)
@@ -706,20 +718,22 @@ static inline void mem_cpu_pool_build(struct mem_cpu_pool *cpu_pool,
     cpu_pool->array = array;
 }
 
-static inline void * mem_cpu_pool_pop(struct mem_cpu_pool *cpu_pool)
+static inline void *
+mem_cpu_pool_pop(struct mem_cpu_pool *cpu_pool)
 {
     cpu_pool->nr_objs--;
     return cpu_pool->array[cpu_pool->nr_objs];
 }
 
-static inline void mem_cpu_pool_push(struct mem_cpu_pool *cpu_pool, void *obj)
+static inline void
+mem_cpu_pool_push(struct mem_cpu_pool *cpu_pool, void *obj)
 {
     cpu_pool->array[cpu_pool->nr_objs] = obj;
     cpu_pool->nr_objs++;
 }
 
-static int mem_cpu_pool_fill(struct mem_cpu_pool *cpu_pool,
-                             struct mem_cache *cache)
+static int
+mem_cpu_pool_fill(struct mem_cpu_pool *cpu_pool, struct mem_cache *cache)
 {
     void *obj;
     int i;
@@ -740,8 +754,8 @@ static int mem_cpu_pool_fill(struct mem_cpu_pool *cpu_pool,
     return i;
 }
 
-static void mem_cpu_pool_drain(struct mem_cpu_pool *cpu_pool,
-                               struct mem_cache *cache)
+static void
+mem_cpu_pool_drain(struct mem_cpu_pool *cpu_pool, struct mem_cache *cache)
 {
     void *obj;
     int i;
@@ -756,8 +770,8 @@ static void mem_cpu_pool_drain(struct mem_cpu_pool *cpu_pool,
     pthread_mutex_unlock(&cache->lock);
 }
 
-static void mem_cache_error(struct mem_cache *cache, void *buf, int error,
-                            void *arg)
+static void
+mem_cache_error(struct mem_cache *cache, void *buf, int error, void *arg)
 {
     struct mem_buftag *buftag;
 
@@ -801,7 +815,8 @@ static void mem_cache_error(struct mem_cache *cache, void *buf, int error,
  * (buffers per slab and maximum color). It can also set the MEM_CF_DIRECT
  * and/or MEM_CF_SLAB_EXTERNAL flags depending on the resulting layout.
  */
-static void mem_cache_compute_sizes(struct mem_cache *cache, int flags)
+static void
+mem_cache_compute_sizes(struct mem_cache *cache, int flags)
 {
     size_t i, buffers, buf_size, slab_size, free_slab_size, optimal_size;
     size_t waste, waste_min;
@@ -866,9 +881,10 @@ static void mem_cache_compute_sizes(struct mem_cache *cache, int flags)
     }
 }
 
-static void mem_cache_init(struct mem_cache *cache, const char *name,
-                           size_t obj_size, size_t align, mem_cache_ctor_t ctor,
-                           const struct mem_source *source, int flags)
+static void
+mem_cache_init(struct mem_cache *cache, const char *name,
+               size_t obj_size, size_t align, mem_cache_ctor_t ctor,
+               const struct mem_source *source, int flags)
 {
     struct mem_cpu_pool_type *cpu_pool_type;
     size_t i, buf_size;
@@ -940,9 +956,10 @@ static void mem_cache_init(struct mem_cache *cache, const char *name,
     pthread_mutex_unlock(&mem_cache_list_lock);
 }
 
-struct mem_cache * mem_cache_create(const char *name, size_t obj_size,
-                                    size_t align, mem_cache_ctor_t ctor,
-                                    const struct mem_source *source, int flags)
+struct mem_cache *
+mem_cache_create(const char *name, size_t obj_size, size_t align,
+                 mem_cache_ctor_t ctor, const struct mem_source *source,
+                 int flags)
 {
     struct mem_cache *cache;
 
@@ -956,12 +973,14 @@ struct mem_cache * mem_cache_create(const char *name, size_t obj_size,
     return cache;
 }
 
-static inline int mem_cache_empty(struct mem_cache *cache)
+static inline int
+mem_cache_empty(struct mem_cache *cache)
 {
     return cache->nr_objs == cache->nr_bufs;
 }
 
-static int mem_cache_grow(struct mem_cache *cache)
+static int
+mem_cache_grow(struct mem_cache *cache)
 {
     struct mem_slab *slab;
     size_t color;
@@ -1004,7 +1023,8 @@ static int mem_cache_grow(struct mem_cache *cache)
     return !empty;
 }
 
-static void mem_cache_reap(struct mem_cache *cache)
+static void
+mem_cache_reap(struct mem_cache *cache)
 {
     struct mem_slab *slab;
     struct list dead_slabs;
@@ -1031,7 +1051,8 @@ static void mem_cache_reap(struct mem_cache *cache)
     }
 }
 
-void mem_cache_destroy(struct mem_cache *cache)
+void
+mem_cache_destroy(struct mem_cache *cache)
 {
     struct mem_cpu_pool *cpu_pool;
     void **ptr;
@@ -1096,7 +1117,8 @@ void mem_cache_destroy(struct mem_cache *cache)
  *
  * The cache must be locked before calling this function.
  */
-static void * mem_cache_alloc_from_slab(struct mem_cache *cache)
+static void *
+mem_cache_alloc_from_slab(struct mem_cache *cache)
 {
     struct mem_slab *slab;
     union mem_bufctl *bufctl;
@@ -1172,7 +1194,8 @@ static void * mem_cache_alloc_from_slab(struct mem_cache *cache)
  *
  * The cache must be locked before calling this function.
  */
-static void mem_cache_free_to_slab(struct mem_cache *cache, void *buf)
+static void
+mem_cache_free_to_slab(struct mem_cache *cache, void *buf)
 {
     struct mem_slab *slab;
     union mem_bufctl *bufctl;
@@ -1251,8 +1274,8 @@ static void mem_cache_free_to_slab(struct mem_cache *cache, void *buf)
     }
 }
 
-static void mem_cache_alloc_verify(struct mem_cache *cache, void *buf,
-                                   int construct)
+static void
+mem_cache_alloc_verify(struct mem_cache *cache, void *buf, int construct)
 {
     struct mem_buftag *buftag;
     union mem_bufctl *bufctl;
@@ -1280,7 +1303,8 @@ static void mem_cache_alloc_verify(struct mem_cache *cache, void *buf,
         cache->ctor(buf);
 }
 
-void * mem_cache_alloc(struct mem_cache *cache)
+void *
+mem_cache_alloc(struct mem_cache *cache)
 {
     struct mem_cpu_pool *cpu_pool;
     int filled;
@@ -1343,7 +1367,8 @@ slow_alloc_retry:
     return buf;
 }
 
-static void mem_cache_free_verify(struct mem_cache *cache, void *buf)
+static void
+mem_cache_free_verify(struct mem_cache *cache, void *buf)
 {
     struct avltree_node *node;
     struct mem_buftag *buftag;
@@ -1405,7 +1430,8 @@ static void mem_cache_free_verify(struct mem_cache *cache, void *buf)
     buftag->state = MEM_BUFTAG_FREE;
 }
 
-void mem_cache_free(struct mem_cache *cache, void *obj)
+void
+mem_cache_free(struct mem_cache *cache, void *obj)
 {
     struct mem_cpu_pool *cpu_pool;
     void **array;
@@ -1453,7 +1479,8 @@ fast_free_retry:
     mem_cache_free_to_slab(cache, obj);
 }
 
-void mem_cache_info(struct mem_cache *cache)
+void
+mem_cache_info(struct mem_cache *cache)
 {
     struct mem_cache *cache_stats;
     char flags_str[64];
@@ -1521,7 +1548,8 @@ void mem_cache_info(struct mem_cache *cache)
     mem_free(cache_stats, sizeof(*cache_stats));
 }
 
-static void * mem_gc(void *arg)
+static void *
+mem_gc(void *arg)
 {
     struct mem_cache *cache;
     struct timespec ts;
@@ -1562,7 +1590,8 @@ static void * mem_gc(void *arg)
     return NULL;
 }
 
-void mem_setup(void)
+void
+mem_setup(void)
 {
     static int mem_initialized = 0;
     struct mem_cpu_pool_type *cpu_pool_type;
@@ -1627,7 +1656,8 @@ void mem_setup(void)
  * Return the mem cache index matching the given allocation size, which
  * must be strictly greater than 0.
  */
-static inline size_t mem_get_index(size_t size)
+static inline size_t
+mem_get_index(size_t size)
 {
     assert(size != 0);
 
@@ -1639,7 +1669,8 @@ static inline size_t mem_get_index(size_t size)
         return (sizeof(long) * CHAR_BIT) - __builtin_clzl(size);
 }
 
-static void mem_alloc_verify(struct mem_cache *cache, void *buf, size_t size)
+static void
+mem_alloc_verify(struct mem_cache *cache, void *buf, size_t size)
 {
     size_t redzone_size;
     void *redzone;
@@ -1651,7 +1682,8 @@ static void mem_alloc_verify(struct mem_cache *cache, void *buf, size_t size)
     memset(redzone, MEM_REDZONE_BYTE, redzone_size);
 }
 
-void * mem_alloc(size_t size)
+void *
+mem_alloc(size_t size)
 {
     size_t index;
     void *buf;
@@ -1676,7 +1708,8 @@ void * mem_alloc(size_t size)
   return buf;
 }
 
-void * mem_zalloc(size_t size)
+void *
+mem_zalloc(size_t size)
 {
     void *ptr;
 
@@ -1689,7 +1722,8 @@ void * mem_zalloc(size_t size)
     return ptr;
 }
 
-static void mem_free_verify(struct mem_cache *cache, void *buf, size_t size)
+static void
+mem_free_verify(struct mem_cache *cache, void *buf, size_t size)
 {
     unsigned char *redzone_byte, *redzone_end;
 
@@ -1706,7 +1740,8 @@ static void mem_free_verify(struct mem_cache *cache, void *buf, size_t size)
     }
 }
 
-void mem_free(void *ptr, size_t size)
+void
+mem_free(void *ptr, size_t size)
 {
     size_t index;
 
@@ -1729,7 +1764,8 @@ void mem_free(void *ptr, size_t size)
     }
 }
 
-void mem_info(void)
+void
+mem_info(void)
 {
     struct mem_cache *cache, *cache_stats;
     size_t mem_usage, mem_reclaimable;

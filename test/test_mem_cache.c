@@ -52,7 +52,8 @@ struct obj {
     char name[16];
 };
 
-static void obj_ctor(void *ptr)
+static void
+obj_ctor(void *ptr)
 {
     struct obj *obj;
 
@@ -64,7 +65,8 @@ static struct mem_cache *obj_cache;
 static volatile int work;
 static struct result results[NTHREADS];
 
-static void * run(void *arg)
+static void *
+run(void *arg)
 {
     struct obj *objs[OBJSPERLOOP];
     struct result *result;
@@ -90,7 +92,8 @@ static void * run(void *arg)
     return NULL;
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     pthread_t threads[NTHREADS];
     unsigned long ops;

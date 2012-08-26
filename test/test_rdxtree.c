@@ -46,7 +46,11 @@ struct obj {
     unsigned long id;
 };
 
-static struct obj * obj_create(unsigned long id)
+static void print_subtree(struct rdxtree_node *node, int height, size_t index,
+                          size_t level);
+
+static struct obj *
+obj_create(unsigned long id)
 {
     struct obj *obj;
 
@@ -56,15 +60,14 @@ static struct obj * obj_create(unsigned long id)
     return obj;
 }
 
-static void obj_destroy(struct obj *obj)
+static void
+obj_destroy(struct obj *obj)
 {
     free(obj);
 }
 
-static void print_subtree(struct rdxtree_node *node, int height, size_t index,
-                          size_t level);
-
-static void print_value(void *ptr, size_t index, size_t level)
+static void
+print_value(void *ptr, size_t index, size_t level)
 {
     struct obj *obj;
     int i;
@@ -80,7 +83,8 @@ static void print_value(void *ptr, size_t index, size_t level)
     printf("%zu:%lu\n", index, obj->id);
 }
 
-static void print_values(struct rdxtree_node *node, size_t index, size_t level)
+static void
+print_values(struct rdxtree_node *node, size_t index, size_t level)
 {
     size_t i;
 
@@ -93,8 +97,8 @@ static void print_values(struct rdxtree_node *node, size_t index, size_t level)
         print_value(node->slots[i], i, level + 1);
 }
 
-static void print_node(struct rdxtree_node *node, int height, size_t index,
-                       size_t level)
+static void
+print_node(struct rdxtree_node *node, int height, size_t index, size_t level)
 {
     size_t i;
 
@@ -107,8 +111,8 @@ static void print_node(struct rdxtree_node *node, int height, size_t index,
         print_subtree(node->slots[i], height - 1, i, level + 1);
 }
 
-static void print_subtree(struct rdxtree_node *node, int height, size_t index,
-                          size_t level)
+static void
+print_subtree(struct rdxtree_node *node, int height, size_t index, size_t level)
 {
     if (node == NULL)
         return;
@@ -119,7 +123,8 @@ static void print_subtree(struct rdxtree_node *node, int height, size_t index,
         print_node(node, height, index, level);
 }
 
-static void print_tree(struct rdxtree *tree)
+static void
+print_tree(struct rdxtree *tree)
 {
     if (tree->height == 0)
         print_value(tree->root, 0, 0);
@@ -127,7 +132,8 @@ static void print_tree(struct rdxtree *tree)
         print_subtree(tree->root, tree->height, 0, 0);
 }
 
-static void destroy_tree(struct rdxtree *tree)
+static void
+destroy_tree(struct rdxtree *tree)
 {
     struct rdxtree_iter iter;
     struct obj *obj;
@@ -138,7 +144,8 @@ static void destroy_tree(struct rdxtree *tree)
     rdxtree_remove_all(tree);
 }
 
-static void test_1(void)
+static void
+test_1(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -154,7 +161,8 @@ static void test_1(void)
     destroy_tree(&tree);
 }
 
-static void test_2(void)
+static void
+test_2(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -170,7 +178,8 @@ static void test_2(void)
     destroy_tree(&tree);
 }
 
-static void test_3(void)
+static void
+test_3(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -189,7 +198,8 @@ static void test_3(void)
     destroy_tree(&tree);
 }
 
-static void test_4(void)
+static void
+test_4(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -208,7 +218,8 @@ static void test_4(void)
     destroy_tree(&tree);
 }
 
-static void test_5(void)
+static void
+test_5(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -227,7 +238,8 @@ static void test_5(void)
     destroy_tree(&tree);
 }
 
-static void test_6(void)
+static void
+test_6(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -246,7 +258,8 @@ static void test_6(void)
     destroy_tree(&tree);
 }
 
-static void test_7(void)
+static void
+test_7(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -265,7 +278,8 @@ static void test_7(void)
     print_tree(&tree);
 }
 
-static void test_8(void)
+static void
+test_8(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -284,7 +298,8 @@ static void test_8(void)
     print_tree(&tree);
 }
 
-static void test_9(void)
+static void
+test_9(void)
 {
     struct rdxtree tree;
     struct obj *obj1, *obj2;
@@ -309,7 +324,8 @@ static void test_9(void)
     print_tree(&tree);
 }
 
-static void test_10(void)
+static void
+test_10(void)
 {
     struct rdxtree tree;
     struct obj *obj1, *obj2;
@@ -334,7 +350,8 @@ static void test_10(void)
     print_tree(&tree);
 }
 
-static void test_11(void)
+static void
+test_11(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -359,7 +376,8 @@ static void test_11(void)
     print_tree(&tree);
 }
 
-static void test_12(void)
+static void
+test_12(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -384,7 +402,8 @@ static void test_12(void)
     print_tree(&tree);
 }
 
-static void test_13(void)
+static void
+test_13(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -405,7 +424,8 @@ static void test_13(void)
     destroy_tree(&tree);
 }
 
-static void test_14(void)
+static void
+test_14(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -429,7 +449,8 @@ static void test_14(void)
     destroy_tree(&tree);
 }
 
-static void test_15(void)
+static void
+test_15(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -454,7 +475,8 @@ static void test_15(void)
     destroy_tree(&tree);
 }
 
-static void test_16(void)
+static void
+test_16(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -479,7 +501,8 @@ static void test_16(void)
     destroy_tree(&tree);
 }
 
-static void test_17(void)
+static void
+test_17(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -516,7 +539,8 @@ static void test_17(void)
     destroy_tree(&tree);
 }
 
-static void test_18(void)
+static void
+test_18(void)
 {
     struct rdxtree tree;
     struct obj *obj;
@@ -540,7 +564,8 @@ static void test_18(void)
     destroy_tree(&tree);
 }
 
-static void test_19(void)
+static void
+test_19(void)
 {
     struct rdxtree tree;
     struct obj *obj1, *obj2, *tmp;
@@ -565,7 +590,8 @@ static void test_19(void)
     destroy_tree(&tree);
 }
 
-static void test_20(void)
+static void
+test_20(void)
 {
     struct rdxtree tree;
     struct obj *obj1, *obj2, *tmp;
@@ -590,7 +616,8 @@ static void test_20(void)
     destroy_tree(&tree);
 }
 
-int main(int argc, char *argv[])
+int
+main(int argc, char *argv[])
 {
     (void)argc;
     (void)argv;

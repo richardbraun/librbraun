@@ -57,7 +57,8 @@
 #define hash_long(n, bits) hash_int32(n, bits)
 #endif
 
-static inline uint32_t hash_int32(uint32_t n, unsigned int bits)
+static inline uint32_t
+hash_int32(uint32_t n, unsigned int bits)
 {
     uint32_t hash;
 
@@ -72,7 +73,8 @@ static inline uint32_t hash_int32(uint32_t n, unsigned int bits)
     return hash >> (32 - bits);
 }
 
-static inline uint64_t hash_int64(uint64_t n, unsigned int bits)
+static inline uint64_t
+hash_int64(uint64_t n, unsigned int bits)
 {
     uint64_t hash;
 
@@ -88,12 +90,14 @@ static inline uint64_t hash_int64(uint64_t n, unsigned int bits)
     return hash >> (64 - bits);
 }
 
-static inline unsigned long hash_ptr(const void *ptr, unsigned int bits)
+static inline unsigned long
+hash_ptr(const void *ptr, unsigned int bits)
 {
     return hash_long((unsigned long)ptr, bits);
 }
 
-static inline unsigned long hash_str(const char *str, unsigned int bits)
+static inline unsigned long
+hash_str(const char *str, unsigned int bits)
 {
     unsigned long hash;
     char c;

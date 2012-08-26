@@ -42,7 +42,8 @@ struct btag {
     size_t size;
 } __aligned(8);
 
-void * malloc(size_t size)
+void *
+malloc(size_t size)
 {
     struct btag *btag;
 
@@ -62,7 +63,8 @@ void * malloc(size_t size)
     return btag + 1;
 }
 
-void * calloc(size_t nmemb, size_t size)
+void *
+calloc(size_t nmemb, size_t size)
 {
     size_t bytes;
     void *buf;
@@ -80,7 +82,8 @@ void * calloc(size_t nmemb, size_t size)
     return buf;
 }
 
-void * realloc(void *ptr, size_t size)
+void *
+realloc(void *ptr, size_t size)
 {
     struct btag *btag;
     size_t old_size;
@@ -108,7 +111,8 @@ void * realloc(void *ptr, size_t size)
     return buf;
 }
 
-int posix_memalign(void **ptr, size_t align, size_t size)
+int
+posix_memalign(void **ptr, size_t align, size_t size)
 {
     struct btag *btag;
     char *buf;
@@ -134,7 +138,8 @@ int posix_memalign(void **ptr, size_t align, size_t size)
     return 0;
 }
 
-void free(void *ptr)
+void
+free(void *ptr)
 {
     struct btag *btag;
 

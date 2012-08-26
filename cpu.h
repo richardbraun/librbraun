@@ -61,7 +61,8 @@
  * The returned CPU ID cannot be greater than the maximum number of supported
  * processors.
  */
-static inline int cpu_id(void)
+static inline int
+cpu_id(void)
 {
 #if NR_CPUS == 1
     return 0;
