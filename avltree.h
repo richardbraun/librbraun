@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2011 Richard Braun.
+ * Copyright (c) 2010, 2011, 2012 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,7 @@ avltree_init(struct avltree *tree)
 static inline void
 avltree_node_init(struct avltree_node *node)
 {
-    assert(avltree_check_alignment(node));
+    assert(avltree_node_check_alignment(node));
 
     node->parent = (unsigned long)node | AVLTREE_BALANCE_ZERO;
     node->children[AVLTREE_LEFT] = NULL;
@@ -92,7 +92,7 @@ avltree_node_init(struct avltree_node *node)
 static inline int
 avltree_node_unlinked(const struct avltree_node *node)
 {
-    return avltree_parent(node) == node;
+    return avltree_node_parent(node) == node;
 }
 
 /*
