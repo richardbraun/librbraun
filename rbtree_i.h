@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2011 Richard Braun.
+ * Copyright (c) 2010, 2011, 2012 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -78,15 +78,6 @@ struct rbtree {
 #define RBTREE_SLOT_PARENT_MASK (~RBTREE_SLOT_INDEX_MASK)
 
 /*
- * Return true if the given pointer is suitably aligned.
- */
-static inline int
-rbtree_check_alignment(const struct rbtree_node *node)
-{
-    return ((unsigned long)node & (~RBTREE_PARENT_MASK)) == 0;
-}
-
-/*
  * Return true if the given index is a valid child index.
  */
 static inline int
@@ -108,10 +99,19 @@ rbtree_d2i(int diff)
 }
 
 /*
+ * Return true if the given pointer is suitably aligned.
+ */
+static inline int
+rbtree_node_check_alignment(const struct rbtree_node *node)
+{
+    return ((unsigned long)node & (~RBTREE_PARENT_MASK)) == 0;
+}
+
+/*
  * Return the parent of a node.
  */
 static inline struct rbtree_node *
-rbtree_parent(const struct rbtree_node *node)
+rbtree_node_parent(const struct rbtree_node *node)
 {
     return (struct rbtree_node *)(node->parent & RBTREE_PARENT_MASK);
 }
@@ -122,7 +122,7 @@ rbtree_parent(const struct rbtree_node *node)
 static inline unsigned long
 rbtree_slot(struct rbtree_node *parent, int index)
 {
-    assert(rbtree_check_alignment(parent));
+    assert(rbtree_node_check_alignment(parent));
     assert(rbtree_check_index(index));
     return (unsigned long)parent | index;
 }

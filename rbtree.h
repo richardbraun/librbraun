@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2011 Richard Braun.
+ * Copyright (c) 2010, 2011, 2012 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -74,7 +74,7 @@ rbtree_init(struct rbtree *tree)
 static inline void
 rbtree_node_init(struct rbtree_node *node)
 {
-    assert(rbtree_check_alignment(node));
+    assert(rbtree_node_check_alignment(node));
 
     node->parent = (unsigned long)node | RBTREE_COLOR_RED;
     node->children[RBTREE_LEFT] = NULL;
@@ -87,7 +87,7 @@ rbtree_node_init(struct rbtree_node *node)
 static inline int
 rbtree_node_unlinked(const struct rbtree_node *node)
 {
-    return rbtree_parent(node) == node;
+    return rbtree_node_parent(node) == node;
 }
 
 /*
