@@ -311,6 +311,7 @@ phys_seg_free_to_buddy(struct phys_seg *seg, struct phys_page *page,
 static void
 phys_cpu_pool_init(struct phys_cpu_pool *cpu_pool, int size)
 {
+    pthread_mutex_init(&cpu_pool->lock, NULL);
     cpu_pool->size = size;
     cpu_pool->transfer_size = (size + PHYS_CPU_POOL_TRANSFER_RATIO - 1)
                               / PHYS_CPU_POOL_TRANSFER_RATIO;
