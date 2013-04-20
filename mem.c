@@ -1476,7 +1476,9 @@ fast_free_retry:
         goto fast_free_retry;
     }
 
+    pthread_mutex_lock(&cache->lock);
     mem_cache_free_to_slab(cache, obj);
+    pthread_mutex_unlock(&cache->lock);
 }
 
 void
