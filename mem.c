@@ -1469,6 +1469,7 @@ fast_free_retry:
         if (cpu_pool->array != NULL) {
             pthread_mutex_unlock(&cpu_pool->lock);
             mem_cache_free(cache->cpu_pool_type->array_cache, array);
+            pthread_mutex_lock(&cpu_pool->lock);
             goto fast_free_retry;
         }
 
