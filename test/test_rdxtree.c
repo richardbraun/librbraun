@@ -228,10 +228,10 @@ test_5(void)
     TITLE("insert 0 and 4096");
 
     rdxtree_init(&tree);
-    obj = obj_create(4096);
+    obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
-    obj = obj_create(0);
+    obj = obj_create(4096);
     error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     print_tree(&tree);
