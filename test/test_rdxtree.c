@@ -93,8 +93,8 @@ print_values(struct rdxtree_node *node, size_t index, size_t level)
 
     printf("%zu:n (bm: " BM_FORMAT ")\n", index, node->alloc_bm);
 
-    for (i = 0; i < ARRAY_SIZE(node->slots); i++)
-        print_value(node->slots[i], i, level + 1);
+    for (i = 0; i < ARRAY_SIZE(node->entries); i++)
+        print_value(node->entries[i], i, level + 1);
 }
 
 static void
@@ -107,8 +107,8 @@ print_node(struct rdxtree_node *node, int height, size_t index, size_t level)
 
     printf("%zu:n (bm: " BM_FORMAT ")\n", index, node->alloc_bm);
 
-    for (i = 0; i < ARRAY_SIZE(node->slots); i++)
-        print_subtree(node->slots[i], height - 1, i, level + 1);
+    for (i = 0; i < ARRAY_SIZE(node->entries); i++)
+        print_subtree(node->entries[i], height - 1, i, level + 1);
 }
 
 static void
