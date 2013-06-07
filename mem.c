@@ -412,7 +412,7 @@ static void mem_cache_error(struct mem_cache *cache, void *buf, int error,
 static void * mem_cache_alloc_from_slab(struct mem_cache *cache);
 static void mem_cache_free_to_slab(struct mem_cache *cache, void *buf);
 
-#ifdef CONFIG_MEM_USE_PHYS
+#if CONFIG_MEM_USE_PHYS
 #include "phys.h"
 
 static void *
@@ -889,7 +889,7 @@ mem_cache_init(struct mem_cache *cache, const char *name,
     struct mem_cpu_pool_type *cpu_pool_type;
     size_t i, buf_size;
 
-#ifdef CONFIG_MEM_VERIFY
+#if CONFIG_MEM_VERIFY
     cache->flags = MEM_CF_VERIFY;
 #else
     cache->flags = 0;
@@ -1577,7 +1577,7 @@ mem_gc(void *arg)
 #if 0
         mem_info();
 
-#ifdef CONFIG_MEM_USE_PHYS
+#if CONFIG_MEM_USE_PHYS
         phys_info();
 #endif /* CONFIG_MEM_USE_PHYS */
 #endif
@@ -1616,7 +1616,7 @@ mem_setup(void)
      */
     assert(sizeof(union mem_bufctl) <= MEM_ALIGN_MIN);
 
-#ifdef CONFIG_MEM_USE_PHYS
+#if CONFIG_MEM_USE_PHYS
     phys_setup();
 #endif /* CONFIG_MEM_USE_PHYS */
 

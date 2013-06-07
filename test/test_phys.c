@@ -27,6 +27,7 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "../error.c"
 #include "../phys.c"
 
 int

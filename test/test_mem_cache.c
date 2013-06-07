@@ -34,7 +34,7 @@
 #include "../error.c"
 #include "../avltree.c"
 
-#ifdef CONFIG_MEM_USE_PHYS
+#if CONFIG_MEM_USE_PHYS
 #include "../phys.c"
 #endif /* CONFIG_MEM_USE_PHYS */
 
