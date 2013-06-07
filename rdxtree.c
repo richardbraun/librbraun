@@ -52,6 +52,11 @@
 #include "rdxtree.h"
 
 /*
+ * Mask applied on an entry to obtain its address.
+ */
+#define RDXTREE_ENTRY_ADDR_MASK (~0x3UL)
+
+/*
  * Global properties used to shape radix trees.
  */
 #define RDXTREE_RADIX       6
@@ -107,6 +112,30 @@ struct rdxtree_node {
     void *entries[RDXTREE_RADIX_SIZE];
 };
 
+static inline int
+rdxtree_check_alignment(const void *ptr)
+{
+    return ((unsigned long)ptr & ~RDXTREE_ENTRY_ADDR_MASK) == 0;
+}
+
+static inline void *
+rdxtree_entry_addr(void *entry)
+{
+    return (void *)((unsigned long)entry & RDXTREE_ENTRY_ADDR_MASK);
+}
+
+static inline int
+rdxtree_entry_is_node(const void *entry)
+{
+    return ((unsigned long)entry & 1) != 0;
+}
+
+static inline void *
+rdxtree_node_to_entry(struct rdxtree_node *node)
+{
+    return (void *)((unsigned long)node | 1);
+}
+
 static int
 rdxtree_node_create(struct rdxtree_node **nodep, unsigned int height)
 {
@@ -117,6 +146,7 @@ rdxtree_node_create(struct rdxtree_node **nodep, unsigned int height)
     if (node == NULL)
         return ERR_NOMEM;
 
+    assert(rdxtree_check_alignment(node));
     node->parent = NULL;
     node->height = height;
     node->nr_entries = 0;
@@ -160,13 +190,21 @@ rdxtree_node_empty(struct rdxtree_node *node)
 }
 
 static inline void
-rdxtree_node_insert(struct rdxtree_node *node, unsigned int index, void *ptr)
+rdxtree_node_insert(struct rdxtree_node *node, unsigned int index,
+                    void *entry)
 {
     assert(index < ARRAY_SIZE(node->entries));
     assert(node->entries[index] == NULL);
 
     node->nr_entries++;
-    node->entries[index] = ptr;
+    node->entries[index] = entry;
+}
+
+static inline void
+rdxtree_node_insert_node(struct rdxtree_node *node, unsigned int index,
+                         struct rdxtree_node *child)
+{
+    rdxtree_node_insert(node, index, rdxtree_node_to_entry(child));
 }
 
 static inline void
@@ -185,7 +223,7 @@ rdxtree_node_find(struct rdxtree_node *node, unsigned int index, int get_slot)
     void *ptr;
 
     while (index < ARRAY_SIZE(node->entries)) {
-        ptr = node->entries[index];
+        ptr = rdxtree_entry_addr(node->entries[index]);
 
         if (ptr != NULL)
             return get_slot ? (void *)&node->entries[index] : ptr;
@@ -242,33 +280,34 @@ rdxtree_max_key(unsigned int height)
 static void
 rdxtree_shrink(struct rdxtree *tree)
 {
-    struct rdxtree_node *node, *child;
+    struct rdxtree_node *node;
+    void *entry;
 
     while (tree->height > 0) {
-        node = tree->root;
+        node = rdxtree_entry_addr(tree->root);
 
         if (node->nr_entries != 1)
             break;
 
-        child = node->entries[0];
+        entry = node->entries[0];
 
-        if (child == NULL)
+        if (entry == NULL)
             break;
 
         rdxtree_node_destroy(node);
         tree->height--;
 
         if (tree->height > 0)
-            rdxtree_node_unlink(child);
+            rdxtree_node_unlink(rdxtree_entry_addr(entry));
 
-        tree->root = child;
+        tree->root = entry;
     }
 }
 
 static int
 rdxtree_grow(struct rdxtree *tree, unsigned long key)
 {
-    struct rdxtree_node *node;
+    struct rdxtree_node *root, *node;
     unsigned int new_height;
     int error;
 
@@ -281,6 +320,8 @@ rdxtree_grow(struct rdxtree *tree, unsigned long key)
         tree->height = new_height;
         return ERR_SUCCESS;
     }
+
+    root = rdxtree_entry_addr(tree->root);
 
     do {
         error = rdxtree_node_create(&node, tree->height);
@@ -295,14 +336,15 @@ rdxtree_grow(struct rdxtree *tree, unsigned long key)
         if (tree->height == 0)
             rdxtree_node_bm_clear(node, 0);
         else {
-            rdxtree_node_link(tree->root, node, 0);
+            rdxtree_node_link(root, node, 0);
 
-            if (rdxtree_node_bm_empty(tree->root))
+            if (rdxtree_node_bm_empty(root))
                 rdxtree_node_bm_clear(node, 0);
         }
 
-        tree->root = node;
         tree->height++;
+        tree->root = rdxtree_node_to_entry(node);
+        root = node;
     } while (new_height > tree->height);
 
     return ERR_SUCCESS;
@@ -358,6 +400,7 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
     int error;
 
     assert(ptr != NULL);
+    assert(rdxtree_check_alignment(ptr));
 
     if (key > rdxtree_max_key(tree->height)) {
         error = rdxtree_grow(tree, key);
@@ -380,7 +423,7 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
         return ERR_SUCCESS;
     }
 
-    node = tree->root;
+    node = rdxtree_entry_addr(tree->root);
     shift = (height - 1) * RDXTREE_RADIX;
     prev = NULL;
 
@@ -398,16 +441,16 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
             }
 
             if (prev == NULL)
-                tree->root = node;
+                tree->root = rdxtree_node_to_entry(node);
             else {
-                rdxtree_node_insert(prev, index, node);
+                rdxtree_node_insert_node(prev, index, node);
                 rdxtree_node_link(node, prev, index);
             }
         }
 
         prev = node;
         index = (key >> shift) & RDXTREE_RADIX_MASK;
-        node = prev->entries[index];
+        node = rdxtree_entry_addr(prev->entries[index]);
         shift -= RDXTREE_RADIX;
         height--;
     } while (height > 0);
@@ -447,6 +490,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
     int error;
 
     assert(ptr != NULL);
+    assert(rdxtree_check_alignment(ptr));
 
     height = tree->height;
 
@@ -464,7 +508,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
         goto grow;
     }
 
-    node = tree->root;
+    node = rdxtree_entry_addr(tree->root);
     key = 0;
     shift = (height - 1) * RDXTREE_RADIX;
     prev = NULL;
@@ -478,7 +522,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
                 return error;
             }
 
-            rdxtree_node_insert(prev, index, node);
+            rdxtree_node_insert_node(prev, index, node);
             rdxtree_node_link(node, prev, index);
         }
 
@@ -489,7 +533,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
             goto grow;
 
         key |= ((unsigned long)index << shift);
-        node = node->entries[index];
+        node = rdxtree_entry_addr(node->entries[index]);
         shift -= RDXTREE_RADIX;
         height--;
     } while (height > 0);
@@ -552,7 +596,7 @@ rdxtree_remove(struct rdxtree *tree, unsigned long key)
     if (key > rdxtree_max_key(height))
         return NULL;
 
-    node = tree->root;
+    node = rdxtree_entry_addr(tree->root);
 
     if (height == 0) {
         tree->root = NULL;
@@ -567,7 +611,7 @@ rdxtree_remove(struct rdxtree *tree, unsigned long key)
 
         prev = node;
         index = (key >> shift) & RDXTREE_RADIX_MASK;
-        node = node->entries[index];
+        node = rdxtree_entry_addr(node->entries[index]);
         shift -= RDXTREE_RADIX;
         height--;
     } while (height > 0);
@@ -588,7 +632,7 @@ rdxtree_lookup_common(struct rdxtree *tree, unsigned long key, int get_slot)
     unsigned int height, shift, index;
 
     height = tree->height;
-    node = tree->root;
+    node = rdxtree_entry_addr(tree->root);
 
     if (key > rdxtree_max_key(height))
         return NULL;
@@ -608,7 +652,7 @@ rdxtree_lookup_common(struct rdxtree *tree, unsigned long key, int get_slot)
 
         prev = node;
         index = (key >> shift) & RDXTREE_RADIX_MASK;
-        node = node->entries[index];
+        node = rdxtree_entry_addr(node->entries[index]);
         shift -= RDXTREE_RADIX;
         height--;
     } while (height > 0);
@@ -637,9 +681,11 @@ rdxtree_replace_slot(void **slot, void *ptr)
     void *old;
 
     assert(ptr != NULL);
+    assert(rdxtree_check_alignment(ptr));
 
     old = *slot;
     assert(old != NULL);
+    assert(rdxtree_check_alignment(old));
     *slot = ptr;
     return old;
 }
@@ -652,7 +698,7 @@ rdxtree_walk(struct rdxtree *tree, struct rdxtree_node *node)
 
     if (node == NULL) {
         height = tree->height;
-        node = tree->root;
+        node = rdxtree_entry_addr(tree->root);
 
         while (height > 1) {
             node = rdxtree_node_find(node, 0, 0);
