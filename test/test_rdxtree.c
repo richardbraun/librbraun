@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <stdarg.h>
 
+#include "../error.h"
 #include "../macros.h"
 #include "../rdxtree.c"
 
@@ -623,6 +624,42 @@ test_20(void)
     destroy_tree(&tree);
 }
 
+static void
+test_21(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("insert 0, insert again");
+
+    rdxtree_init(&tree);
+    obj = obj_create(0);
+    error = rdxtree_insert(&tree, 0, obj);
+    assert(!error);
+    error = rdxtree_insert(&tree, 0, obj);
+    assert(error == ERR_BUSY);
+    destroy_tree(&tree);
+}
+
+static void
+test_22(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("insert 123, insert again");
+
+    rdxtree_init(&tree);
+    obj = obj_create(123);
+    error = rdxtree_insert(&tree, 123, obj);
+    assert(!error);
+    error = rdxtree_insert(&tree, 123, obj);
+    assert(error == ERR_BUSY);
+    destroy_tree(&tree);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -649,5 +686,7 @@ main(int argc, char *argv[])
     test_18();
     test_19();
     test_20();
+    test_21();
+    test_22();
     return 0;
 }
