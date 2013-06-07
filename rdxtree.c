@@ -154,6 +154,7 @@ rdxtree_node_empty(struct rdxtree_node *node)
 static inline void
 rdxtree_node_insert(struct rdxtree_node *node, unsigned int index, void *ptr)
 {
+    assert(index < ARRAY_SIZE(node->entries));
     assert(node->entries[index] == NULL);
 
     node->nr_entries++;
@@ -163,6 +164,7 @@ rdxtree_node_insert(struct rdxtree_node *node, unsigned int index, void *ptr)
 static inline void
 rdxtree_node_remove(struct rdxtree_node *node, unsigned int index)
 {
+    assert(index < ARRAY_SIZE(node->entries));
     assert(node->entries[index] != NULL);
 
     node->nr_entries--;
