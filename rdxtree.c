@@ -570,26 +570,26 @@ rdxtree_remove(struct rdxtree *tree, unsigned long key)
     return node;
 }
 
-static void **
-rdxtree_lookup_common(struct rdxtree *tree, unsigned long key)
+static void *
+rdxtree_lookup_common(struct rdxtree *tree, unsigned long key, int get_slot)
 {
     struct rdxtree_node *node, *prev;
     unsigned int index;
     int height, shift;
 
     height = tree->height;
+    node = tree->root;
 
     if (key > rdxtree_max_key(height))
         return NULL;
 
     if (height == 0) {
-        if (tree->root == NULL)
+        if (node == NULL)
             return NULL;
 
-        return &tree->root;
+        return get_slot ? (void *)&tree->root : node;
     }
 
-    node = tree->root;
     shift = (height - 1) * RDXTREE_RADIX;
 
     do {
@@ -606,22 +606,19 @@ rdxtree_lookup_common(struct rdxtree *tree, unsigned long key)
     if (node == NULL)
         return NULL;
 
-    return &prev->entries[index];
+    return get_slot ? (void *)&prev->entries[index] : node;
 }
 
 void *
 rdxtree_lookup(struct rdxtree *tree, unsigned long key)
 {
-    void **slot;
-
-    slot = rdxtree_lookup_common(tree, key);
-    return (slot == NULL) ? NULL : *slot;
+    return rdxtree_lookup_common(tree, key, 0);
 }
 
 void **
 rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key)
 {
-    return rdxtree_lookup_common(tree, key);
+    return rdxtree_lookup_common(tree, key, 1);
 }
 
 void *
