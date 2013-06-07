@@ -169,12 +169,16 @@ rdxtree_node_remove(struct rdxtree_node *node, unsigned int index)
     node->entries[index] = NULL;
 }
 
-static inline void **
-rdxtree_node_find(struct rdxtree_node *node, unsigned int index)
+static inline void *
+rdxtree_node_find(struct rdxtree_node *node, unsigned int index, int get_slot)
 {
+    void *ptr;
+
     while (index < ARRAY_SIZE(node->entries)) {
-        if (node->entries[index] != NULL)
-            return &node->entries[index];
+        ptr = node->entries[index];
+
+        if (ptr != NULL)
+            return get_slot ? (void *)&node->entries[index] : ptr;
 
         index++;
     }
@@ -636,8 +640,7 @@ rdxtree_replace_slot(void **slot, void *ptr)
 static struct rdxtree_node *
 rdxtree_walk(struct rdxtree *tree, struct rdxtree_node *node)
 {
-    struct rdxtree_node *prev;
-    void **slot;
+    struct rdxtree_node *prev, *child;
     unsigned int index;
     int height;
 
@@ -646,8 +649,7 @@ rdxtree_walk(struct rdxtree *tree, struct rdxtree_node *node)
         node = tree->root;
 
         while (height > 1) {
-            slot = rdxtree_node_find(node, 0);
-            node = *slot;
+            node = rdxtree_node_find(node, 0, 0);
             height--;
         }
 
@@ -663,20 +665,19 @@ rdxtree_walk(struct rdxtree *tree, struct rdxtree_node *node)
             return NULL;
 
         index = node->index;
-        slot = rdxtree_node_find(prev, index + 1);
+        child = rdxtree_node_find(prev, index + 1, 0);
 
-        if (slot != NULL)
+        if (child != NULL)
             break;
 
         height++;
         node = prev;
     }
 
-    node = *slot;
+    node = child;
 
     while (height > 0) {
-        slot = rdxtree_node_find(node, 0);
-        node = *slot;
+        node = rdxtree_node_find(node, 0, 0);
         height--;
     }
 
@@ -698,14 +699,14 @@ rdxtree_iter_next(struct rdxtree *tree, struct rdxtree_iter *iter)
 
     if (iter->node != NULL) {
         index = iter->slot - ((struct rdxtree_node *)iter->node)->entries;
-        iter->slot = rdxtree_node_find(iter->node, index + 1);
+        iter->slot = rdxtree_node_find(iter->node, index + 1, 1);
     }
 
     if (iter->slot == NULL) {
         iter->node = rdxtree_walk(tree, iter->node);
 
         if (iter->node != NULL)
-            iter->slot = rdxtree_node_find(iter->node, 0);
+            iter->slot = rdxtree_node_find(iter->node, 0, 1);
     }
 
     if (iter->slot == NULL)
