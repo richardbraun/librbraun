@@ -91,6 +91,13 @@ typedef unsigned long long rdxtree_bm_t;
     ((~(rdxtree_bm_t)0) >> (RDXTREE_BM_SIZE - RDXTREE_RADIX_SIZE))
 
 /*
+ * These macros can be replaced by actual functions in an environment
+ * that provides lockless synchronization such as RCU.
+ */
+#define llsync_assign_ptr(ptr, value)   ((ptr) = (value))
+#define llsync_read_ptr(ptr)            (ptr)
+
+/*
  * Radix tree node.
  *
  * The height of a tree is the number of nodes to traverse until stored
@@ -102,6 +109,15 @@ typedef unsigned long long rdxtree_bm_t;
  * Concerning the allocation bitmap, a bit is set when the node it denotes,
  * or one of its children, can be used to allocate an entry. Conversely, a bit
  * is clear when the matching node and all of its children have no free entry.
+ *
+ * In order to support safe lockless lookups, in particular during a resize,
+ * each node includes the height of its subtree, which is invariant during
+ * the entire node lifetime. Since the tree height does vary, it can't be
+ * used to determine whether the tree root is a node or a stored pointer.
+ * This implementation assumes that all nodes and stored pointers are 4-byte
+ * aligned, and uses the least significant bit of entries to indicate the
+ * pointer type. This bit is set for internal nodes, and clear for stored
+ * pointers so that they can be accessed from slots without conversion.
  */
 struct rdxtree_node {
     struct rdxtree_node *parent;
@@ -157,8 +173,15 @@ rdxtree_node_create(struct rdxtree_node **nodep, unsigned int height)
 }
 
 static void
-rdxtree_node_destroy(struct rdxtree_node *node)
+rdxtree_node_schedule_destruction(struct rdxtree_node *node)
 {
+    /*
+     * This function is intended to use the appropriate interface to defer
+     * destruction until all read-side references are dropped in an
+     * environment that provides lockless synchronization.
+     *
+     * Otherwise, it simply "schedules" destruction immediately.
+     */
     free(node);
 }
 
@@ -197,7 +220,7 @@ rdxtree_node_insert(struct rdxtree_node *node, unsigned int index,
     assert(node->entries[index] == NULL);
 
     node->nr_entries++;
-    node->entries[index] = entry;
+    llsync_assign_ptr(node->entries[index], entry);
 }
 
 static inline void
@@ -214,7 +237,7 @@ rdxtree_node_remove(struct rdxtree_node *node, unsigned int index)
     assert(node->entries[index] != NULL);
 
     node->nr_entries--;
-    node->entries[index] = NULL;
+    llsync_assign_ptr(node->entries[index], NULL);
 }
 
 static inline void *
@@ -294,13 +317,13 @@ rdxtree_shrink(struct rdxtree *tree)
         if (entry == NULL)
             break;
 
-        rdxtree_node_destroy(node);
         tree->height--;
 
         if (tree->height > 0)
             rdxtree_node_unlink(rdxtree_entry_addr(entry));
 
-        tree->root = entry;
+        llsync_assign_ptr(tree->root, entry);
+        rdxtree_node_schedule_destruction(node);
     }
 }
 
@@ -331,8 +354,6 @@ rdxtree_grow(struct rdxtree *tree, unsigned long key)
             return error;
         }
 
-        rdxtree_node_insert(node, 0, tree->root);
-
         if (tree->height == 0)
             rdxtree_node_bm_clear(node, 0);
         else {
@@ -342,8 +363,9 @@ rdxtree_grow(struct rdxtree *tree, unsigned long key)
                 rdxtree_node_bm_clear(node, 0);
         }
 
+        rdxtree_node_insert(node, 0, tree->root);
         tree->height++;
-        tree->root = rdxtree_node_to_entry(node);
+        llsync_assign_ptr(tree->root, rdxtree_node_to_entry(node));
         root = node;
     } while (new_height > tree->height);
 
@@ -364,16 +386,17 @@ rdxtree_cleanup(struct rdxtree *tree, struct rdxtree_node *node)
         }
 
         if (node->parent == NULL) {
-            rdxtree_node_destroy(node);
             tree->height = 0;
-            tree->root = NULL;
+            llsync_assign_ptr(tree->root, NULL);
+            rdxtree_node_schedule_destruction(node);
             break;
         }
 
         prev = node;
         node = node->parent;
+        rdxtree_node_unlink(prev);
         rdxtree_node_remove(node, prev->index);
-        rdxtree_node_destroy(prev);
+        rdxtree_node_schedule_destruction(prev);
     }
 }
 
@@ -415,7 +438,7 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
         if (tree->root != NULL)
             return ERR_BUSY;
 
-        tree->root = ptr;
+        llsync_assign_ptr(tree->root, ptr);
 
         if (slotp != NULL)
             *slotp = &tree->root;
@@ -441,10 +464,10 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
             }
 
             if (prev == NULL)
-                tree->root = rdxtree_node_to_entry(node);
+                llsync_assign_ptr(tree->root, rdxtree_node_to_entry(node));
             else {
-                rdxtree_node_insert_node(prev, index, node);
                 rdxtree_node_link(node, prev, index);
+                rdxtree_node_insert_node(prev, index, node);
             }
         }
 
@@ -496,7 +519,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
 
     if (height == 0) {
         if (tree->root == NULL) {
-            tree->root = ptr;
+            llsync_assign_ptr(tree->root, ptr);
             *keyp = 0;
 
             if (slotp != NULL)
@@ -522,8 +545,8 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
                 return error;
             }
 
-            rdxtree_node_insert_node(prev, index, node);
             rdxtree_node_link(node, prev, index);
+            rdxtree_node_insert_node(prev, index, node);
         }
 
         prev = node;
@@ -599,7 +622,7 @@ rdxtree_remove(struct rdxtree *tree, unsigned long key)
     node = rdxtree_entry_addr(tree->root);
 
     if (height == 0) {
-        tree->root = NULL;
+        llsync_assign_ptr(tree->root, NULL);
         return node;
     }
 
@@ -630,9 +653,17 @@ rdxtree_lookup_common(struct rdxtree *tree, unsigned long key, int get_slot)
 {
     struct rdxtree_node *node, *prev;
     unsigned int height, shift, index;
+    void *entry;
 
-    height = tree->height;
-    node = rdxtree_entry_addr(tree->root);
+    entry = llsync_read_ptr(tree->root);
+
+    if (entry == NULL) {
+        node = NULL;
+        height = 0;
+    } else {
+        node = rdxtree_entry_addr(entry);
+        height = rdxtree_entry_is_node(entry) ? node->height + 1 : 0;
+    }
 
     if (key > rdxtree_max_key(height))
         return NULL;
@@ -652,7 +683,8 @@ rdxtree_lookup_common(struct rdxtree *tree, unsigned long key, int get_slot)
 
         prev = node;
         index = (key >> shift) & RDXTREE_RADIX_MASK;
-        node = rdxtree_entry_addr(node->entries[index]);
+        entry = llsync_read_ptr(node->entries[index]);
+        node = rdxtree_entry_addr(entry);
         shift -= RDXTREE_RADIX;
         height--;
     } while (height > 0);
@@ -686,7 +718,7 @@ rdxtree_replace_slot(void **slot, void *ptr)
     old = *slot;
     assert(old != NULL);
     assert(rdxtree_check_alignment(old));
-    *slot = ptr;
+    llsync_assign_ptr(*slot, ptr);
     return old;
 }
 
@@ -776,7 +808,9 @@ rdxtree_remove_all(struct rdxtree *tree)
     height = tree->height;
 
     if (height == 0) {
-        tree->root = NULL;
+        if (tree->root != NULL)
+            llsync_assign_ptr(tree->root, NULL);
+
         return;
     }
 
