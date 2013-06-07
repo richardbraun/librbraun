@@ -101,26 +101,29 @@ typedef unsigned long long rdxtree_bm_t;
 struct rdxtree_node {
     struct rdxtree_node *parent;
     unsigned int index;
+    unsigned int height;
     unsigned int nr_entries;
     rdxtree_bm_t alloc_bm;
     void *entries[RDXTREE_RADIX_SIZE];
 };
 
-static struct rdxtree_node *
-rdxtree_node_create(void)
+static int
+rdxtree_node_create(struct rdxtree_node **nodep, unsigned int height)
 {
     struct rdxtree_node *node;
 
     node = malloc(sizeof(*node));
 
     if (node == NULL)
-        return NULL;
+        return ERR_NOMEM;
 
     node->parent = NULL;
+    node->height = height;
     node->nr_entries = 0;
     node->alloc_bm = RDXTREE_BM_FULL;
     memset(node->entries, 0, sizeof(node->entries));
-    return node;
+    *nodep = node;
+    return 0;
 }
 
 static void
@@ -267,6 +270,7 @@ rdxtree_grow(struct rdxtree *tree, unsigned long key)
 {
     struct rdxtree_node *node;
     unsigned int new_height;
+    int error;
 
     new_height = tree->height + 1;
 
@@ -279,11 +283,11 @@ rdxtree_grow(struct rdxtree *tree, unsigned long key)
     }
 
     do {
-        node = rdxtree_node_create();
+        error = rdxtree_node_create(&node, tree->height);
 
-        if (node == NULL) {
+        if (error) {
             rdxtree_shrink(tree);
-            return ERR_NOMEM;
+            return error;
         }
 
         rdxtree_node_insert(node, 0, tree->root);
@@ -382,15 +386,15 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
 
     do {
         if (node == NULL) {
-            node = rdxtree_node_create();
+            error = rdxtree_node_create(&node, height - 1);
 
-            if (node == NULL) {
+            if (error) {
                 if (prev == NULL)
                     tree->height = 0;
                 else
                     rdxtree_cleanup(tree, prev);
 
-                return ERR_NOMEM;
+                return error;
             }
 
             if (prev == NULL)
@@ -467,11 +471,11 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
 
     do {
         if (node == NULL) {
-            node = rdxtree_node_create();
+            error = rdxtree_node_create(&node, height - 1);
 
-            if (node == NULL) {
+            if (error) {
                 rdxtree_cleanup(tree, prev);
-                return ERR_NOMEM;
+                return error;
             }
 
             rdxtree_node_insert(prev, index, node);
