@@ -88,10 +88,15 @@ typedef unsigned long long rdxtree_bm_t;
 /*
  * Radix tree node.
  *
- * The index member can only be used if the parent isn't null. Concerning the
- * allocation bitmap, a bit is set when the node it denotes, or one of its
- * children, can be used to allocate an entry. Conversely, a bit is clear when
- * the matching node and all of its children have no free entry.
+ * The height of a tree is the number of nodes to traverse until stored
+ * pointers are reached. A height of 0 means the entries of a node (or the
+ * tree root) directly point to stored pointers.
+ *
+ * The index is valid if and only if the parent isn't NULL.
+ *
+ * Concerning the allocation bitmap, a bit is set when the node it denotes,
+ * or one of its children, can be used to allocate an entry. Conversely, a bit
+ * is clear when the matching node and all of its children have no free entry.
  */
 struct rdxtree_node {
     struct rdxtree_node *parent;
