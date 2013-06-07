@@ -128,6 +128,11 @@ struct rdxtree_node {
     void *entries[RDXTREE_RADIX_SIZE];
 };
 
+#ifdef RDXTREE_ENABLE_NODE_CREATION_FAILURES
+unsigned int rdxtree_fail_node_creation_threshold;
+unsigned int rdxtree_nr_node_creations;
+#endif /* RDXTREE_ENABLE_NODE_CREATION_FAILURES */
+
 static inline int
 rdxtree_check_alignment(const void *ptr)
 {
@@ -156,6 +161,15 @@ static int
 rdxtree_node_create(struct rdxtree_node **nodep, unsigned int height)
 {
     struct rdxtree_node *node;
+
+#ifdef RDXTREE_ENABLE_NODE_CREATION_FAILURES
+    if (rdxtree_fail_node_creation_threshold != 0) {
+        rdxtree_nr_node_creations++;
+
+        if (rdxtree_nr_node_creations == rdxtree_fail_node_creation_threshold)
+            return ERR_NOMEM;
+    }
+#endif /* RDXTREE_ENABLE_NODE_CREATION_FAILURES */
 
     node = malloc(sizeof(*node));
 

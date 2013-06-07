@@ -27,6 +27,8 @@
 #include <assert.h>
 #include <stdarg.h>
 
+#define RDXTREE_ENABLE_NODE_CREATION_FAILURES
+
 #include "../error.h"
 #include "../macros.h"
 #include "../rdxtree.c"
@@ -848,6 +850,97 @@ test_32(void)
     destroy_tree(&tree);
 }
 
+extern unsigned int rdxtree_fail_node_creation_threshold;
+extern unsigned int rdxtree_nr_node_creations;
+
+static void
+test_33(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("prepare node creation failure at 1, insert 1");
+
+    rdxtree_fail_node_creation_threshold = 1;
+    rdxtree_nr_node_creations = 0;
+
+    rdxtree_init(&tree);
+    obj = obj_create(1);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(error == ERR_NOMEM);
+    obj_destroy(obj);
+    print_tree(&tree);
+}
+
+static void
+test_34(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("prepare node creation failure at 2, insert 64");
+
+    rdxtree_fail_node_creation_threshold = 2;
+    rdxtree_nr_node_creations = 0;
+
+    rdxtree_init(&tree);
+    obj = obj_create(64);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(error == ERR_NOMEM);
+    obj_destroy(obj);
+    print_tree(&tree);
+}
+
+static void
+test_35(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("prepare node creation failure at 2, insert 0 and 64");
+
+    rdxtree_fail_node_creation_threshold = 2;
+    rdxtree_nr_node_creations = 0;
+
+    rdxtree_init(&tree);
+    obj = obj_create(0);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = obj_create(64);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(error == ERR_NOMEM);
+    obj_destroy(obj);
+    print_tree(&tree);
+    destroy_tree(&tree);
+}
+
+static void
+test_36(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("prepare node creation failure at 2, insert 1 and 64");
+
+    rdxtree_fail_node_creation_threshold = 2;
+    rdxtree_nr_node_creations = 0;
+
+    rdxtree_init(&tree);
+    obj = obj_create(1);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = obj_create(64);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(error == ERR_NOMEM);
+    obj_destroy(obj);
+    print_tree(&tree);
+    destroy_tree(&tree);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -886,5 +979,9 @@ main(int argc, char *argv[])
     test_30();
     test_31();
     test_32();
+    test_33();
+    test_34();
+    test_35();
+    test_36();
     return 0;
 }
