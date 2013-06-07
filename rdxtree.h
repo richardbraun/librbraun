@@ -55,7 +55,7 @@
  * Radix tree.
  */
 struct rdxtree {
-    int height;
+    unsigned int height;
     void *root;
 };
 

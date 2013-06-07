@@ -210,14 +210,14 @@ rdxtree_node_bm_empty(struct rdxtree_node *node)
     return (node->alloc_bm == RDXTREE_BM_EMPTY);
 }
 
-static inline int
+static inline unsigned int
 rdxtree_node_bm_first(struct rdxtree_node *node)
 {
     return rdxtree_ffs(node->alloc_bm) - 1;
 }
 
 static inline unsigned long
-rdxtree_max_key(int height)
+rdxtree_max_key(unsigned int height)
 {
     unsigned int shift;
 
@@ -259,7 +259,7 @@ static int
 rdxtree_grow(struct rdxtree *tree, unsigned long key)
 {
     struct rdxtree_node *node;
-    int new_height;
+    unsigned int new_height;
 
     new_height = tree->height + 1;
 
@@ -343,8 +343,8 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
                       void ***slotp)
 {
     struct rdxtree_node *node, *prev;
-    unsigned int index = index;
-    int error, height, shift;
+    unsigned int height, shift, index = index;
+    int error;
 
     assert(ptr != NULL);
 
@@ -432,7 +432,8 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
 {
     struct rdxtree_node *node, *prev;
     unsigned long key;
-    int error, height, shift, index = index;
+    unsigned int height, shift, index = index;
+    int error;
 
     assert(ptr != NULL);
 
@@ -473,7 +474,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
         prev = node;
         index = rdxtree_node_bm_first(node);
 
-        if (index == -1)
+        if (index == (unsigned int)-1)
             goto grow;
 
         key |= ((unsigned long)index << shift);
@@ -533,8 +534,7 @@ void *
 rdxtree_remove(struct rdxtree *tree, unsigned long key)
 {
     struct rdxtree_node *node, *prev;
-    unsigned int index;
-    int height, shift;
+    unsigned int height, shift, index;
 
     height = tree->height;
 
@@ -574,8 +574,7 @@ static void *
 rdxtree_lookup_common(struct rdxtree *tree, unsigned long key, int get_slot)
 {
     struct rdxtree_node *node, *prev;
-    unsigned int index;
-    int height, shift;
+    unsigned int height, shift, index;
 
     height = tree->height;
     node = tree->root;
@@ -638,8 +637,7 @@ static struct rdxtree_node *
 rdxtree_walk(struct rdxtree *tree, struct rdxtree_node *node)
 {
     struct rdxtree_node *prev, *child;
-    unsigned int index;
-    int height;
+    unsigned int height, index;
 
     if (node == NULL) {
         height = tree->height;
@@ -716,7 +714,7 @@ void
 rdxtree_remove_all(struct rdxtree *tree)
 {
     struct rdxtree_node *node, *next;
-    int height;
+    unsigned int height;
 
     height = tree->height;
 
