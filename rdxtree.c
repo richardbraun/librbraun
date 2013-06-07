@@ -50,6 +50,7 @@
 #include "error.h"
 #include "macros.h"
 #include "rdxtree.h"
+#include "rdxtree_i.h"
 
 /*
  * Mask applied on an entry to obtain its address.
@@ -428,7 +429,7 @@ rdxtree_insert_bm_clear(struct rdxtree_node *node, unsigned int index)
     }
 }
 
-static int
+int
 rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
                       void ***slotp)
 {
@@ -505,19 +506,6 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
 }
 
 int
-rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
-{
-    return rdxtree_insert_common(tree, key, ptr, NULL);
-}
-
-int
-rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
-                    void ***slotp)
-{
-    return rdxtree_insert_common(tree, key, ptr, slotp);
-}
-
-static int
 rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
                             unsigned long *keyp, void ***slotp)
 {
@@ -595,19 +583,6 @@ out:
     return ERR_SUCCESS;
 }
 
-int
-rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
-{
-    return rdxtree_insert_alloc_common(tree, ptr, keyp, NULL);
-}
-
-int
-rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr, unsigned long *keyp,
-                          void ***slotp)
-{
-    return rdxtree_insert_alloc_common(tree, ptr, keyp, slotp);
-}
-
 static void
 rdxtree_remove_bm_set(struct rdxtree_node *node, unsigned int index)
 {
@@ -662,7 +637,7 @@ rdxtree_remove(struct rdxtree *tree, unsigned long key)
     return node;
 }
 
-static void *
+void *
 rdxtree_lookup_common(struct rdxtree *tree, unsigned long key, int get_slot)
 {
     struct rdxtree_node *node, *prev;
@@ -707,18 +682,6 @@ rdxtree_lookup_common(struct rdxtree *tree, unsigned long key, int get_slot)
         return NULL;
 
     return get_slot ? (void *)&prev->entries[index] : node;
-}
-
-void *
-rdxtree_lookup(struct rdxtree *tree, unsigned long key)
-{
-    return rdxtree_lookup_common(tree, key, 0);
-}
-
-void **
-rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key)
-{
-    return rdxtree_lookup_common(tree, key, 1);
 }
 
 void *

@@ -74,6 +74,8 @@ struct rdxtree_iter {
  */
 #define RDXTREE_INITIALIZER { 0, NULL }
 
+#include "rdxtree_i.h"
+
 /*
  * Initialize a tree.
  */
@@ -99,7 +101,11 @@ rdxtree_iter_init(struct rdxtree_iter *iter)
  *
  * The ptr parameter must not be null.
  */
-int rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr);
+static inline int
+rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
+{
+    return rdxtree_insert_common(tree, key, ptr, NULL);
+}
 
 /*
  * Insert a pointer in a tree and obtain its slot.
@@ -108,8 +114,12 @@ int rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr);
  * the newly inserted pointer is stored at the address pointed to by the slotp
  * parameter.
  */
-int rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
-                        void ***slotp);
+static inline int
+rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
+                    void ***slotp)
+{
+    return rdxtree_insert_common(tree, key, ptr, slotp);
+}
 
 /*
  * Insert a pointer in a tree, for which a new key is allocated.
@@ -117,7 +127,11 @@ int rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
  * The ptr and keyp parameters must not be null. The newly allocated key is
  * stored at the address pointed to by the keyp parameter.
  */
-int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp);
+static inline int
+rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
+{
+    return rdxtree_insert_alloc_common(tree, ptr, keyp, NULL);
+}
 
 /*
  * Insert a pointer in a tree, for which a new key is allocated, and obtain
@@ -128,8 +142,12 @@ int rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp);
  * slot of the inserted pointer is stored at the address pointed to by the
  * slotp parameter.
  */
-int rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
-                              unsigned long *keyp, void ***slotp);
+static inline int
+rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
+                          unsigned long *keyp, void ***slotp)
+{
+    return rdxtree_insert_alloc_common(tree, ptr, keyp, slotp);
+}
 
 /*
  * Remove a pointer from a tree.
@@ -143,7 +161,11 @@ void * rdxtree_remove(struct rdxtree *tree, unsigned long key);
  *
  * The matching pointer is returned if successful, null otherwise.
  */
-void * rdxtree_lookup(struct rdxtree *tree, unsigned long key);
+static inline void *
+rdxtree_lookup(struct rdxtree *tree, unsigned long key)
+{
+    return rdxtree_lookup_common(tree, key, 0);
+}
 
 /*
  * Look up a slot in a tree.
@@ -156,7 +178,11 @@ void * rdxtree_lookup(struct rdxtree *tree, unsigned long key);
  *
  * See rdxtree_replace_slot().
  */
-void ** rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key);
+static inline void **
+rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key)
+{
+    return rdxtree_lookup_common(tree, key, 1);
+}
 
 /*
  * Replace a pointer in a tree.

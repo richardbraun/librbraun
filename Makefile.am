@@ -29,7 +29,8 @@ librbraun_la_SOURCES = \
 	rbtree.h \
 	rbtree_i.h \
 	rdxtree.c \
-	rdxtree.h
+	rdxtree.h \
+	rdxtree_i.h
 
 librbraun_la_LIBADD = -lrt -lpthread
 
