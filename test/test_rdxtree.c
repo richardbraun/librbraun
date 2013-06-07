@@ -786,6 +786,68 @@ test_28(void)
     destroy_tree(&tree);
 }
 
+static void
+test_29(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+
+    TITLE("empty tree, lookup 0");
+
+    rdxtree_init(&tree);
+    obj = rdxtree_lookup(&tree, 0);
+    assert(obj == NULL);
+}
+
+static void
+test_30(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+
+    TITLE("empty tree, lookup 10");
+
+    rdxtree_init(&tree);
+    obj = rdxtree_lookup(&tree, 10);
+    assert(obj == NULL);
+}
+
+static void
+test_31(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("insert 60000, lookup 1");
+
+    rdxtree_init(&tree);
+    obj = obj_create(60000);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = rdxtree_lookup(&tree, 1);
+    assert(obj == NULL);
+    destroy_tree(&tree);
+}
+
+static void
+test_32(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("insert 60001, lookup 60000");
+
+    rdxtree_init(&tree);
+    obj = obj_create(60001);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = rdxtree_lookup(&tree, 60000);
+    assert(obj == NULL);
+    destroy_tree(&tree);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -820,5 +882,9 @@ main(int argc, char *argv[])
     test_26();
     test_27();
     test_28();
+    test_29();
+    test_30();
+    test_31();
+    test_32();
     return 0;
 }
