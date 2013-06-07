@@ -696,6 +696,30 @@ test_24(void)
     destroy_tree(&tree);
 }
 
+static void
+test_25(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    void **slot;
+    unsigned long i;
+    int error;
+
+    TITLE("insert_alloc_slot x3");
+
+    rdxtree_init(&tree);
+
+    for (i = 0; i < 3; i++) {
+        obj = obj_create(0);
+        error = rdxtree_insert_alloc_slot(&tree, obj, &obj->id, &slot);
+        assert(!error);
+        assert(obj->id == i);
+        assert(*slot == obj);
+    }
+
+    destroy_tree(&tree);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -726,5 +750,6 @@ main(int argc, char *argv[])
     test_22();
     test_23();
     test_24();
+    test_25();
     return 0;
 }
