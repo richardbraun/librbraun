@@ -720,6 +720,72 @@ test_25(void)
     destroy_tree(&tree);
 }
 
+static void
+test_26(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    unsigned long i;
+    int error;
+
+    TITLE("insert [0..62], remove 63");
+
+    rdxtree_init(&tree);
+
+    for (i = 0; i < 62; i++) {
+        obj = obj_create(i);
+        error = rdxtree_insert(&tree, obj->id, obj);
+        assert(!error);
+    }
+
+    obj = rdxtree_remove(&tree, 63);
+    assert(obj == NULL);
+
+    destroy_tree(&tree);
+}
+
+static void
+test_27(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    unsigned long i;
+    int error;
+
+    TITLE("insert [0..63], remove 64");
+
+    rdxtree_init(&tree);
+
+    for (i = 0; i < 64; i++) {
+        obj = obj_create(i);
+        error = rdxtree_insert(&tree, obj->id, obj);
+        assert(!error);
+    }
+
+    obj = rdxtree_remove(&tree, 64);
+    assert(obj == NULL);
+
+    destroy_tree(&tree);
+}
+
+static void
+test_28(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("insert 60000, remove 1");
+
+    rdxtree_init(&tree);
+    obj = obj_create(60000);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = rdxtree_remove(&tree, 1);
+    assert(obj == NULL);
+    destroy_tree(&tree);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -751,5 +817,8 @@ main(int argc, char *argv[])
     test_23();
     test_24();
     test_25();
+    test_26();
+    test_27();
+    test_28();
     return 0;
 }
