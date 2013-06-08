@@ -309,10 +309,10 @@ rdxtree_max_key(unsigned int height)
 
     shift = RDXTREE_RADIX * height;
 
-    if (shift >= (sizeof(unsigned long) * CHAR_BIT))
-        return ~0UL;
-    else
+    if (likely(shift < (sizeof(unsigned long) * CHAR_BIT)))
         return (1 << shift) - 1;
+    else
+        return ~0UL;
 }
 
 static void
@@ -393,8 +393,8 @@ rdxtree_cleanup(struct rdxtree *tree, struct rdxtree_node *node)
     struct rdxtree_node *prev;
 
     for (;;) {
-        if (!rdxtree_node_empty(node)) {
-            if (node->parent == NULL)
+        if (likely(!rdxtree_node_empty(node))) {
+            if (unlikely(node->parent == NULL))
                 rdxtree_shrink(tree);
 
             break;
@@ -421,7 +421,7 @@ rdxtree_insert_bm_clear(struct rdxtree_node *node, unsigned int index)
     for (;;) {
         rdxtree_node_bm_clear(node, index);
 
-        if ((node->parent == NULL) || !rdxtree_node_full(node))
+        if (!rdxtree_node_full(node) || (node->parent == NULL))
             break;
 
         index = node->index;
@@ -440,7 +440,7 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
     assert(ptr != NULL);
     assert(rdxtree_check_alignment(ptr));
 
-    if (key > rdxtree_max_key(tree->height)) {
+    if (unlikely(key > rdxtree_max_key(tree->height))) {
         error = rdxtree_grow(tree, key);
 
         if (error)
@@ -449,7 +449,7 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
 
     height = tree->height;
 
-    if (height == 0) {
+    if (unlikely(height == 0)) {
         if (tree->root != NULL)
             return ERR_BUSY;
 
@@ -493,7 +493,7 @@ rdxtree_insert_common(struct rdxtree *tree, unsigned long key, void *ptr,
         height--;
     } while (height > 0);
 
-    if (node != NULL)
+    if (unlikely(node != NULL))
         return ERR_BUSY;
 
     rdxtree_node_insert(prev, index, ptr);
@@ -519,7 +519,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
 
     height = tree->height;
 
-    if (height == 0) {
+    if (unlikely(height == 0)) {
         if (tree->root == NULL) {
             llsync_assign_ptr(tree->root, ptr);
             *keyp = 0;
@@ -605,12 +605,12 @@ rdxtree_remove(struct rdxtree *tree, unsigned long key)
 
     height = tree->height;
 
-    if (key > rdxtree_max_key(height))
+    if (unlikely(key > rdxtree_max_key(height)))
         return NULL;
 
     node = rdxtree_entry_addr(tree->root);
 
-    if (height == 0) {
+    if (unlikely(height == 0)) {
         llsync_assign_ptr(tree->root, NULL);
         return node;
     }
