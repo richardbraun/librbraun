@@ -18,6 +18,32 @@
 #ifndef _RDXTREE_I_H
 #define _RDXTREE_I_H
 
+/*
+ * Radix tree.
+ */
+struct rdxtree {
+    unsigned int height;
+    void *root;
+};
+
+/*
+ * Radix tree iterator.
+ */
+struct rdxtree_iter {
+    void *node;
+    void **slot;
+};
+
+/*
+ * Initialize an iterator.
+ */
+static inline void
+rdxtree_iter_init(struct rdxtree_iter *iter)
+{
+    iter->node = NULL;
+    iter->slot = NULL;
+}
+
 int rdxtree_insert_common(struct rdxtree *tree, unsigned long key,
                           void *ptr, void ***slotp);
 
@@ -26,5 +52,14 @@ int rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
 
 void * rdxtree_lookup_common(struct rdxtree *tree, unsigned long key,
                              int get_slot);
+
+/*
+ * Walk over pointers in a tree.
+ *
+ * Move the iterator to the next pointer in the given tree.
+ *
+ * The next pointer is returned if there is one, null otherwise.
+ */
+void * rdxtree_iter_next(struct rdxtree *tree, struct rdxtree_iter *iter);
 
 #endif /* _RDXTREE_I_H */

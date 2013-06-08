@@ -54,20 +54,12 @@
 /*
  * Radix tree.
  */
-struct rdxtree {
-    unsigned int height;
-    void *root;
-};
+struct rdxtree;
 
 /*
  * Radix tree iterator.
- *
- * Don't use directly - use rdxtree_for_each() instead.
  */
-struct rdxtree_iter {
-    void *node;
-    void **slot;
-};
+struct rdxtree_iter;
 
 /*
  * Static tree initializer.
@@ -84,16 +76,6 @@ rdxtree_init(struct rdxtree *tree)
 {
     tree->height = 0;
     tree->root = NULL;
-}
-
-/*
- * Initialize an iterator.
- */
-static inline void
-rdxtree_iter_init(struct rdxtree_iter *iter)
-{
-    iter->node = NULL;
-    iter->slot = NULL;
 }
 
 /*
@@ -192,15 +174,6 @@ rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key)
  * See rdxtree_lookup_slot().
  */
 void * rdxtree_replace_slot(void **slot, void *ptr);
-
-/*
- * Walk pointers in a tree.
- *
- * Move the iterator to the next pointer in the given tree.
- *
- * The next pointer is returned if there is one, null otherwise.
- */
-void * rdxtree_iter_next(struct rdxtree *tree, struct rdxtree_iter *iter);
 
 /*
  * Forge a loop to process all pointers of a tree.
