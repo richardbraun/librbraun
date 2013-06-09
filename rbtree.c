@@ -33,7 +33,7 @@
 /*
  * Return the index of a node in the children array of its parent.
  *
- * The parent parameter must not be null, and must be the parent of the
+ * The parent parameter must not be NULL, and must be the parent of the
  * given node.
  */
 static inline int
@@ -317,7 +317,7 @@ rbtree_remove(struct rbtree *tree, struct rbtree_node *node)
 
     /*
      * The node has been removed, update the colors. The child pointer can
-     * be null, in which case it is considered a black leaf.
+     * be NULL, in which case it is considered a black leaf.
      */
 update_color:
     if (color == RBTREE_COLOR_RED)

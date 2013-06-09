@@ -44,7 +44,7 @@ avltree_i2b(int index)
 /*
  * Return the index of a node in the children array of its parent.
  *
- * The parent parameter must not be null, and must be the parent of the
+ * The parent parameter must not be NULL, and must be the parent of the
  * given node.
  */
 static inline int

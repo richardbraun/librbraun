@@ -81,7 +81,7 @@ rdxtree_init(struct rdxtree *tree)
 /*
  * Insert a pointer in a tree.
  *
- * The ptr parameter must not be null.
+ * The ptr parameter must not be NULL.
  */
 static inline int
 rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
@@ -92,7 +92,7 @@ rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
 /*
  * Insert a pointer in a tree and obtain its slot.
  *
- * The ptr and slotp parameters must not be null. If successful, the slot of
+ * The ptr and slotp parameters must not be NULL. If successful, the slot of
  * the newly inserted pointer is stored at the address pointed to by the slotp
  * parameter.
  */
@@ -106,7 +106,7 @@ rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
 /*
  * Insert a pointer in a tree, for which a new key is allocated.
  *
- * The ptr and keyp parameters must not be null. The newly allocated key is
+ * The ptr and keyp parameters must not be NULL. The newly allocated key is
  * stored at the address pointed to by the keyp parameter.
  */
 static inline int
@@ -119,7 +119,7 @@ rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
  * Insert a pointer in a tree, for which a new key is allocated, and obtain
  * its slot.
  *
- * The ptr, keyp and slotp parameters must not be null. The newly allocated
+ * The ptr, keyp and slotp parameters must not be NULL. The newly allocated
  * key is stored at the address pointed to by the keyp parameter while the
  * slot of the inserted pointer is stored at the address pointed to by the
  * slotp parameter.
@@ -134,14 +134,14 @@ rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
 /*
  * Remove a pointer from a tree.
  *
- * The matching pointer is returned if successful, null otherwise.
+ * The matching pointer is returned if successful, NULL otherwise.
  */
 void * rdxtree_remove(struct rdxtree *tree, unsigned long key);
 
 /*
  * Look up a pointer in a tree.
  *
- * The matching pointer is returned if successful, null otherwise.
+ * The matching pointer is returned if successful, NULL otherwise.
  */
 static inline void *
 rdxtree_lookup(struct rdxtree *tree, unsigned long key)
@@ -156,7 +156,7 @@ rdxtree_lookup(struct rdxtree *tree, unsigned long key)
  * a placeholder for fast replacements to avoid multiple lookups on the same
  * key.
  *
- * A slot for the matching pointer is returned if successful, null otherwise.
+ * A slot for the matching pointer is returned if successful, NULL otherwise.
  *
  * See rdxtree_replace_slot().
  */
@@ -169,7 +169,7 @@ rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key)
 /*
  * Replace a pointer in a tree.
  *
- * The ptr parameter must not be null. The previous pointer is returned.
+ * The ptr parameter must not be NULL. The previous pointer is returned.
  *
  * See rdxtree_lookup_slot().
  */

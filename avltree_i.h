@@ -154,7 +154,7 @@ avltree_slot_index(unsigned long slot)
  * Insert a node in a tree, rebalancing it if necessary.
  *
  * The index parameter is the index in the children array of the parent where
- * the new node is to be inserted. It is ignored if the parent is null.
+ * the new node is to be inserted. It is ignored if the parent is NULL.
  *
  * This function is intended to be used by the avltree_insert() macro only.
  */

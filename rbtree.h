@@ -213,7 +213,7 @@ MACRO_END
  *
  * This macro essentially acts as rbtree_lookup() but in addition to a node,
  * it also returns a slot, which identifies an insertion point in the tree.
- * If the returned node is null, the slot can be used by rbtree_insert_slot()
+ * If the returned node is NULL, the slot can be used by rbtree_insert_slot()
  * to insert without the overhead of an additional lookup. The slot is a
  * simple unsigned long integer.
  *
@@ -251,7 +251,7 @@ MACRO_END
  * obtain the insertion point with a standard lookup. The insertion point
  * is obtained by calling rbtree_lookup_slot(). In addition, the new node
  * must not compare equal to an existing node in the tree (i.e. the slot
- * must denote a null node).
+ * must denote a NULL node).
  */
 static inline void
 rbtree_insert_slot(struct rbtree *tree, unsigned long slot,

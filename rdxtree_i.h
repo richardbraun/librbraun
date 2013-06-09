@@ -58,7 +58,7 @@ void * rdxtree_lookup_common(struct rdxtree *tree, unsigned long key,
  *
  * Move the iterator to the next pointer in the given tree.
  *
- * The next pointer is returned if there is one, null otherwise.
+ * The next pointer is returned if there is one, NULL otherwise.
  */
 void * rdxtree_iter_next(struct rdxtree *tree, struct rdxtree_iter *iter);
 
