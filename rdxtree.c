@@ -778,8 +778,8 @@ rdxtree_iter_next(struct rdxtree *tree, struct rdxtree_iter *iter)
 void
 rdxtree_remove_all(struct rdxtree *tree)
 {
-    struct rdxtree_node *node, *next;
-    unsigned int height;
+    struct rdxtree_node *node, *parent, *next;
+    unsigned int height, index;
 
     height = tree->height;
 
@@ -794,8 +794,19 @@ rdxtree_remove_all(struct rdxtree *tree)
 
     do {
         next = rdxtree_walk(tree, node);
-        node->nr_entries = 0;
-        rdxtree_cleanup(tree, node);
+
+        parent = node->parent;
+
+        if (parent != NULL) {
+            index = node->index;
+            rdxtree_node_remove(parent, index);
+            rdxtree_remove_bm_set(parent, index);
+            rdxtree_cleanup(tree, parent);
+            node->parent = NULL;
+        }
+
+        rdxtree_node_schedule_destruction(node);
+
         node = next;
     } while (node != NULL);
 }
