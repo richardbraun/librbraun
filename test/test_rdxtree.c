@@ -38,11 +38,7 @@
 #if RDXTREE_RADIX < 6
 #define BM_FORMAT "%lx"
 #elif RDXTREE_RADIX == 6 /* RDXTREE_RADIX < 6 */
-#ifdef __LP64__
-#define BM_FORMAT "%lx"
-#else /* __LP64__ */
 #define BM_FORMAT "%llx"
-#endif /* __LP64__ */
 #endif /* RDXTREE_RADIX < 6 */
 
 struct obj {
