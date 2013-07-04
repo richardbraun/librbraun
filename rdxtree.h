@@ -84,7 +84,7 @@ rdxtree_init(struct rdxtree *tree)
  * The ptr parameter must not be NULL.
  */
 static inline int
-rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
+rdxtree_insert(struct rdxtree *tree, unsigned long long key, void *ptr)
 {
     return rdxtree_insert_common(tree, key, ptr, NULL);
 }
@@ -97,7 +97,7 @@ rdxtree_insert(struct rdxtree *tree, unsigned long key, void *ptr)
  * parameter.
  */
 static inline int
-rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
+rdxtree_insert_slot(struct rdxtree *tree, unsigned long long key, void *ptr,
                     void ***slotp)
 {
     return rdxtree_insert_common(tree, key, ptr, slotp);
@@ -110,7 +110,7 @@ rdxtree_insert_slot(struct rdxtree *tree, unsigned long key, void *ptr,
  * stored at the address pointed to by the keyp parameter.
  */
 static inline int
-rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
+rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long long *keyp)
 {
     return rdxtree_insert_alloc_common(tree, ptr, keyp, NULL);
 }
@@ -126,7 +126,7 @@ rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long *keyp)
  */
 static inline int
 rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
-                          unsigned long *keyp, void ***slotp)
+                          unsigned long long *keyp, void ***slotp)
 {
     return rdxtree_insert_alloc_common(tree, ptr, keyp, slotp);
 }
@@ -136,7 +136,7 @@ rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
  *
  * The matching pointer is returned if successful, NULL otherwise.
  */
-void * rdxtree_remove(struct rdxtree *tree, unsigned long key);
+void * rdxtree_remove(struct rdxtree *tree, unsigned long long key);
 
 /*
  * Look up a pointer in a tree.
@@ -144,7 +144,7 @@ void * rdxtree_remove(struct rdxtree *tree, unsigned long key);
  * The matching pointer is returned if successful, NULL otherwise.
  */
 static inline void *
-rdxtree_lookup(struct rdxtree *tree, unsigned long key)
+rdxtree_lookup(struct rdxtree *tree, unsigned long long key)
 {
     return rdxtree_lookup_common(tree, key, 0);
 }
@@ -161,7 +161,7 @@ rdxtree_lookup(struct rdxtree *tree, unsigned long key)
  * See rdxtree_replace_slot().
  */
 static inline void **
-rdxtree_lookup_slot(struct rdxtree *tree, unsigned long key)
+rdxtree_lookup_slot(struct rdxtree *tree, unsigned long long key)
 {
     return rdxtree_lookup_common(tree, key, 1);
 }
