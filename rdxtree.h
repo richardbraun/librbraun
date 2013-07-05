@@ -144,7 +144,7 @@ void * rdxtree_remove(struct rdxtree *tree, unsigned long long key);
  * The matching pointer is returned if successful, NULL otherwise.
  */
 static inline void *
-rdxtree_lookup(struct rdxtree *tree, unsigned long long key)
+rdxtree_lookup(const struct rdxtree *tree, unsigned long long key)
 {
     return rdxtree_lookup_common(tree, key, 0);
 }
@@ -161,7 +161,7 @@ rdxtree_lookup(struct rdxtree *tree, unsigned long long key)
  * See rdxtree_replace_slot().
  */
 static inline void **
-rdxtree_lookup_slot(struct rdxtree *tree, unsigned long long key)
+rdxtree_lookup_slot(const struct rdxtree *tree, unsigned long long key)
 {
     return rdxtree_lookup_common(tree, key, 1);
 }
