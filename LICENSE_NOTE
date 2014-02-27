@@ -4,6 +4,6 @@ merged into the X15 and GNU Mach microkernels, which are licensed under
 GPLv3 and GPLv2 respectively. Some of it is also used in proprietary
 software.
 
-As a result, files found both in this library and GPL covered projects
-are actually double licensed. They can be reused from this library under
-the 2-clause BSD license.
+As a result, files found both in this library (under a BSD license) and
+GPL covered projects (under a GPL license) are actually double licensed.
+They can be reused from this library under the 2-clause BSD license.
