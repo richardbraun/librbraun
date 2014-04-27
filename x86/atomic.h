@@ -33,6 +33,12 @@
                  : "+m" (*(ptr))    \
                  : "r" (delta))
 
+#define ATOMIC_FETCHADD(ptr, oldval, delta)     \
+    asm volatile("lock xadd %1, %0"             \
+                 : "+m" (*(ptr)), "=r" (oldval) \
+                 : "1" (delta)                  \
+                 : "memory")
+
 #define ATOMIC_AND(ptr, bits)       \
     asm volatile("lock and %1, %0"  \
                  : "+m" (*(ptr))    \
@@ -60,6 +66,18 @@ static inline void
 atomic_add_uint(volatile unsigned int *ptr, int delta)
 {
     ATOMIC_ADD(ptr, delta);
+}
+
+/*
+ * Implies a full memory barrier.
+ */
+static inline unsigned int
+atomic_fetchadd_uint(volatile unsigned int *ptr, int delta)
+{
+    unsigned int oldval;
+
+    ATOMIC_FETCHADD(ptr, oldval, delta);
+    return oldval;
 }
 
 static inline void
@@ -103,6 +121,18 @@ static inline void
 atomic_add_ulong(volatile unsigned long *ptr, long delta)
 {
     ATOMIC_ADD(ptr, delta);
+}
+
+/*
+ * Implies a full memory barrier.
+ */
+static inline unsigned long
+atomic_fetchadd_ulong(volatile unsigned long *ptr, long delta)
+{
+    unsigned long oldval;
+
+    ATOMIC_FETCHADD(ptr, oldval, delta);
+    return oldval;
 }
 
 static inline void
