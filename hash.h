@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Richard Braun.
+ * Copyright (c) 2010-2014 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@
  *
  * Integer hashing follows Thomas Wang's paper about his 32/64-bits mix
  * functions :
- * - http://www.concentric.net/~Ttwang/tech/inthash.htm
+ * - https://gist.github.com/badboy/6267743
  *
  * String hashing uses a variant of the djb2 algorithm with k=31, as in
  * the implementation of the hashCode() method of the Java String class :
