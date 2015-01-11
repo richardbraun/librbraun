@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2010 Richard Braun.
+ * Copyright (c) 2009-2015 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,40 +29,66 @@
 #ifndef _MACROS_H
 #define _MACROS_H
 
+#if !defined(__GNUC__) || (__GNUC__ < 4)
+#error "GCC 4+ required"
+#endif
+
 #include <stddef.h>
 
-#define MACRO_BEGIN     ({
-#define MACRO_END       })
+#define MACRO_BEGIN         ({
+#define MACRO_END           })
 
-#define XQUOTE(x)       #x
-#define QUOTE(x)        XQUOTE(x)
+#define __QUOTE(x)          #x
+#define QUOTE(x)            __QUOTE(x)
 
-#define STRLEN(x)       (sizeof(x) - 1)
-#define ARRAY_SIZE(x)   (sizeof(x) / sizeof((x)[0]))
+#define STRLEN(x)           (sizeof(x) - 1)
+#define ARRAY_SIZE(x)       (sizeof(x) / sizeof((x)[0]))
 
-#define MIN(a, b)       ((a) < (b) ? (a) : (b))
-#define MAX(a, b)       ((a) > (b) ? (a) : (b))
+#define MIN(a, b)           ((a) < (b) ? (a) : (b))
+#define MAX(a, b)           ((a) > (b) ? (a) : (b))
 
-#define P2ALIGNED(x, a) (((x) & ((a) - 1)) == 0)
-#define ISP2(x)         P2ALIGNED(x, x)
-#define P2ALIGN(x, a)   ((x) & -(a))
-#define P2ROUND(x, a)   (-(-(x) & -(a)))
-#define P2END(x, a)     (-(~(x) & -(a)))
+#define DIV_CEIL(n, d)      (((n) + (d) - 1) / (d))
+
+#define P2ALIGNED(x, a)     (((x) & ((a) - 1)) == 0)
+#define ISP2(x)             P2ALIGNED(x, x)
+#define P2ALIGN(x, a)       ((x) & -(a))
+#define P2ROUND(x, a)       (-(-(x) & -(a)))
+#define P2END(x, a)         (-(~(x) & -(a)))
 
 #define structof(ptr, type, member) \
     ((type *)((char *)(ptr) - offsetof(type, member)))
 
-#define alignof(x)      __alignof__(x)
+#define alignof(x)          __alignof__(x)
 
-#define likely(expr)    __builtin_expect(!!(expr), 1)
-#define unlikely(expr)  __builtin_expect(!!(expr), 0)
+#define likely(expr)        __builtin_expect(!!(expr), 1)
+#define unlikely(expr)      __builtin_expect(!!(expr), 0)
 
-#define barrier()       asm volatile("" : : : "memory")
+#define barrier()           asm volatile("" : : : "memory")
 
-#define __noreturn      __attribute__((noreturn))
-#define __aligned(x)    __attribute__((aligned(x)))
+#define __noreturn          __attribute__((noreturn))
+#define __alias(x)          __attribute__((alias(x)))
 
 #define __format_printf(fmt, args) \
     __attribute__((format(printf, fmt, args)))
+
+/*
+ * The following macros may be provided by the C environment.
+ */
+
+#ifndef __aligned
+#define __aligned(x)        __attribute__((aligned(x)))
+#endif
+
+#ifndef __always_inline
+#define __always_inline     inline __attribute__((always_inline))
+#endif
+
+#ifndef __section
+#define __section(x)        __attribute__((section(x)))
+#endif
+
+#ifndef __packed
+#define __packed            __attribute__((packed))
+#endif
 
 #endif /* _MACROS_H */
