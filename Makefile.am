@@ -18,6 +18,9 @@ librbraun_la_SOURCES = \
 	avltree.c \
 	avltree.h \
 	avltree_i.h \
+	bitmap.c \
+	bitmap.h \
+	bitmap_i.h \
 	cpu.h \
 	error.c \
 	error.h \
