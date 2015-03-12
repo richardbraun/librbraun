@@ -52,7 +52,9 @@ enum {
     ERR_TIMEDOUT,
     ERR_WOULDBLOCK,
     ERR_LOOKUP,
-    ERR_MEM_CACHE
+    ERR_MEM_CACHE,
+    ERR_AGAIN,
+    ERR_EXIST,
 };
 
 /*

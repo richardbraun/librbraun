@@ -48,7 +48,9 @@ static const char *errormsg_table[] = {
     "operation timed out",
     "operation would block",
     "entry not found",
-    "internal memory allocator failure"
+    "internal memory allocator failure",
+    "resource temporarily unavailable",
+    "entry exist",
 };
 
 #define ERRORMSG_TABLE_SIZE ARRAY_SIZE(errormsg_table)
