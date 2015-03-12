@@ -33,14 +33,17 @@ librbraun_la_SOURCES = \
 	rbtree_i.h \
 	rdxtree.c \
 	rdxtree.h \
-	rdxtree_i.h
+	rdxtree_i.h \
+	shell.c
+	shell.h
 
 librbraun_la_LIBADD = -lrt -lpthread
 
 bin_PROGRAMS = \
 	test_avltree \
 	test_rbtree \
-	test_rdxtree
+	test_rdxtree \
+	test_shell
 
 test_avltree_SOURCES = test/test_avltree.c
 test_avltree_LDADD = librbraun.la
@@ -50,3 +53,6 @@ test_rbtree_LDADD = librbraun.la
 
 test_rdxtree_SOURCES = test/test_rdxtree.c
 test_rdxtree_LDADD = -lrt -lpthread
+
+test_shell_SOURCES = test/test_shell.c
+test_shell_LDADD = librbraun.la
