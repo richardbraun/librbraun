@@ -42,14 +42,14 @@
 #endif /* RDXTREE_RADIX < 6 */
 
 struct obj {
-    unsigned long long id;
+    rdxtree_key_t id;
 };
 
 static void print_subtree(struct rdxtree_node *node, int height, size_t index,
                           size_t level);
 
 static struct obj *
-obj_create(unsigned long long id)
+obj_create(rdxtree_key_t id)
 {
     struct obj *obj;
 
@@ -79,7 +79,7 @@ print_value(void *ptr, size_t index, size_t level)
     for (i = level; i > 0; i--)
         putchar(' ');
 
-    printf("%zu:%llu\n", index, obj->id);
+    printf("%zu:%llu\n", index, (unsigned long long)obj->id);
 }
 
 static void
@@ -361,7 +361,7 @@ test_11(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert [0..4096] and remove in reverse order");
@@ -387,7 +387,7 @@ test_12(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert [0..4096] and remove in same order");
@@ -413,7 +413,7 @@ test_13(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("allocate");
@@ -435,7 +435,7 @@ test_14(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert 0, allocate");
@@ -460,7 +460,7 @@ test_15(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert [0..4095], remove 0, allocate");
@@ -486,7 +486,7 @@ test_16(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert [0..4095], remove 1, allocate");
@@ -512,7 +512,7 @@ test_17(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert [0..63] and [128..191], allocate x65");
@@ -550,7 +550,7 @@ test_18(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert [0..4095], allocate");
@@ -700,7 +700,7 @@ test_25(void)
     struct rdxtree tree;
     struct obj *obj;
     void **slot;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert_alloc_slot x3");
@@ -723,7 +723,7 @@ test_26(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert [0..62], remove 63");
@@ -747,7 +747,7 @@ test_27(void)
 {
     struct rdxtree tree;
     struct obj *obj;
-    unsigned long long i;
+    rdxtree_key_t i;
     int error;
 
     TITLE("insert [0..63], remove 64");
@@ -937,6 +937,7 @@ test_36(void)
     destroy_tree(&tree);
 }
 
+#ifndef RDXTREE_KEY_32
 static void
 test_37(void)
 {
@@ -956,6 +957,7 @@ test_37(void)
     obj_destroy(obj);
     print_tree(&tree);
 }
+#endif /* RDXTREE_KEY_32 */
 
 int
 main(int argc, char *argv[])
@@ -999,6 +1001,8 @@ main(int argc, char *argv[])
     test_34();
     test_35();
     test_36();
+#ifndef RDXTREE_KEY_32
     test_37();
+#endif /* RDXTREE_KEY_32 */
     return 0;
 }

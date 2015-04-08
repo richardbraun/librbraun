@@ -33,6 +33,20 @@
 #define _RDXTREE_H
 
 #include <stddef.h>
+#include <stdint.h>
+
+/*
+ * This macro selects between 32 or 64-bits (the default) keys.
+ */
+#if 0
+#define RDXTREE_KEY_32
+#endif
+
+#ifdef RDXTREE_KEY_32
+typedef uint32_t rdxtree_key_t;
+#else /* RDXTREE_KEY_32 */
+typedef uint64_t rdxtree_key_t;
+#endif /* RDXTREE_KEY_32 */
 
 /*
  * Radix tree.
@@ -67,7 +81,7 @@ rdxtree_init(struct rdxtree *tree)
  * The ptr parameter must not be NULL.
  */
 static inline int
-rdxtree_insert(struct rdxtree *tree, unsigned long long key, void *ptr)
+rdxtree_insert(struct rdxtree *tree, rdxtree_key_t key, void *ptr)
 {
     return rdxtree_insert_common(tree, key, ptr, NULL);
 }
@@ -80,8 +94,8 @@ rdxtree_insert(struct rdxtree *tree, unsigned long long key, void *ptr)
  * parameter.
  */
 static inline int
-rdxtree_insert_slot(struct rdxtree *tree, unsigned long long key, void *ptr,
-                    void ***slotp)
+rdxtree_insert_slot(struct rdxtree *tree, rdxtree_key_t key,
+                    void *ptr, void ***slotp)
 {
     return rdxtree_insert_common(tree, key, ptr, slotp);
 }
@@ -93,7 +107,7 @@ rdxtree_insert_slot(struct rdxtree *tree, unsigned long long key, void *ptr,
  * stored at the address pointed to by the keyp parameter.
  */
 static inline int
-rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long long *keyp)
+rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, rdxtree_key_t *keyp)
 {
     return rdxtree_insert_alloc_common(tree, ptr, keyp, NULL);
 }
@@ -109,7 +123,7 @@ rdxtree_insert_alloc(struct rdxtree *tree, void *ptr, unsigned long long *keyp)
  */
 static inline int
 rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
-                          unsigned long long *keyp, void ***slotp)
+                          rdxtree_key_t *keyp, void ***slotp)
 {
     return rdxtree_insert_alloc_common(tree, ptr, keyp, slotp);
 }
@@ -119,7 +133,7 @@ rdxtree_insert_alloc_slot(struct rdxtree *tree, void *ptr,
  *
  * The matching pointer is returned if successful, NULL otherwise.
  */
-void * rdxtree_remove(struct rdxtree *tree, unsigned long long key);
+void * rdxtree_remove(struct rdxtree *tree, rdxtree_key_t key);
 
 /*
  * Look up a pointer in a tree.
@@ -127,7 +141,7 @@ void * rdxtree_remove(struct rdxtree *tree, unsigned long long key);
  * The matching pointer is returned if successful, NULL otherwise.
  */
 static inline void *
-rdxtree_lookup(const struct rdxtree *tree, unsigned long long key)
+rdxtree_lookup(const struct rdxtree *tree, rdxtree_key_t key)
 {
     return rdxtree_lookup_common(tree, key, 0);
 }
@@ -144,7 +158,7 @@ rdxtree_lookup(const struct rdxtree *tree, unsigned long long key)
  * See rdxtree_replace_slot().
  */
 static inline void **
-rdxtree_lookup_slot(const struct rdxtree *tree, unsigned long long key)
+rdxtree_lookup_slot(const struct rdxtree *tree, rdxtree_key_t key)
 {
     return rdxtree_lookup_common(tree, key, 1);
 }
