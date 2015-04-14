@@ -13,6 +13,10 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _RDXTREE_I_H

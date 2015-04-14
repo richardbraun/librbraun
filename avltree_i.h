@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2011, 2012 Richard Braun.
+ * Copyright (c) 2010-2015 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -21,6 +21,10 @@
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _AVLTREE_I_H

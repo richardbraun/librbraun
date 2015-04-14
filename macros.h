@@ -24,6 +24,9 @@
  *
  *
  * Helper macros.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _MACROS_H

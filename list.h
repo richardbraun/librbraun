@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2010, 2014 Richard Braun.
+ * Copyright (c) 2009-2015 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -24,6 +24,9 @@
  *
  *
  * Simple doubly-linked list.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _LIST_H

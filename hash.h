@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2014 Richard Braun.
+ * Copyright (c) 2010-2015 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,9 @@
  * It can be used by the implementation to select high or low bits, depending
  * on their relative randomness. To get complete, unmasked hashes, use the
  * HASH_ALLBITS macro.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _HASH_H

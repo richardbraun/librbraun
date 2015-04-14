@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2013 Richard Braun.
+ * Copyright (c) 2012-2015 Richard Braun.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,6 +35,9 @@
  * can be reordered after loads. As a result, load and store memory barriers
  * are simple compiler barriers whereas full memory barriers must generate
  * a barrier instruction.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _X86_MB_H

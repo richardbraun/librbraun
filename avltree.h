@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2011, 2012 Richard Braun.
+ * Copyright (c) 2010-2015 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,9 @@
  * the more common case where there can be as many insertions/removals as
  * lookups, or the amount of changes can't be determined, red-black trees
  * provide better average performance.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _AVLTREE_H

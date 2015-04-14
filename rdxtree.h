@@ -27,6 +27,9 @@
  *
  * In addition to the standard insertion operation, this implementation
  * can allocate keys for the caller at insertion time.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _RDXTREE_H

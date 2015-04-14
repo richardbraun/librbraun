@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, 2010 Richard Braun.
+ * Copyright (c) 2009-2015 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,9 @@
  *  - It only requires constant additional space (as it works on linked lists).
  *  - It performs at O(n log n) for average and worst cases.
  *  - It is adaptive, performing faster on already sorted lists.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #include "list.h"

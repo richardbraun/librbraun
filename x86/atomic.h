@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Richard Braun.
+ * Copyright (c) 2012-2015 Richard Braun.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,6 +23,9 @@
  *
  *
  * Atomic operations.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _X86_ATOMIC_H

@@ -26,6 +26,9 @@
  *
  * Most functions do not check whether the given parameters are valid. This
  * is the responsibility of the caller.
+ *
+ * Upstream site with license notes :
+ * http://git.sceen.net/rbraun/librbraun.git/
  */
 
 #ifndef _BITMAP_H
