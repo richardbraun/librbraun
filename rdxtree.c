@@ -686,6 +686,7 @@ rdxtree_walk(struct rdxtree *tree, struct rdxtree_node *node)
     if (node == NULL) {
         height = tree->height;
         node = rdxtree_entry_addr(tree->root);
+        assert(node != NULL);
 
         while (height > 1) {
             node = rdxtree_node_find(node, 0, 0);
