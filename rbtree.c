@@ -178,7 +178,7 @@ void
 rbtree_insert_rebalance(struct rbtree *tree, struct rbtree_node *parent,
                         int index, struct rbtree_node *node)
 {
-    struct rbtree_node *grand_parent, *uncle, *tmp;
+    struct rbtree_node *grand_parent, *uncle;
     int left, right;
 
     assert(rbtree_node_check_alignment(parent));
@@ -227,9 +227,7 @@ rbtree_insert_rebalance(struct rbtree *tree, struct rbtree_node *parent,
          */
         if (parent->children[right] == node) {
             rbtree_rotate(tree, parent, left);
-            tmp = node;
-            node = parent;
-            parent = tmp;
+            parent = node;
         }
 
         /*
@@ -348,6 +346,8 @@ update_color:
             brother = parent->children[right];
         }
 
+        assert(brother != NULL);
+
         /*
          * Brother has no red child. Recolor and repeat at parent.
          */
@@ -377,6 +377,7 @@ update_color:
          * (we already know brother is black), set brother's right child black,
          * rotate left at parent and leave.
          */
+        assert(brother->children[right] != NULL);
         rbtree_node_set_color(brother, rbtree_node_color(parent));
         rbtree_node_set_black(parent);
         rbtree_node_set_black(brother->children[right]);
