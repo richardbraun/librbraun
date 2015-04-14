@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2012 Richard Braun.
+ * Copyright (c) 2010-2015 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
