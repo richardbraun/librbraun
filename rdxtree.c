@@ -237,15 +237,20 @@ rdxtree_node_remove(struct rdxtree_node *node, unsigned int index)
 }
 
 static inline void *
-rdxtree_node_find(struct rdxtree_node *node, unsigned int index, int get_slot)
+rdxtree_node_find(struct rdxtree_node *node, unsigned int *indexp)
 {
+    unsigned int index;
     void *ptr;
 
-    while (index < ARRAY_SIZE(node->entries)) {
-        ptr = rdxtree_entry_addr(node->entries[index]);
+    index = *indexp;
 
-        if (ptr != NULL)
-            return get_slot ? (void *)&node->entries[index] : ptr;
+    while (index < ARRAY_SIZE(node->entries)) {
+        ptr = rdxtree_entry_addr(llsync_read_ptr(node->entries[index]));
+
+        if (ptr != NULL) {
+            *indexp = index;
+            return ptr;
+        }
 
         index++;
     }
@@ -681,116 +686,120 @@ rdxtree_replace_slot(void **slot, void *ptr)
     return old;
 }
 
-static struct rdxtree_node *
-rdxtree_walk(struct rdxtree *tree, struct rdxtree_node *node)
+static void *
+rdxtree_walk_next(struct rdxtree *tree, struct rdxtree_iter *iter)
 {
-    struct rdxtree_node *prev, *child;
-    unsigned int height, index;
+    struct rdxtree_node *root, *node, *prev;
+    unsigned int height, shift, index, orig_index;
+    rdxtree_key_t key;
+    void *entry;
 
-    if (node == NULL) {
-        height = tree->height;
-        node = rdxtree_entry_addr(tree->root);
-        assert(node != NULL);
+    entry = llsync_read_ptr(tree->root);
 
-        while (height > 1) {
-            node = rdxtree_node_find(node, 0, 0);
-            height--;
+    if (entry == NULL)
+        return NULL;
+
+    if (!rdxtree_entry_is_node(entry)) {
+        if (iter->key != 0)
+            return NULL;
+        else {
+            iter->key = 1;
+            return rdxtree_entry_addr(entry);
+        }
+    }
+
+    root = rdxtree_entry_addr(entry);
+
+restart:
+    node = root;
+    height = root->height + 1;
+    key = iter->key;
+
+    if (key > rdxtree_max_key(height))
+        return NULL;
+
+    shift = (height - 1) * RDXTREE_RADIX;
+
+    do {
+        prev = node;
+        index = (key >> shift) & RDXTREE_RADIX_MASK;
+        orig_index = index;
+        node = rdxtree_node_find(node, &index);
+
+        if (node == NULL) {
+            shift += RDXTREE_RADIX;
+            iter->key = ((key >> shift) + 1) << shift;
+            goto restart;
         }
 
-        return node;
-    }
+        if (orig_index != index)
+            key = ((key >> shift) + (index - orig_index)) << shift;
 
-    height = 0;
-
-    for (;;) {
-        prev = node->parent;
-
-        if (prev == NULL)
-            return NULL;
-
-        index = node->index;
-        child = rdxtree_node_find(prev, index + 1, 0);
-
-        if (child != NULL)
-            break;
-
-        height++;
-        node = prev;
-    }
-
-    node = child;
-
-    while (height > 0) {
-        node = rdxtree_node_find(node, 0, 0);
+        shift -= RDXTREE_RADIX;
         height--;
-    }
+    } while (height > 0);
 
+    iter->node = prev;
+    iter->key = key + 1;
     return node;
 }
 
 void *
-rdxtree_iter_next(struct rdxtree *tree, struct rdxtree_iter *iter)
+rdxtree_walk(struct rdxtree *tree, struct rdxtree_iter *iter)
 {
-    unsigned int index;
+    unsigned int index, orig_index;
+    void *ptr;
 
-    if (tree->height == 0) {
-        if (iter->slot != NULL)
-            return NULL;
+    if (iter->node == NULL)
+        return rdxtree_walk_next(tree, iter);
 
-        iter->slot = &tree->root;
-        return *iter->slot;
+    index = iter->key & RDXTREE_RADIX_MASK;
+
+    if (index != 0) {
+        orig_index = index;
+        ptr = rdxtree_node_find(iter->node, &index);
+
+        if (ptr != NULL) {
+            iter->key += (orig_index - index) + 1;
+            return ptr;
+        }
     }
 
-    if (iter->node != NULL) {
-        index = iter->slot - ((struct rdxtree_node *)iter->node)->entries;
-        iter->slot = rdxtree_node_find(iter->node, index + 1, 1);
-    }
-
-    if (iter->slot == NULL) {
-        iter->node = rdxtree_walk(tree, iter->node);
-
-        if (iter->node != NULL)
-            iter->slot = rdxtree_node_find(iter->node, 0, 1);
-    }
-
-    if (iter->slot == NULL)
-        return NULL;
-
-    return *iter->slot;
+    return rdxtree_walk_next(tree, iter);
 }
 
 void
 rdxtree_remove_all(struct rdxtree *tree)
 {
-    struct rdxtree_node *node, *parent, *next;
-    unsigned int height, index;
+    struct rdxtree_node *node, *parent;
+    struct rdxtree_iter iter;
 
-    height = tree->height;
-
-    if (height == 0) {
+    if (tree->height == 0) {
         if (tree->root != NULL)
             llsync_assign_ptr(tree->root, NULL);
 
         return;
     }
 
-    node = rdxtree_walk(tree, NULL);
+    for (;;) {
+        rdxtree_iter_init(&iter);
+        rdxtree_walk_next(tree, &iter);
 
-    do {
-        next = rdxtree_walk(tree, node);
+        if (iter.node == NULL)
+            break;
 
+        node = iter.node;
         parent = node->parent;
 
-        if (parent != NULL) {
-            index = node->index;
-            rdxtree_node_remove(parent, index);
-            rdxtree_remove_bm_set(parent, index);
+        if (parent == NULL)
+            rdxtree_init(tree);
+        else {
+            rdxtree_node_remove(parent, node->index);
+            rdxtree_remove_bm_set(parent, node->index);
             rdxtree_cleanup(tree, parent);
             node->parent = NULL;
         }
 
         rdxtree_node_schedule_destruction(node);
-
-        node = next;
-    } while (node != NULL);
+    }
 }

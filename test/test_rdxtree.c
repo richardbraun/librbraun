@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 Richard Braun.
+ * Copyright (c) 2011-2015 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -235,6 +235,29 @@ test_5(void)
 
     rdxtree_init(&tree);
     obj = obj_create(0);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = obj_create(4096);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    print_tree(&tree);
+    destroy_tree(&tree);
+}
+
+static void
+test_5_1(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("insert 0, 256 and 4096");
+
+    rdxtree_init(&tree);
+    obj = obj_create(0);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = obj_create(256);
     error = rdxtree_insert(&tree, obj->id, obj);
     assert(!error);
     obj = obj_create(4096);
@@ -970,6 +993,7 @@ main(int argc, char *argv[])
     test_3();
     test_4();
     test_5();
+    test_5_1();
     test_6();
     test_7();
     test_8();

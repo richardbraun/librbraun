@@ -178,10 +178,10 @@ void * rdxtree_replace_slot(void **slot, void *ptr);
 /*
  * Forge a loop to process all pointers of a tree.
  */
-#define rdxtree_for_each(tree, iter, ptr)                           \
-for (rdxtree_iter_init(iter), ptr = rdxtree_iter_next(tree, iter);  \
-     ptr != NULL;                                                   \
-     ptr = rdxtree_iter_next(tree, iter))
+#define rdxtree_for_each(tree, iter, ptr)                       \
+for (rdxtree_iter_init(iter), ptr = rdxtree_walk(tree, iter);   \
+     ptr != NULL;                                               \
+     ptr = rdxtree_walk(tree, iter))
 
 /*
  * Remove all pointers from a tree.

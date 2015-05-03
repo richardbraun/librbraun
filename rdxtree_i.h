@@ -32,10 +32,14 @@ struct rdxtree {
 
 /*
  * Radix tree iterator.
+ *
+ * The node member refers to the node containing the current pointer, if any.
+ * The key member refers to the key from which to look up the next pointer,
+ * in ascending order.
  */
 struct rdxtree_iter {
     void *node;
-    void **slot;
+    rdxtree_key_t key;
 };
 
 /*
@@ -45,7 +49,7 @@ static inline void
 rdxtree_iter_init(struct rdxtree_iter *iter)
 {
     iter->node = NULL;
-    iter->slot = NULL;
+    iter->key = 0;
 }
 
 int rdxtree_insert_common(struct rdxtree *tree, rdxtree_key_t key,
@@ -57,13 +61,6 @@ int rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
 void * rdxtree_lookup_common(const struct rdxtree *tree, rdxtree_key_t key,
                              int get_slot);
 
-/*
- * Walk over pointers in a tree.
- *
- * Move the iterator to the next pointer in the given tree.
- *
- * The next pointer is returned if there is one, NULL otherwise.
- */
-void * rdxtree_iter_next(struct rdxtree *tree, struct rdxtree_iter *iter);
+void * rdxtree_walk(struct rdxtree *tree, struct rdxtree_iter *iter);
 
 #endif /* _RDXTREE_I_H */
