@@ -268,6 +268,31 @@ test_5_1(void)
 }
 
 static void
+test_5_2(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    rdxtree_key_t i;
+    int error;
+
+    TITLE("insert [0..78], remove 77");
+
+    rdxtree_init(&tree);
+
+    for (i = 0; i <= 78; i++) {
+        obj = obj_create(i);
+        error = rdxtree_insert(&tree, obj->id, obj);
+        assert(!error);
+    }
+
+    obj = rdxtree_remove(&tree, 77);
+    assert(obj->id == 77);
+    obj_destroy(obj);
+    print_tree(&tree);
+    destroy_tree(&tree);
+}
+
+static void
 test_6(void)
 {
     struct rdxtree tree;
@@ -994,6 +1019,7 @@ main(int argc, char *argv[])
     test_4();
     test_5();
     test_5_1();
+    test_5_2();
     test_6();
     test_7();
     test_8();

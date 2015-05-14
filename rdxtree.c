@@ -760,7 +760,7 @@ rdxtree_walk(struct rdxtree *tree, struct rdxtree_iter *iter)
         ptr = rdxtree_node_find(iter->node, &index);
 
         if (ptr != NULL) {
-            iter->key += (orig_index - index) + 1;
+            iter->key += (index - orig_index) + 1;
             return ptr;
         }
     }
