@@ -184,6 +184,15 @@ for (rdxtree_iter_init(iter), ptr = rdxtree_walk(tree, iter);   \
      ptr = rdxtree_walk(tree, iter))
 
 /*
+ * Return the key of the current pointer from an iterator.
+ */
+static inline rdxtree_key_t
+rdxtree_iter_key(const struct rdxtree_iter *iter)
+{
+    return iter->key;
+}
+
+/*
  * Remove all pointers from a tree.
  *
  * The common way to destroy a tree and its pointers is to loop over all

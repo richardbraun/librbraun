@@ -144,8 +144,10 @@ destroy_tree(struct rdxtree *tree)
     struct rdxtree_iter iter;
     struct obj *obj;
 
-    rdxtree_for_each(tree, &iter, obj)
+    rdxtree_for_each(tree, &iter, obj) {
+        assert(obj->id == rdxtree_iter_key(&iter));
         obj_destroy(obj);
+    }
 
     rdxtree_remove_all(tree);
 }
@@ -1007,6 +1009,29 @@ test_37(void)
 }
 #endif /* RDXTREE_KEY_32 */
 
+static void
+test_38(void)
+{
+    struct rdxtree tree;
+    struct obj *obj;
+    int error;
+
+    TITLE("insert 1, 3 and max_key");
+
+    rdxtree_init(&tree);
+    obj = obj_create(1);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = obj_create(3);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    obj = obj_create((rdxtree_key_t)-1);
+    error = rdxtree_insert(&tree, obj->id, obj);
+    assert(!error);
+    print_tree(&tree);
+    destroy_tree(&tree);
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -1054,5 +1079,6 @@ main(int argc, char *argv[])
 #ifndef RDXTREE_KEY_32
     test_37();
 #endif /* RDXTREE_KEY_32 */
+    test_38();
     return 0;
 }

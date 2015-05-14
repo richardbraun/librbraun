@@ -34,8 +34,8 @@ struct rdxtree {
  * Radix tree iterator.
  *
  * The node member refers to the node containing the current pointer, if any.
- * The key member refers to the key from which to look up the next pointer,
- * in ascending order.
+ * The key member refers to the current pointer, and is valid if and only if
+ * rdxtree_walk() has been called at least once on the iterator.
  */
 struct rdxtree_iter {
     void *node;
@@ -49,7 +49,7 @@ static inline void
 rdxtree_iter_init(struct rdxtree_iter *iter)
 {
     iter->node = NULL;
-    iter->key = 0;
+    iter->key = (rdxtree_key_t)-1;
 }
 
 int rdxtree_insert_common(struct rdxtree *tree, rdxtree_key_t key,

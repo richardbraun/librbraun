@@ -700,20 +700,24 @@ rdxtree_walk_next(struct rdxtree *tree, struct rdxtree_iter *iter)
         return NULL;
 
     if (!rdxtree_entry_is_node(entry)) {
-        if (iter->key != 0)
+        if (iter->key != (rdxtree_key_t)-1)
             return NULL;
         else {
-            iter->key = 1;
+            iter->key = 0;
             return rdxtree_entry_addr(entry);
         }
     }
+
+    key = iter->key + 1;
+
+    if ((key == 0) && (iter->node != NULL))
+        return NULL;
 
     root = rdxtree_entry_addr(entry);
 
 restart:
     node = root;
     height = root->height + 1;
-    key = iter->key;
 
     if (key > rdxtree_max_key(height))
         return NULL;
@@ -728,7 +732,11 @@ restart:
 
         if (node == NULL) {
             shift += RDXTREE_RADIX;
-            iter->key = ((key >> shift) + 1) << shift;
+            key = ((key >> shift) + 1) << shift;
+
+            if (key == 0)
+                return NULL;
+
             goto restart;
         }
 
@@ -740,7 +748,7 @@ restart:
     } while (height > 0);
 
     iter->node = prev;
-    iter->key = key + 1;
+    iter->key = key;
     return node;
 }
 
@@ -753,7 +761,7 @@ rdxtree_walk(struct rdxtree *tree, struct rdxtree_iter *iter)
     if (iter->node == NULL)
         return rdxtree_walk_next(tree, iter);
 
-    index = iter->key & RDXTREE_RADIX_MASK;
+    index = (iter->key + 1) & RDXTREE_RADIX_MASK;
 
     if (index != 0) {
         orig_index = index;
