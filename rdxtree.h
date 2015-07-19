@@ -177,6 +177,8 @@ void * rdxtree_replace_slot(void **slot, void *ptr);
 
 /*
  * Forge a loop to process all pointers of a tree.
+ *
+ * It is not safe to modify a tree from such a loop.
  */
 #define rdxtree_for_each(tree, iter, ptr)                       \
 for (rdxtree_iter_init(iter), ptr = rdxtree_walk(tree, iter);   \
