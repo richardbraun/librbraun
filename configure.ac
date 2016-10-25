@@ -23,11 +23,6 @@ AC_DEFINE_UNQUOTED([CONFIG_NR_CPUS], [8],
                    [maximum number of supported processors])
 AC_DEFINE_UNQUOTED([CONFIG_CPU_L1_SHIFT], [6],
                    [Size of the CPU cache line size defined as a base two logarithm])
-AC_DEFINE_UNQUOTED([CONFIG_MEM_MALLOC], [0], [build malloc and friends])
-AC_DEFINE_UNQUOTED([CONFIG_MEM_USE_PHYS], [0],
-                   [make the mem module use the phys module as its backend])
-AC_DEFINE_UNQUOTED([CONFIG_MEM_VERIFY], [0],
-                   [enforce strong verification on all memory caches])
 
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_FILES([Makefile])
