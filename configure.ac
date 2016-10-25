@@ -22,7 +22,7 @@ AC_HEADER_ASSERT()
 AC_DEFINE_UNQUOTED([CONFIG_NR_CPUS], [8],
                    [maximum number of supported processors])
 AC_DEFINE_UNQUOTED([CONFIG_CPU_L1_SHIFT], [6],
-                   [Size of the CPU cache line size defined as a base two logarithm])
+                   [processor cache line size as a base two exponent])
 
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_FILES([Makefile])
