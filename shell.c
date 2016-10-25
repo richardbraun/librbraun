@@ -819,7 +819,7 @@ out:
 static int
 shell_process_tabulation(void)
 {
-    const struct shell_cmd *cmd;
+    const struct shell_cmd *cmd = NULL; /* GCC */
     struct shell_line *current_line;
     const char *name;
     unsigned long i, size;

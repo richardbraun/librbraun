@@ -420,7 +420,8 @@ rdxtree_insert_common(struct rdxtree *tree, rdxtree_key_t key,
                       void *ptr, void ***slotp)
 {
     struct rdxtree_node *node, *prev;
-    unsigned int height, shift, index = index;
+    unsigned int height, shift;
+    unsigned int index = 0; /* GCC */
     int error;
 
     assert(ptr != NULL);
@@ -496,7 +497,8 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
                             rdxtree_key_t *keyp, void ***slotp)
 {
     struct rdxtree_node *node, *prev;
-    unsigned int height, shift, index = index;
+    unsigned int height, shift;
+    unsigned int index = 0; /* GCC */
     rdxtree_key_t key;
     int error;
 

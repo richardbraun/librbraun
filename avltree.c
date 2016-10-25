@@ -140,11 +140,7 @@ avltree_rotate(struct avltree *tree, struct avltree_node *node, int balance)
 {
     struct avltree_node *parent, *lnode, *lrnode, *lrlnode, *lrrnode;
     int left, right, lweight, rweight, lbalance;
-
-    /*
-     * Silence gcc warning.
-     */
-    int index = index;
+    int index = 0; /* GCC */
 
     assert((balance == -2) || (balance == 2));
 
