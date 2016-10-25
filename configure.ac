@@ -17,6 +17,8 @@ AC_PROG_CC
 AM_PROG_AS
 AM_PROG_CC_C_O
 
+AC_HEADER_ASSERT()
+
 AC_DEFINE_UNQUOTED([CONFIG_NR_CPUS], [8],
                    [maximum number of supported processors])
 AC_DEFINE_UNQUOTED([CONFIG_CPU_L1_SHIFT], [6],
