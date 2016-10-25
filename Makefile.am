@@ -21,6 +21,7 @@ librbraun_la_SOURCES = \
 	bitmap.c \
 	bitmap.h \
 	bitmap_i.h \
+	check.h \
 	cpu.h \
 	error.c \
 	error.h \

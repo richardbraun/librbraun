@@ -23,12 +23,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-#include <assert.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #define RDXTREE_ENABLE_NODE_CREATION_FAILURES
 
+#include "../check.h"
 #include "../error.h"
 #include "../macros.h"
 #include "../rdxtree.c"
@@ -54,7 +54,7 @@ obj_create(rdxtree_key_t id)
     struct obj *obj;
 
     obj = malloc(sizeof(*obj));
-    assert(obj != NULL);
+    check(obj != NULL);
     obj->id = id;
     return obj;
 }
@@ -145,7 +145,7 @@ destroy_tree(struct rdxtree *tree)
     struct obj *obj;
 
     rdxtree_for_each(tree, &iter, obj) {
-        assert(obj->id == rdxtree_iter_key(&iter));
+        check(obj->id == rdxtree_iter_key(&iter));
         obj_destroy(obj);
     }
 
@@ -164,7 +164,7 @@ test_1(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     print_tree(&tree);
     destroy_tree(&tree);
 }
@@ -181,7 +181,7 @@ test_2(void)
     rdxtree_init(&tree);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     print_tree(&tree);
     destroy_tree(&tree);
 }
@@ -198,10 +198,10 @@ test_3(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     print_tree(&tree);
     destroy_tree(&tree);
 }
@@ -218,10 +218,10 @@ test_4(void)
     rdxtree_init(&tree);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     print_tree(&tree);
     destroy_tree(&tree);
 }
@@ -238,10 +238,10 @@ test_5(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(4096);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     print_tree(&tree);
     destroy_tree(&tree);
 }
@@ -258,13 +258,13 @@ test_5_1(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(256);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(4096);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     print_tree(&tree);
     destroy_tree(&tree);
 }
@@ -284,11 +284,11 @@ test_5_2(void)
     for (i = 0; i <= 78; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, obj->id, obj);
-        assert(!error);
+        check(!error);
     }
 
     obj = rdxtree_remove(&tree, 77);
-    assert(obj->id == 77);
+    check(obj->id == 77);
     obj_destroy(obj);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -306,10 +306,10 @@ test_6(void)
     rdxtree_init(&tree);
     obj = obj_create(4096);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     print_tree(&tree);
     destroy_tree(&tree);
 }
@@ -327,9 +327,9 @@ test_7(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     ptr = rdxtree_remove(&tree, obj->id);
-    assert(ptr == obj);
+    check(ptr == obj);
     obj_destroy(obj);
     print_tree(&tree);
 }
@@ -347,9 +347,9 @@ test_8(void)
     rdxtree_init(&tree);
     obj = obj_create(4096);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     ptr = rdxtree_remove(&tree, obj->id);
-    assert(ptr == obj);
+    check(ptr == obj);
     obj_destroy(obj);
     print_tree(&tree);
 }
@@ -367,15 +367,15 @@ test_9(void)
     rdxtree_init(&tree);
     obj1 = obj_create(0);
     error = rdxtree_insert(&tree, obj1->id, obj1);
-    assert(!error);
+    check(!error);
     obj2 = obj_create(4096);
     error = rdxtree_insert(&tree, obj2->id, obj2);
-    assert(!error);
+    check(!error);
     ptr = rdxtree_remove(&tree, obj2->id);
-    assert(ptr == obj2);
+    check(ptr == obj2);
     obj_destroy(obj2);
     ptr = rdxtree_remove(&tree, obj1->id);
-    assert(ptr == obj1);
+    check(ptr == obj1);
     obj_destroy(obj1);
     print_tree(&tree);
 }
@@ -393,15 +393,15 @@ test_10(void)
     rdxtree_init(&tree);
     obj1 = obj_create(0);
     error = rdxtree_insert(&tree, obj1->id, obj1);
-    assert(!error);
+    check(!error);
     obj2 = obj_create(4096);
     error = rdxtree_insert(&tree, obj2->id, obj2);
-    assert(!error);
+    check(!error);
     ptr = rdxtree_remove(&tree, obj1->id);
-    assert(ptr == obj1);
+    check(ptr == obj1);
     obj_destroy(obj1);
     ptr = rdxtree_remove(&tree, obj2->id);
-    assert(ptr == obj2);
+    check(ptr == obj2);
     obj_destroy(obj2);
     print_tree(&tree);
 }
@@ -421,7 +421,7 @@ test_11(void)
     for (i = 0; i <= 4096; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, i, obj);
-        assert(!error);
+        check(!error);
     }
 
     for (i = 4096; i <= 4096; i--) {
@@ -447,7 +447,7 @@ test_12(void)
     for (i = 0; i <= 4096; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, i, obj);
-        assert(!error);
+        check(!error);
     }
 
     for (i = 0; i <= 4096; i++) {
@@ -471,12 +471,12 @@ test_13(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert_alloc(&tree, obj, &obj->id);
-    assert(!error);
-    assert(obj->id == 0);
+    check(!error);
+    check(obj->id == 0);
     print_tree(&tree);
     i = obj->id;
     obj = rdxtree_lookup(&tree, i);
-    assert(obj->id == i);
+    check(obj->id == i);
     destroy_tree(&tree);
 }
 
@@ -493,15 +493,15 @@ test_14(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(0);
     error = rdxtree_insert_alloc(&tree, obj, &obj->id);
-    assert(!error);
-    assert(obj->id == 1);
+    check(!error);
+    check(obj->id == 1);
     print_tree(&tree);
     i = obj->id;
     obj = rdxtree_lookup(&tree, i);
-    assert(obj->id == i);
+    check(obj->id == i);
     destroy_tree(&tree);
 }
 
@@ -520,14 +520,14 @@ test_15(void)
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, i, obj);
-        assert(!error);
+        check(!error);
     }
 
     obj = rdxtree_remove(&tree, 0);
-    assert(obj->id == 0);
+    check(obj->id == 0);
     error = rdxtree_insert_alloc(&tree, obj, &obj->id);
-    assert(!error);
-    assert(obj->id == 0);
+    check(!error);
+    check(obj->id == 0);
     destroy_tree(&tree);
 }
 
@@ -546,14 +546,14 @@ test_16(void)
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, i, obj);
-        assert(!error);
+        check(!error);
     }
 
     obj = rdxtree_remove(&tree, 1);
-    assert(obj->id == 1);
+    check(obj->id == 1);
     error = rdxtree_insert_alloc(&tree, obj, &obj->id);
-    assert(!error);
-    assert(obj->id == 1);
+    check(!error);
+    check(obj->id == 1);
     destroy_tree(&tree);
 }
 
@@ -572,26 +572,26 @@ test_17(void)
     for (i = 0; i < 64; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, i, obj);
-        assert(!error);
+        check(!error);
     }
 
     for (i = 128; i < 192; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, i, obj);
-        assert(!error);
+        check(!error);
     }
 
     for (i = 64; i < 128; i++) {
         obj = obj_create(0);
         error = rdxtree_insert_alloc(&tree, obj, &obj->id);
-        assert(!error);
-        assert(obj->id == i);
+        check(!error);
+        check(obj->id == i);
     }
 
     obj = obj_create(0);
     error = rdxtree_insert_alloc(&tree, obj, &obj->id);
-    assert(!error);
-    assert(obj->id == 192);
+    check(!error);
+    check(obj->id == 192);
     destroy_tree(&tree);
 }
 
@@ -610,13 +610,13 @@ test_18(void)
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, i, obj);
-        assert(!error);
+        check(!error);
     }
 
     obj = obj_create(0);
     error = rdxtree_insert_alloc(&tree, obj, &obj->id);
-    assert(!error);
-    assert(obj->id == 4096);
+    check(!error);
+    check(obj->id == 4096);
     destroy_tree(&tree);
 }
 
@@ -633,16 +633,16 @@ test_19(void)
     rdxtree_init(&tree);
     obj1 = obj_create(0);
     error = rdxtree_insert(&tree, 0, obj1);
-    assert(!error);
+    check(!error);
     slot = rdxtree_lookup_slot(&tree, 0);
-    assert(slot != NULL);
+    check(slot != NULL);
     obj2 = obj_create(0);
     tmp = rdxtree_replace_slot(slot, obj2);
-    assert(obj1 == tmp);
+    check(obj1 == tmp);
     obj_destroy(obj1);
     print_tree(&tree);
     tmp = rdxtree_lookup(&tree, 0);
-    assert(obj2 == tmp);
+    check(obj2 == tmp);
     destroy_tree(&tree);
 }
 
@@ -659,16 +659,16 @@ test_20(void)
     rdxtree_init(&tree);
     obj1 = obj_create(4096);
     error = rdxtree_insert(&tree, 4096, obj1);
-    assert(!error);
+    check(!error);
     slot = rdxtree_lookup_slot(&tree, 4096);
-    assert(slot != NULL);
+    check(slot != NULL);
     obj2 = obj_create(4096);
     tmp = rdxtree_replace_slot(slot, obj2);
-    assert(obj1 == tmp);
+    check(obj1 == tmp);
     obj_destroy(obj1);
     print_tree(&tree);
     tmp = rdxtree_lookup(&tree, 4096);
-    assert(obj2 == tmp);
+    check(obj2 == tmp);
     destroy_tree(&tree);
 }
 
@@ -684,9 +684,9 @@ test_21(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, 0, obj);
-    assert(!error);
+    check(!error);
     error = rdxtree_insert(&tree, 0, obj);
-    assert(error == ERR_BUSY);
+    check(error == ERR_BUSY);
     destroy_tree(&tree);
 }
 
@@ -702,9 +702,9 @@ test_22(void)
     rdxtree_init(&tree);
     obj = obj_create(123);
     error = rdxtree_insert(&tree, 123, obj);
-    assert(!error);
+    check(!error);
     error = rdxtree_insert(&tree, 123, obj);
-    assert(error == ERR_BUSY);
+    check(error == ERR_BUSY);
     destroy_tree(&tree);
 }
 
@@ -721,8 +721,8 @@ test_23(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert_slot(&tree, obj->id, obj, &slot);
-    assert(!error);
-    assert(*slot == obj);
+    check(!error);
+    check(*slot == obj);
     destroy_tree(&tree);
 }
 
@@ -739,8 +739,8 @@ test_24(void)
     rdxtree_init(&tree);
     obj = obj_create(321);
     error = rdxtree_insert_slot(&tree, obj->id, obj, &slot);
-    assert(!error);
-    assert(*slot == obj);
+    check(!error);
+    check(*slot == obj);
     destroy_tree(&tree);
 }
 
@@ -760,9 +760,9 @@ test_25(void)
     for (i = 0; i < 3; i++) {
         obj = obj_create(0);
         error = rdxtree_insert_alloc_slot(&tree, obj, &obj->id, &slot);
-        assert(!error);
-        assert(obj->id == i);
-        assert(*slot == obj);
+        check(!error);
+        check(obj->id == i);
+        check(*slot == obj);
     }
 
     destroy_tree(&tree);
@@ -783,11 +783,11 @@ test_26(void)
     for (i = 0; i < 62; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, obj->id, obj);
-        assert(!error);
+        check(!error);
     }
 
     obj = rdxtree_remove(&tree, 63);
-    assert(obj == NULL);
+    check(obj == NULL);
 
     destroy_tree(&tree);
 }
@@ -807,11 +807,11 @@ test_27(void)
     for (i = 0; i < 64; i++) {
         obj = obj_create(i);
         error = rdxtree_insert(&tree, obj->id, obj);
-        assert(!error);
+        check(!error);
     }
 
     obj = rdxtree_remove(&tree, 64);
-    assert(obj == NULL);
+    check(obj == NULL);
 
     destroy_tree(&tree);
 }
@@ -828,9 +828,9 @@ test_28(void)
     rdxtree_init(&tree);
     obj = obj_create(60000);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = rdxtree_remove(&tree, 1);
-    assert(obj == NULL);
+    check(obj == NULL);
     destroy_tree(&tree);
 }
 
@@ -844,7 +844,7 @@ test_29(void)
 
     rdxtree_init(&tree);
     obj = rdxtree_lookup(&tree, 0);
-    assert(obj == NULL);
+    check(obj == NULL);
 }
 
 static void
@@ -857,7 +857,7 @@ test_30(void)
 
     rdxtree_init(&tree);
     obj = rdxtree_lookup(&tree, 10);
-    assert(obj == NULL);
+    check(obj == NULL);
 }
 
 static void
@@ -872,9 +872,9 @@ test_31(void)
     rdxtree_init(&tree);
     obj = obj_create(60000);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = rdxtree_lookup(&tree, 1);
-    assert(obj == NULL);
+    check(obj == NULL);
     destroy_tree(&tree);
 }
 
@@ -890,9 +890,9 @@ test_32(void)
     rdxtree_init(&tree);
     obj = obj_create(60001);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = rdxtree_lookup(&tree, 60000);
-    assert(obj == NULL);
+    check(obj == NULL);
     destroy_tree(&tree);
 }
 
@@ -914,7 +914,7 @@ test_33(void)
     rdxtree_init(&tree);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(error == ERR_NOMEM);
+    check(error == ERR_NOMEM);
     obj_destroy(obj);
     print_tree(&tree);
 }
@@ -934,7 +934,7 @@ test_34(void)
     rdxtree_init(&tree);
     obj = obj_create(64);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(error == ERR_NOMEM);
+    check(error == ERR_NOMEM);
     obj_destroy(obj);
     print_tree(&tree);
 }
@@ -954,10 +954,10 @@ test_35(void)
     rdxtree_init(&tree);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(64);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(error == ERR_NOMEM);
+    check(error == ERR_NOMEM);
     obj_destroy(obj);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -978,10 +978,10 @@ test_36(void)
     rdxtree_init(&tree);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(64);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(error == ERR_NOMEM);
+    check(error == ERR_NOMEM);
     obj_destroy(obj);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -1001,9 +1001,9 @@ test_37(void)
     rdxtree_init(&tree);
     obj = obj_create(4294967296);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     ptr = rdxtree_remove(&tree, obj->id);
-    assert(ptr == obj);
+    check(ptr == obj);
     obj_destroy(obj);
     print_tree(&tree);
 }
@@ -1021,13 +1021,13 @@ test_38(void)
     rdxtree_init(&tree);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create(3);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     obj = obj_create((rdxtree_key_t)-1);
     error = rdxtree_insert(&tree, obj->id, obj);
-    assert(!error);
+    check(!error);
     print_tree(&tree);
     destroy_tree(&tree);
 }
