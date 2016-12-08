@@ -308,6 +308,6 @@ void rbtree_remove(struct rbtree *tree, struct rbtree_node *node);
 for (node = rbtree_postwalk_deepest(tree),              \
      tmp = rbtree_postwalk_unlink(node);                \
      node != NULL;                                      \
-     node = tmp, tmp = rbtree_postwalk_unlink(node))    \
+     node = tmp, tmp = rbtree_postwalk_unlink(node))
 
 #endif /* _RBTREE_H */

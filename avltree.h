@@ -309,6 +309,6 @@ void avltree_remove(struct avltree *tree, struct avltree_node *node);
 for (node = avltree_postwalk_deepest(tree),             \
      tmp = avltree_postwalk_unlink(node);               \
      node != NULL;                                      \
-     node = tmp, tmp = avltree_postwalk_unlink(node))   \
+     node = tmp, tmp = avltree_postwalk_unlink(node))
 
 #endif /* _AVLTREE_H */
