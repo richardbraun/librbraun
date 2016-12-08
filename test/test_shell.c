@@ -99,8 +99,9 @@ main(int argc, char *argv[])
     for (i = 0; i < ARRAY_SIZE(test_shell_cmds); i++) {
         ret = shell_cmd_register(&test_shell_cmds[i]);
 
-        if (ret)
+        if (ret) {
             error_die(ret);
+        }
     }
 
     setbuf(stdin, NULL);

@@ -54,13 +54,15 @@ print_subtree(struct avltree_node *node, int level)
     char balance;
     int i;
 
-    if (node == NULL)
+    if (node == NULL) {
         return;
+    }
 
     print_subtree(node->children[AVLTREE_RIGHT], level + 1);
 
-    for (i = level; i > 0; i--)
+    for (i = level; i > 0; i--) {
         putchar(' ');
+    }
 
     obj = avltree_entry(node, struct obj, node);
 
@@ -114,8 +116,9 @@ main(int argc, char *argv[])
         id = get_id(i);
         node = avltree_lookup_slot(&tree, id, obj_cmp_lookup, slot);
 
-        if (node != NULL)
+        if (node != NULL) {
             continue;
+        }
 
         obj = malloc(sizeof(*obj));
         obj->id = id;

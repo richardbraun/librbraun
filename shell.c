@@ -858,8 +858,9 @@ shell_process_tabulation(void)
     for (i = 0; i < size; i++) {
         error = shell_process_raw_char(name[i]);
 
-        if (error)
+        if (error) {
             goto out;
+        }
     }
 
     error = 0;
@@ -1144,7 +1145,8 @@ shell_setup(void)
     for (i = 0; i < ARRAY_SIZE(shell_default_cmds); i++) {
         error = shell_cmd_register(&shell_default_cmds[i]);
 
-        if (error)
+        if (error) {
             error_die(error);
+        }
     }
 }

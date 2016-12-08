@@ -56,8 +56,9 @@ _list_divide(struct list *input_list, struct list *left_list,
 
     node = input_list->next;
 
-    for (i = 0; (i < list_size) && !list_end(input_list, node); i++)
+    for (i = 0; (i < list_size) && !list_end(input_list, node); i++) {
         node = node->next;
+    }
 
     list_split(left_list, input_list, node);
 }
@@ -125,8 +126,9 @@ list_sort(struct list *list, list_sort_cmp_fn_t cmp_fn)
 
     for (list_size = 1; /* no condition */; list_size <<= 1) {
         for (nr_merges = 0; /* no condition */; nr_merges++) {
-            if (list_empty(list))
+            if (list_empty(list)) {
                 break;
+            }
 
             _list_divide(list, &left_list, list_size);
             _list_merge(&left_list, list, &output_list, list_size, cmp_fn);
@@ -135,7 +137,8 @@ list_sort(struct list *list, list_sort_cmp_fn_t cmp_fn)
         list_concat(list, &output_list);
         list_init(&output_list);
 
-        if (nr_merges <= 1)
+        if (nr_merges <= 1) {
             return;
+        }
     }
 }

@@ -54,13 +54,15 @@ print_subtree(struct rbtree_node *node, int level)
     char color;
     int i;
 
-    if (node == NULL)
+    if (node == NULL) {
         return;
+    }
 
     print_subtree(node->children[RBTREE_RIGHT], level + 1);
 
-    for (i = level; i > 0; i--)
+    for (i = level; i > 0; i--) {
         putchar(' ');
+    }
 
     obj = rbtree_entry(node, struct obj, node);
     color = (node->parent & RBTREE_COLOR_MASK) ? 'b' : 'r';
@@ -99,8 +101,9 @@ main(int argc, char *argv[])
         id = get_id(i);
         node = rbtree_lookup_slot(&tree, id, obj_cmp_lookup, slot);
 
-        if (node != NULL)
+        if (node != NULL) {
             continue;
+        }
 
         obj = malloc(sizeof(*obj));
         obj->id = id;

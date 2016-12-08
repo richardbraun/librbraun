@@ -62,8 +62,9 @@ static const char *errormsg_table[] = {
 const char *
 error_str(unsigned int error)
 {
-    if (error >= ERRORMSG_TABLE_SIZE)
+    if (error >= ERRORMSG_TABLE_SIZE) {
         return "invalid error code";
+    }
 
     return errormsg_table[error];
 }

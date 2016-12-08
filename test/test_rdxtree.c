@@ -71,13 +71,15 @@ print_value(void *ptr, size_t index, size_t level)
     struct obj *obj;
     int i;
 
-    if (ptr == NULL)
+    if (ptr == NULL) {
         return;
+    }
 
     obj = ptr;
 
-    for (i = level; i > 0; i--)
+    for (i = level; i > 0; i--) {
         putchar(' ');
+    }
 
     printf("%zu:%llu\n", index, (unsigned long long)obj->id);
 }
@@ -87,13 +89,15 @@ print_values(struct rdxtree_node *node, size_t index, size_t level)
 {
     size_t i;
 
-    for (i = level; i > 0; i--)
+    for (i = level; i > 0; i--) {
         putchar(' ');
+    }
 
     printf("%zu:n (bm: " BM_FORMAT ")\n", index, node->alloc_bm);
 
-    for (i = 0; i < ARRAY_SIZE(node->entries); i++)
+    for (i = 0; i < ARRAY_SIZE(node->entries); i++) {
         print_value(node->entries[i], i, level + 1);
+    }
 }
 
 static void
@@ -102,8 +106,9 @@ print_node(struct rdxtree_node *node, int height, size_t index, size_t level)
     void *entry;
     size_t i;
 
-    for (i = level; i > 0; i--)
+    for (i = level; i > 0; i--) {
         putchar(' ');
+    }
 
     printf("%zu:n (bm: " BM_FORMAT ")\n", index, node->alloc_bm);
 
@@ -116,13 +121,15 @@ print_node(struct rdxtree_node *node, int height, size_t index, size_t level)
 static void
 print_subtree(struct rdxtree_node *node, int height, size_t index, size_t level)
 {
-    if (node == NULL)
+    if (node == NULL) {
         return;
+    }
 
-    if (height == 1)
+    if (height == 1) {
         print_values(node, index, level);
-    else
+    } else {
         print_node(node, height, index, level);
+    }
 }
 
 static void
@@ -132,10 +139,11 @@ print_tree(struct rdxtree *tree)
 
     root = rdxtree_entry_addr(tree->root);
 
-    if (tree->height == 0)
+    if (tree->height == 0) {
         print_value(root, 0, 0);
-    else
+    } else {
         print_subtree(root, tree->height, 0, 0);
+    }
 }
 
 static void

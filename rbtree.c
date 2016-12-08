@@ -47,8 +47,9 @@ rbtree_node_index(const struct rbtree_node *node,
     assert(parent != NULL);
     assert((node == NULL) || (rbtree_node_parent(node) == parent));
 
-    if (parent->children[RBTREE_LEFT] == node)
+    if (parent->children[RBTREE_LEFT] == node) {
         return RBTREE_LEFT;
+    }
 
     assert(parent->children[RBTREE_RIGHT] == node);
 
@@ -139,8 +140,9 @@ rbtree_node_find_deepest(struct rbtree_node *node)
         if (node == NULL) {
             node = parent->children[RBTREE_RIGHT];
 
-            if (node == NULL)
+            if (node == NULL) {
                 return parent;
+            }
         }
     }
 }
@@ -164,16 +166,18 @@ rbtree_rotate(struct rbtree *tree, struct rbtree_node *node, int direction)
 
     node->children[right] = rnode->children[left];
 
-    if (rnode->children[left] != NULL)
+    if (rnode->children[left] != NULL) {
         rbtree_node_set_parent(rnode->children[left], node);
+    }
 
     rnode->children[left] = node;
     rbtree_node_set_parent(rnode, parent);
 
-    if (unlikely(parent == NULL))
+    if (unlikely(parent == NULL)) {
         tree->root = rnode;
-    else
+    } else {
         parent->children[rbtree_node_index(node, parent)] = rnode;
+    }
 
     rbtree_node_set_parent(node, rnode);
 }
@@ -192,10 +196,11 @@ rbtree_insert_rebalance(struct rbtree *tree, struct rbtree_node *parent,
     node->children[RBTREE_LEFT] = NULL;
     node->children[RBTREE_RIGHT] = NULL;
 
-    if (unlikely(parent == NULL))
+    if (unlikely(parent == NULL)) {
         tree->root = node;
-    else
+    } else {
         parent->children[index] = node;
+    }
 
     for (;;) {
         if (parent == NULL) {
@@ -203,8 +208,9 @@ rbtree_insert_rebalance(struct rbtree *tree, struct rbtree_node *parent,
             break;
         }
 
-        if (rbtree_node_is_black(parent))
+        if (rbtree_node_is_black(parent)) {
             break;
+        }
 
         grand_parent = rbtree_node_parent(parent);
         assert(grand_parent != NULL);
@@ -253,11 +259,11 @@ rbtree_remove(struct rbtree *tree, struct rbtree_node *node)
     struct rbtree_node *child, *parent, *brother;
     int color, left, right;
 
-    if (node->children[RBTREE_LEFT] == NULL)
+    if (node->children[RBTREE_LEFT] == NULL) {
         child = node->children[RBTREE_RIGHT];
-    else if (node->children[RBTREE_RIGHT] == NULL)
+    } else if (node->children[RBTREE_RIGHT] == NULL) {
         child = node->children[RBTREE_LEFT];
-    else {
+    } else {
         struct rbtree_node *successor;
 
         /*
@@ -266,17 +272,19 @@ rbtree_remove(struct rbtree *tree, struct rbtree_node *node)
 
         successor = node->children[RBTREE_RIGHT];
 
-        while (successor->children[RBTREE_LEFT] != NULL)
+        while (successor->children[RBTREE_LEFT] != NULL) {
             successor = successor->children[RBTREE_LEFT];
+        }
 
         color = rbtree_node_color(successor);
         child = successor->children[RBTREE_RIGHT];
         parent = rbtree_node_parent(node);
 
-        if (unlikely(parent == NULL))
+        if (unlikely(parent == NULL)) {
             tree->root = successor;
-        else
+        } else {
             parent->children[rbtree_node_index(node, parent)] = successor;
+        }
 
         parent = rbtree_node_parent(successor);
 
@@ -287,16 +295,17 @@ rbtree_remove(struct rbtree *tree, struct rbtree_node *node)
         successor->children[RBTREE_LEFT] = node->children[RBTREE_LEFT];
         rbtree_node_set_parent(successor->children[RBTREE_LEFT], successor);
 
-        if (node == parent)
+        if (node == parent) {
             parent = successor;
-        else {
+        } else {
             successor->children[RBTREE_RIGHT] = node->children[RBTREE_RIGHT];
             rbtree_node_set_parent(successor->children[RBTREE_RIGHT],
                                    successor);
             parent->children[RBTREE_LEFT] = child;
 
-            if (child != NULL)
+            if (child != NULL) {
                 rbtree_node_set_parent(child, parent);
+            }
         }
 
         goto update_color;
@@ -309,21 +318,24 @@ rbtree_remove(struct rbtree *tree, struct rbtree_node *node)
     color = rbtree_node_color(node);
     parent = rbtree_node_parent(node);
 
-    if (child != NULL)
+    if (child != NULL) {
         rbtree_node_set_parent(child, parent);
+    }
 
-    if (unlikely(parent == NULL))
+    if (unlikely(parent == NULL)) {
         tree->root = child;
-    else
+    } else {
         parent->children[rbtree_node_index(node, parent)] = child;
+    }
 
     /*
      * The node has been removed, update the colors. The child pointer can
      * be NULL, in which case it is considered a black leaf.
      */
 update_color:
-    if (color == RBTREE_COLOR_RED)
+    if (color == RBTREE_COLOR_RED) {
         return;
+    }
 
     for (;;) {
         if ((child != NULL) && rbtree_node_is_red(child)) {
@@ -331,8 +343,9 @@ update_color:
             break;
         }
 
-        if (parent == NULL)
+        if (parent == NULL) {
             break;
+        }
 
         left = rbtree_node_index(child, parent);
         right = 1 - left;
@@ -397,13 +410,15 @@ rbtree_nearest(struct rbtree_node *parent, int index, int direction)
 {
     assert(rbtree_check_index(direction));
 
-    if (parent == NULL)
+    if (parent == NULL) {
         return NULL;
+    }
 
     assert(rbtree_check_index(index));
 
-    if (index != direction)
+    if (index != direction) {
         return parent;
+    }
 
     return rbtree_walk(parent, direction);
 }
@@ -417,8 +432,9 @@ rbtree_firstlast(const struct rbtree *tree, int direction)
 
     prev = NULL;
 
-    for (cur = tree->root; cur != NULL; cur = cur->children[direction])
+    for (cur = tree->root; cur != NULL; cur = cur->children[direction]) {
         prev = cur;
+    }
 
     return prev;
 }
@@ -433,14 +449,16 @@ rbtree_walk(struct rbtree_node *node, int direction)
     left = direction;
     right = 1 - left;
 
-    if (node == NULL)
+    if (node == NULL) {
         return NULL;
+    }
 
     if (node->children[left] != NULL) {
         node = node->children[left];
 
-        while (node->children[right] != NULL)
+        while (node->children[right] != NULL) {
             node = node->children[right];
+        }
     } else {
         struct rbtree_node *parent;
         int index;
@@ -448,14 +466,16 @@ rbtree_walk(struct rbtree_node *node, int direction)
         for (;;) {
             parent = rbtree_node_parent(node);
 
-            if (parent == NULL)
+            if (parent == NULL) {
                 return NULL;
+            }
 
             index = rbtree_node_index(node, parent);
             node = parent;
 
-            if (index == right)
+            if (index == right) {
                 break;
+            }
         }
     }
 
@@ -469,8 +489,9 @@ rbtree_postwalk_deepest(const struct rbtree *tree)
 
     node = tree->root;
 
-    if (node == NULL)
+    if (node == NULL) {
         return NULL;
+    }
 
     return rbtree_node_find_deepest(node);
 }
@@ -481,23 +502,26 @@ rbtree_postwalk_unlink(struct rbtree_node *node)
     struct rbtree_node *parent;
     int index;
 
-    if (node == NULL)
+    if (node == NULL) {
         return NULL;
+    }
 
     assert(node->children[RBTREE_LEFT] == NULL);
     assert(node->children[RBTREE_RIGHT] == NULL);
 
     parent = rbtree_node_parent(node);
 
-    if (parent == NULL)
+    if (parent == NULL) {
         return NULL;
+    }
 
     index = rbtree_node_index(node, parent);
     parent->children[index] = NULL;
     node = parent->children[RBTREE_RIGHT];
 
-    if (node == NULL)
+    if (node == NULL) {
         return parent;
+    }
 
     return rbtree_node_find_deepest(node);
 }

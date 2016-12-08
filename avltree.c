@@ -58,8 +58,9 @@ avltree_node_index(const struct avltree_node *node,
     assert(parent != NULL);
     assert((node == NULL) || (avltree_node_parent(node) == parent));
 
-    if (parent->children[AVLTREE_LEFT] == node)
+    if (parent->children[AVLTREE_LEFT] == node) {
         return AVLTREE_LEFT;
+    }
 
     assert(parent->children[AVLTREE_RIGHT] == node);
 
@@ -119,8 +120,9 @@ avltree_node_find_deepest(struct avltree_node *node)
         if (node == NULL) {
             node = parent->children[AVLTREE_RIGHT];
 
-            if (node == NULL)
+            if (node == NULL) {
                 return parent;
+            }
         }
     }
 }
@@ -151,8 +153,9 @@ avltree_rotate(struct avltree *tree, struct avltree_node *node, int balance)
 
     parent = avltree_node_parent(node);
 
-    if (likely(parent != NULL))
+    if (likely(parent != NULL)) {
         index = avltree_node_index(node, parent);
+    }
 
     lnode = node->children[left];
     assert(lnode != NULL);
@@ -166,8 +169,9 @@ avltree_rotate(struct avltree *tree, struct avltree_node *node, int balance)
     if (lbalance != rweight) {
         node->children[left] = lrnode;
 
-        if (lrnode != NULL)
+        if (lrnode != NULL) {
             avltree_node_set_parent(lrnode, node);
+        }
 
         lbalance += rweight;
 
@@ -179,10 +183,11 @@ avltree_rotate(struct avltree *tree, struct avltree_node *node, int balance)
         avltree_node_set_parent(lnode, parent);
         avltree_node_set_balance(lnode, lbalance);
 
-        if (unlikely(parent == NULL))
+        if (unlikely(parent == NULL)) {
             tree->root = lnode;
-        else
+        } else {
             parent->children[index] = lnode;
+        }
 
         /*
          * If the adjusted balance is now 0, it means that the height of the
@@ -201,13 +206,15 @@ avltree_rotate(struct avltree *tree, struct avltree_node *node, int balance)
 
     node->children[left] = lrrnode;
 
-    if (lrrnode != NULL)
+    if (lrrnode != NULL) {
         avltree_node_set_parent(lrrnode, node);
+    }
 
     lnode->children[right] = lrlnode;
 
-    if (lrlnode != NULL)
+    if (lrlnode != NULL) {
         avltree_node_set_parent(lrlnode, lnode);
+    }
 
     balance = avltree_node_balance(lrnode);
 
@@ -222,10 +229,11 @@ avltree_rotate(struct avltree *tree, struct avltree_node *node, int balance)
     avltree_node_set_parent(lrnode, parent);
     avltree_node_set_balance(lrnode, 0);
 
-    if (unlikely(parent == NULL))
+    if (unlikely(parent == NULL)) {
         tree->root = lrnode;
-    else
+    } else {
         parent->children[index] = lrnode;
+    }
 
     /*
      * The balance of the new subtree root is always 0 in this case, which
@@ -278,8 +286,9 @@ avltree_insert_rebalance(struct avltree *tree, struct avltree_node *parent,
          * Both previous and new balances are different from 0, which means the
          * new one has reached -2 or 2. Rebalance now.
          */
-        if (old_balance != 0)
+        if (old_balance != 0) {
             break;
+        }
 
         /*
          * The new balance is either -1 or 1. Update the current node and
@@ -291,8 +300,9 @@ avltree_insert_rebalance(struct avltree *tree, struct avltree_node *parent,
         /*
          * The tree root was reached.
          */
-        if (parent == NULL)
+        if (parent == NULL) {
             return;
+        }
 
         index = avltree_node_index(node, parent);
     }
@@ -306,11 +316,11 @@ avltree_remove(struct avltree *tree, struct avltree_node *node)
     struct avltree_node *child, *parent;
     int left, right, index, old_balance, new_balance;
 
-    if (node->children[AVLTREE_LEFT] == NULL)
+    if (node->children[AVLTREE_LEFT] == NULL) {
         child = node->children[AVLTREE_RIGHT];
-    else if (node->children[AVLTREE_RIGHT] == NULL)
+    } else if (node->children[AVLTREE_RIGHT] == NULL) {
         child = node->children[AVLTREE_LEFT];
-    else {
+    } else {
         struct avltree_node *successor;
 
         /*
@@ -326,16 +336,18 @@ avltree_remove(struct avltree *tree, struct avltree_node *node)
 
         successor = node->children[right];
 
-        while (successor->children[left] != NULL)
+        while (successor->children[left] != NULL) {
             successor = successor->children[left];
+        }
 
         child = successor->children[right];
         parent = avltree_node_parent(node);
 
-        if (unlikely(parent == NULL))
+        if (unlikely(parent == NULL)) {
             tree->root = successor;
-        else
+        } else {
             parent->children[avltree_node_index(node, parent)] = successor;
+        }
 
         parent = avltree_node_parent(successor);
         index = avltree_node_index(successor, parent);
@@ -347,15 +359,16 @@ avltree_remove(struct avltree *tree, struct avltree_node *node)
         successor->children[left] = node->children[left];
         avltree_node_set_parent(successor->children[left], successor);
 
-        if (node == parent)
+        if (node == parent) {
             parent = successor;
-        else {
+        } else {
             successor->children[right] = node->children[right];
             avltree_node_set_parent(successor->children[right], successor);
             parent->children[left] = child;
 
-            if (child != NULL)
+            if (child != NULL) {
                 avltree_node_set_parent(child, parent);
+            }
         }
 
         goto update_balance;
@@ -367,8 +380,9 @@ avltree_remove(struct avltree *tree, struct avltree_node *node)
 
     parent = avltree_node_parent(node);
 
-    if (child != NULL)
+    if (child != NULL) {
         avltree_node_set_parent(child, parent);
+    }
 
     if (parent == NULL) {
         tree->root = child;
@@ -400,16 +414,17 @@ update_balance:
 
         parent = avltree_node_parent(node);
 
-        if (parent != NULL)
+        if (parent != NULL) {
             index = avltree_node_index(node, parent);
+        }
 
         /*
          * The overall subtree height has decreased. Update the current node and
          * iterate again to propagate the change.
          */
-        if (new_balance == 0)
+        if (new_balance == 0) {
             avltree_node_set_balance(node, new_balance);
-        else {
+        } else {
             int decreased;
 
             /*
@@ -420,15 +435,17 @@ update_balance:
 
             decreased = avltree_rotate(tree, node, new_balance);
 
-            if (!decreased)
+            if (!decreased) {
                 break;
+            }
         }
 
         /*
          * The tree root was reached.
          */
-        if (parent == NULL)
+        if (parent == NULL) {
             break;
+        }
     }
 }
 
@@ -437,13 +454,15 @@ avltree_nearest(struct avltree_node *parent, int index, int direction)
 {
     assert(avltree_check_index(direction));
 
-    if (parent == NULL)
+    if (parent == NULL) {
         return NULL;
+    }
 
     assert(avltree_check_index(index));
 
-    if (index != direction)
+    if (index != direction) {
         return parent;
+    }
 
     return avltree_walk(parent, direction);
 }
@@ -457,8 +476,9 @@ avltree_firstlast(const struct avltree *tree, int direction)
 
     prev = NULL;
 
-    for (cur = tree->root; cur != NULL; cur = cur->children[direction])
+    for (cur = tree->root; cur != NULL; cur = cur->children[direction]) {
         prev = cur;
+    }
 
     return prev;
 }
@@ -473,14 +493,16 @@ avltree_walk(struct avltree_node *node, int direction)
     left = direction;
     right = 1 - left;
 
-    if (node == NULL)
+    if (node == NULL) {
         return NULL;
+    }
 
     if (node->children[left] != NULL) {
         node = node->children[left];
 
-        while (node->children[right] != NULL)
+        while (node->children[right] != NULL) {
             node = node->children[right];
+        }
     } else {
         struct avltree_node *parent;
         int index;
@@ -488,14 +510,16 @@ avltree_walk(struct avltree_node *node, int direction)
         for (;;) {
             parent = avltree_node_parent(node);
 
-            if (parent == NULL)
+            if (parent == NULL) {
                 return NULL;
+            }
 
             index = avltree_node_index(node, parent);
             node = parent;
 
-            if (index == right)
+            if (index == right) {
                 break;
+            }
         }
     }
 
@@ -509,8 +533,9 @@ avltree_postwalk_deepest(const struct avltree *tree)
 
     node = tree->root;
 
-    if (node == NULL)
+    if (node == NULL) {
         return NULL;
+    }
 
     return avltree_node_find_deepest(node);
 }
@@ -521,23 +546,26 @@ avltree_postwalk_unlink(struct avltree_node *node)
     struct avltree_node *parent;
     int index;
 
-    if (node == NULL)
+    if (node == NULL) {
         return NULL;
+    }
 
     assert(node->children[AVLTREE_LEFT] == NULL);
     assert(node->children[AVLTREE_RIGHT] == NULL);
 
     parent = avltree_node_parent(node);
 
-    if (parent == NULL)
+    if (parent == NULL) {
         return NULL;
+    }
 
     index = avltree_node_index(node, parent);
     parent->children[index] = NULL;
     node = parent->children[AVLTREE_RIGHT];
 
-    if (node == NULL)
+    if (node == NULL) {
         return parent;
+    }
 
     return avltree_node_find_deepest(node);
 }

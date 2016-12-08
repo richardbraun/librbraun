@@ -75,10 +75,11 @@ cpu_id(void)
 
     id = sched_getcpu();
 
-    if (id == -1)
+    if (id == -1) {
         return 0;
-    else if (id >= NR_CPUS)
+    } else if (id >= NR_CPUS) {
         id &= (NR_CPUS - 1);
+    }
 
     return id;
 #endif
