@@ -131,9 +131,9 @@ static unsigned long shell_history_oldest;
 static unsigned long shell_history_index;
 
 /*
- * Cursor index within the current line.
+ * Cursor within the current line.
  */
-static unsigned long shell_cursor_index;
+static unsigned long shell_cursor;
 
 #define SHELL_SEPARATOR ' '
 
@@ -157,6 +157,20 @@ static char shell_tmp_line[SHELL_LINE_MAX_SIZE];
 
 static int shell_argc;
 static char *shell_argv[SHELL_MAX_ARGS];
+
+static const char *
+shell_find_word(const char *str)
+{
+    for (;;) {
+        if ((*str == '\0') || (*str != SHELL_SEPARATOR)) {
+            break;
+        }
+
+        str++;
+    }
+
+    return str;
+}
 
 void
 shell_cmd_init(struct shell_cmd *cmd, const char *name,
@@ -678,7 +692,7 @@ static void
 shell_reset(void)
 {
     shell_line_reset(shell_history_get_newest());
-    shell_cursor_index = 0;
+    shell_cursor = 0;
     shell_prompt();
 }
 
@@ -691,9 +705,9 @@ shell_erase(void)
     current_line = shell_history_get_newest();
     remaining_chars = shell_line_size(current_line);
 
-    while (shell_cursor_index != remaining_chars) {
+    while (shell_cursor != remaining_chars) {
         putchar(' ');
-        shell_cursor_index++;
+        shell_cursor++;
     }
 
     while (remaining_chars != 0) {
@@ -701,7 +715,7 @@ shell_erase(void)
         remaining_chars--;
     }
 
-    shell_cursor_index = 0;
+    shell_cursor = 0;
 }
 
 static void
@@ -711,7 +725,7 @@ shell_restore(void)
 
     current_line = shell_history_get_newest();
     printf("%s", shell_line_str(current_line));
-    shell_cursor_index = shell_line_size(current_line);
+    shell_cursor = shell_line_size(current_line);
 }
 
 static int
@@ -723,22 +737,22 @@ shell_is_ctrl_char(char c)
 static void
 shell_process_left(void)
 {
-    if (shell_cursor_index == 0) {
+    if (shell_cursor == 0) {
         return;
     }
 
-    shell_cursor_index--;
+    shell_cursor--;
     printf("\e[1D");
 }
 
 static void
 shell_process_right(void)
 {
-    if (shell_cursor_index >= shell_line_size(shell_history_get_newest())) {
+    if (shell_cursor >= shell_line_size(shell_history_get_newest())) {
         return;
     }
 
-    shell_cursor_index++;
+    shell_cursor++;
     printf("\e[1C");
 }
 
@@ -766,15 +780,15 @@ shell_process_backspace(void)
     int error;
 
     current_line = shell_history_get_newest();
-    error = shell_line_erase(current_line, shell_cursor_index - 1);
+    error = shell_line_erase(current_line, shell_cursor - 1);
 
     if (error) {
         return;
     }
 
-    shell_cursor_index--;
-    printf("\b%s ", shell_line_str(current_line) + shell_cursor_index);
-    remaining_chars = shell_line_size(current_line) - shell_cursor_index + 1;
+    shell_cursor--;
+    printf("\b%s ", shell_line_str(current_line) + shell_cursor);
+    remaining_chars = shell_line_size(current_line) - shell_cursor + 1;
 
     while (remaining_chars != 0) {
         putchar('\b');
@@ -790,22 +804,22 @@ shell_process_raw_char(char c)
     int error;
 
     current_line = shell_history_get_newest();
-    error = shell_line_insert(current_line, shell_cursor_index, c);
+    error = shell_line_insert(current_line, shell_cursor, c);
 
     if (error) {
         printf("\nshell: line too long\n");
         return error;
     }
 
-    shell_cursor_index++;
+    shell_cursor++;
 
-    if (shell_cursor_index == shell_line_size(current_line)) {
+    if (shell_cursor == shell_line_size(current_line)) {
         putchar(c);
         goto out;
     }
 
-    printf("%s", shell_line_str(current_line) + shell_cursor_index - 1);
-    remaining_chars = shell_line_size(current_line) - shell_cursor_index;
+    printf("%s", shell_line_str(current_line) + shell_cursor - 1);
+    remaining_chars = shell_line_size(current_line) - shell_cursor;
 
     while (remaining_chars != 0) {
         putchar('\b');
@@ -820,16 +834,18 @@ static int
 shell_process_tabulation(void)
 {
     const struct shell_cmd *cmd = NULL; /* GCC */
-    struct shell_line *current_line;
-    const char *name;
-    unsigned long i, size;
+    const char *name, *str, *word;
+    unsigned long i, size, cmd_cursor;
     int error;
 
     shell_cmd_acquire();
 
-    current_line = shell_history_get_newest();
-    size = shell_cursor_index;
-    error = shell_cmd_complete(shell_line_str(current_line), &size, &cmd);
+    str = shell_line_str(shell_history_get_newest());
+    word = shell_find_word(str);
+    size = shell_cursor - (word - str);
+    cmd_cursor = shell_cursor - size;
+
+    error = shell_cmd_complete(word, &size, &cmd);
 
     if (error && (error != ERR_AGAIN)) {
         error = 0;
@@ -837,21 +853,14 @@ shell_process_tabulation(void)
     }
 
     if (error == ERR_AGAIN) {
-        unsigned long cursor_index;
-
-        cursor_index = shell_cursor_index;
         shell_cmd_print_matches(cmd, size);
         shell_prompt();
         shell_restore();
-
-        while (shell_cursor_index != cursor_index) {
-            shell_process_left();
-        }
     }
 
     name = shell_cmd_name(cmd);
 
-    while (shell_cursor_index != 0) {
+    while (shell_cursor != cmd_cursor) {
         shell_process_backspace();
     }
 
@@ -897,7 +906,7 @@ shell_esc_seq_prev(void)
 static void
 shell_esc_seq_home(void)
 {
-    while (shell_cursor_index != 0) {
+    while (shell_cursor != 0) {
         shell_process_left();
     }
 }
@@ -916,7 +925,7 @@ shell_esc_seq_end(void)
 
     size = shell_line_size(shell_history_get_newest());
 
-    while (shell_cursor_index < size) {
+    while (shell_cursor < size) {
         shell_process_right();
     }
 }
