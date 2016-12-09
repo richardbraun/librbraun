@@ -137,12 +137,13 @@ static unsigned long shell_cursor;
 
 #define SHELL_SEPARATOR ' '
 
-#if 0
-#define SHELL_ERASE     '\b'
-#define SHELL_ERASE     '\x7f'
-#endif
-
-#define SHELL_ERASE     '\x7f'
+/*
+ * Commonly used backspace control characters.
+ *
+ * XXX Adjust for your needs.
+ */
+#define SHELL_ERASE_BS  '\b'
+#define SHELL_ERASE_DEL '\x7f'
 
 /*
  * Buffer used to store the current line during argument processing.
@@ -1074,7 +1075,8 @@ static int
 shell_process_ctrl_char(char c)
 {
     switch (c) {
-    case SHELL_ERASE:
+    case SHELL_ERASE_BS:
+    case SHELL_ERASE_DEL:
         shell_process_backspace();
         break;
     case '\t':
