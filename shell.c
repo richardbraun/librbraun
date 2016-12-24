@@ -854,9 +854,17 @@ shell_process_tabulation(void)
     }
 
     if (error == ERR_AGAIN) {
+        unsigned long cursor;
+
+        cursor = shell_cursor;
         shell_cmd_print_matches(cmd, size);
         shell_prompt();
         shell_restore();
+
+        /* Keep existing arguments as they are */
+        while (shell_cursor != cursor) {
+            shell_process_left();
+        }
     }
 
     name = shell_cmd_name(cmd);
