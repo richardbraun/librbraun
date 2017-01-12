@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, 2011 Richard Braun.
+ * Copyright (c) 2010-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -104,7 +104,7 @@ main(int argc, char *argv[])
     struct avltree tree;
     struct avltree_node *node, *tmp;
     struct obj *obj;
-    unsigned long slot;
+    avltree_slot_t slot;
     int i, id;
 
     (void)argc;

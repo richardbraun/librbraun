@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 Richard Braun.
+ * Copyright (c) 2011-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -118,26 +119,26 @@ unsigned int rdxtree_nr_node_creations;
 static inline void
 rdxtree_assert_alignment(const void *ptr)
 {
-    assert(((unsigned long)ptr & ~RDXTREE_ENTRY_ADDR_MASK) == 0);
+    assert(((uintptr_t)ptr & ~RDXTREE_ENTRY_ADDR_MASK) == 0);
     (void)ptr;
 }
 
 static inline void *
 rdxtree_entry_addr(void *entry)
 {
-    return (void *)((unsigned long)entry & RDXTREE_ENTRY_ADDR_MASK);
+    return (void *)((uintptr_t)entry & RDXTREE_ENTRY_ADDR_MASK);
 }
 
 static inline int
 rdxtree_entry_is_node(const void *entry)
 {
-    return ((unsigned long)entry & 1) != 0;
+    return ((uintptr_t)entry & 1) != 0;
 }
 
 static inline void *
 rdxtree_node_to_entry(struct rdxtree_node *node)
 {
-    return (void *)((unsigned long)node | 1);
+    return (void *)((uintptr_t)node | 1);
 }
 
 static int

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2015 Richard Braun.
+ * Copyright (c) 2010-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "macros.h"
 
@@ -55,7 +56,7 @@
  * a balance of -1 from a raw value of 0.
  */
 struct avltree_node {
-    unsigned long parent;
+    uintptr_t parent;
     struct avltree_node *children[2];
 };
 
@@ -70,20 +71,20 @@ struct avltree {
  * Masks applied on the parent member of a node to obtain either the
  * balance or the parent address.
  */
-#define AVLTREE_BALANCE_MASK    0x3UL
+#define AVLTREE_BALANCE_MASK    ((uintptr_t)0x3)
 #define AVLTREE_PARENT_MASK     (~AVLTREE_BALANCE_MASK)
 
 /*
  * Special raw balance values.
  */
-#define AVLTREE_BALANCE_ZERO    1UL
+#define AVLTREE_BALANCE_ZERO    ((uintptr_t)1)
 #define AVLTREE_BALANCE_INVALID AVLTREE_BALANCE_MASK
 
 /*
  * Masks applied on slots to obtain either the child index or the parent
  * address.
  */
-#define AVLTREE_SLOT_INDEX_MASK     0x1UL
+#define AVLTREE_SLOT_INDEX_MASK     ((uintptr_t)0x1)
 #define AVLTREE_SLOT_PARENT_MASK    (~AVLTREE_SLOT_INDEX_MASK)
 
 /*
@@ -113,7 +114,7 @@ avltree_d2i(int diff)
 static inline int
 avltree_node_check_alignment(const struct avltree_node *node)
 {
-    return ((unsigned long)node & AVLTREE_BALANCE_MASK) == 0;
+    return ((uintptr_t)node & AVLTREE_BALANCE_MASK) == 0;
 }
 
 /*
@@ -128,19 +129,19 @@ avltree_node_parent(const struct avltree_node *node)
 /*
  * Translate an insertion point into a slot.
  */
-static inline unsigned long
+static inline avltree_slot_t
 avltree_slot(struct avltree_node *parent, int index)
 {
     assert(avltree_node_check_alignment(parent));
     assert(avltree_check_index(index));
-    return (unsigned long)parent | index;
+    return (avltree_slot_t)parent | index;
 }
 
 /*
  * Extract the parent address from a slot.
  */
 static inline struct avltree_node *
-avltree_slot_parent(unsigned long slot)
+avltree_slot_parent(avltree_slot_t slot)
 {
     return (struct avltree_node *)(slot & AVLTREE_SLOT_PARENT_MASK);
 }
@@ -149,7 +150,7 @@ avltree_slot_parent(unsigned long slot)
  * Extract the index from a slot.
  */
 static inline int
-avltree_slot_index(unsigned long slot)
+avltree_slot_index(avltree_slot_t slot)
 {
     return slot & AVLTREE_SLOT_INDEX_MASK;
 }

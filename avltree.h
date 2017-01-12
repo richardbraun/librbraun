@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2015 Richard Braun.
+ * Copyright (c) 2010-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,6 +39,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "macros.h"
 
@@ -57,6 +58,11 @@ struct avltree_node;
  * AVL tree.
  */
 struct avltree;
+
+/*
+ * Insertion point identifier.
+ */
+typedef uintptr_t avltree_slot_t;
 
 /*
  * Static tree initializer.
@@ -84,7 +90,7 @@ avltree_node_init(struct avltree_node *node)
 {
     assert(avltree_node_check_alignment(node));
 
-    node->parent = (unsigned long)node | AVLTREE_BALANCE_ZERO;
+    node->parent = (uintptr_t)node | AVLTREE_BALANCE_ZERO;
     node->children[AVLTREE_LEFT] = NULL;
     node->children[AVLTREE_RIGHT] = NULL;
 }
@@ -218,8 +224,7 @@ MACRO_END
  * This macro essentially acts as avltree_lookup() but in addition to a node,
  * it also returns a slot, which identifies an insertion point in the tree.
  * If the returned node is NULL, the slot can be used by avltree_insert_slot()
- * to insert without the overhead of an additional lookup. The slot is a
- * simple unsigned long integer.
+ * to insert without the overhead of an additional lookup.
  *
  * The constraints that apply to the key parameter are the same as for
  * avltree_lookup().
@@ -258,7 +263,7 @@ MACRO_END
  * must denote a NULL node).
  */
 static inline void
-avltree_insert_slot(struct avltree *tree, unsigned long slot,
+avltree_insert_slot(struct avltree *tree, avltree_slot_t slot,
                     struct avltree_node *node)
 {
     struct avltree_node *parent;

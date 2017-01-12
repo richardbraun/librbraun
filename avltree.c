@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2015 Richard Braun.
+ * Copyright (c) 2010-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "macros.h"
 #include "avltree.h"
@@ -89,8 +90,7 @@ avltree_node_set_parent(struct avltree_node *node, struct avltree_node *parent)
 {
     assert(avltree_node_check_alignment(node));
     assert(avltree_node_check_alignment(parent));
-    node->parent = (unsigned long)parent
-                   | (node->parent & AVLTREE_BALANCE_MASK);
+    node->parent = (uintptr_t)parent | (node->parent & AVLTREE_BALANCE_MASK);
 }
 
 /*
@@ -251,7 +251,7 @@ avltree_insert_rebalance(struct avltree *tree, struct avltree_node *parent,
     assert(avltree_node_check_alignment(parent));
     assert(avltree_node_check_alignment(node));
 
-    node->parent = (unsigned long)parent | AVLTREE_BALANCE_ZERO;
+    node->parent = (uintptr_t)parent | AVLTREE_BALANCE_ZERO;
     node->children[AVLTREE_LEFT] = NULL;
     node->children[AVLTREE_RIGHT] = NULL;
 
