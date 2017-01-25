@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 Richard Braun.
+ * Copyright (c) 2011-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -34,7 +34,8 @@
  * Radix tree.
  */
 struct rdxtree {
-    unsigned int height;
+    unsigned short height;
+    unsigned short flags;
     void *root;
 };
 

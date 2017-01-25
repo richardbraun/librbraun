@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 Richard Braun.
+ * Copyright (c) 2011-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -169,7 +169,7 @@ test_1(void)
 
     TITLE("insert 0");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -186,7 +186,7 @@ test_2(void)
 
     TITLE("insert 1");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -203,7 +203,7 @@ test_3(void)
 
     TITLE("insert 0 and 1");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -223,7 +223,7 @@ test_4(void)
 
     TITLE("insert 1 and 0");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -243,7 +243,7 @@ test_5(void)
 
     TITLE("insert 0 and 4096");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -263,7 +263,7 @@ test_5_1(void)
 
     TITLE("insert 0, 256 and 4096");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -287,7 +287,7 @@ test_5_2(void)
 
     TITLE("insert [0..78], remove 77");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
 
     for (i = 0; i <= 78; i++) {
         obj = obj_create(i);
@@ -311,7 +311,7 @@ test_6(void)
 
     TITLE("insert 4096 and 0");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(4096);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -332,7 +332,7 @@ test_7(void)
 
     TITLE("insert and remove 0");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -352,7 +352,7 @@ test_8(void)
 
     TITLE("insert and remove 4096");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(4096);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -372,7 +372,7 @@ test_9(void)
 
     TITLE("insert 0 and 4096 and remove in reverse order");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj1 = obj_create(0);
     error = rdxtree_insert(&tree, obj1->id, obj1);
     check(!error);
@@ -398,7 +398,7 @@ test_10(void)
 
     TITLE("insert 0 and 4096 and remove in same order");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj1 = obj_create(0);
     error = rdxtree_insert(&tree, obj1->id, obj1);
     check(!error);
@@ -424,7 +424,7 @@ test_11(void)
 
     TITLE("insert [0..4096] and remove in reverse order");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
 
     for (i = 0; i <= 4096; i++) {
         obj = obj_create(i);
@@ -450,7 +450,7 @@ test_12(void)
 
     TITLE("insert [0..4096] and remove in same order");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
 
     for (i = 0; i <= 4096; i++) {
         obj = obj_create(i);
@@ -476,7 +476,7 @@ test_13(void)
 
     TITLE("allocate");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, RDXTREE_KEY_ALLOC);
     obj = obj_create(0);
     error = rdxtree_insert_alloc(&tree, obj, &obj->id);
     check(!error);
@@ -498,7 +498,7 @@ test_14(void)
 
     TITLE("insert 0, allocate");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, RDXTREE_KEY_ALLOC);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -523,7 +523,7 @@ test_15(void)
 
     TITLE("insert [0..4095], remove 0, allocate");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, RDXTREE_KEY_ALLOC);
 
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
@@ -549,7 +549,7 @@ test_16(void)
 
     TITLE("insert [0..4095], remove 1, allocate");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, RDXTREE_KEY_ALLOC);
 
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
@@ -575,7 +575,7 @@ test_17(void)
 
     TITLE("insert [0..63] and [128..191], allocate x65");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, RDXTREE_KEY_ALLOC);
 
     for (i = 0; i < 64; i++) {
         obj = obj_create(i);
@@ -613,7 +613,7 @@ test_18(void)
 
     TITLE("insert [0..4095], allocate");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, RDXTREE_KEY_ALLOC);
 
     for (i = 0; i < 4096; i++) {
         obj = obj_create(i);
@@ -638,7 +638,7 @@ test_19(void)
 
     TITLE("insert 0, replace");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj1 = obj_create(0);
     error = rdxtree_insert(&tree, 0, obj1);
     check(!error);
@@ -664,7 +664,7 @@ test_20(void)
 
     TITLE("insert 4096, replace");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj1 = obj_create(4096);
     error = rdxtree_insert(&tree, 4096, obj1);
     check(!error);
@@ -689,7 +689,7 @@ test_21(void)
 
     TITLE("insert 0, insert again");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, 0, obj);
     check(!error);
@@ -707,7 +707,7 @@ test_22(void)
 
     TITLE("insert 123, insert again");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(123);
     error = rdxtree_insert(&tree, 123, obj);
     check(!error);
@@ -726,7 +726,7 @@ test_23(void)
 
     TITLE("insert_slot 0, check slot");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(0);
     error = rdxtree_insert_slot(&tree, obj->id, obj, &slot);
     check(!error);
@@ -744,7 +744,7 @@ test_24(void)
 
     TITLE("insert_slot 321, check slot");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(321);
     error = rdxtree_insert_slot(&tree, obj->id, obj, &slot);
     check(!error);
@@ -763,7 +763,7 @@ test_25(void)
 
     TITLE("insert_alloc_slot x3");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, RDXTREE_KEY_ALLOC);
 
     for (i = 0; i < 3; i++) {
         obj = obj_create(0);
@@ -786,7 +786,7 @@ test_26(void)
 
     TITLE("insert [0..62], remove 63");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
 
     for (i = 0; i < 62; i++) {
         obj = obj_create(i);
@@ -810,7 +810,7 @@ test_27(void)
 
     TITLE("insert [0..63], remove 64");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
 
     for (i = 0; i < 64; i++) {
         obj = obj_create(i);
@@ -833,7 +833,7 @@ test_28(void)
 
     TITLE("insert 60000, remove 1");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(60000);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -850,7 +850,7 @@ test_29(void)
 
     TITLE("empty tree, lookup 0");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = rdxtree_lookup(&tree, 0);
     check(obj == NULL);
 }
@@ -863,7 +863,7 @@ test_30(void)
 
     TITLE("empty tree, lookup 10");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = rdxtree_lookup(&tree, 10);
     check(obj == NULL);
 }
@@ -877,7 +877,7 @@ test_31(void)
 
     TITLE("insert 60000, lookup 1");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(60000);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -895,7 +895,7 @@ test_32(void)
 
     TITLE("insert 60001, lookup 60000");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(60001);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -919,7 +919,7 @@ test_33(void)
     rdxtree_fail_node_creation_threshold = 1;
     rdxtree_nr_node_creations = 0;
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(error == ERR_NOMEM);
@@ -939,7 +939,7 @@ test_34(void)
     rdxtree_fail_node_creation_threshold = 2;
     rdxtree_nr_node_creations = 0;
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(64);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(error == ERR_NOMEM);
@@ -959,7 +959,7 @@ test_35(void)
     rdxtree_fail_node_creation_threshold = 2;
     rdxtree_nr_node_creations = 0;
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(0);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -983,7 +983,7 @@ test_36(void)
     rdxtree_fail_node_creation_threshold = 2;
     rdxtree_nr_node_creations = 0;
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -1006,7 +1006,7 @@ test_37(void)
 
     TITLE("insert and remove 4294967296");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(4294967296);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);
@@ -1026,7 +1026,7 @@ test_38(void)
 
     TITLE("insert 1, 3 and max_key");
 
-    rdxtree_init(&tree);
+    rdxtree_init(&tree, 0);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
     check(!error);

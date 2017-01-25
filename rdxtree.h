@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2015 Richard Braun.
+ * Copyright (c) 2011-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,6 +52,11 @@ typedef uint64_t rdxtree_key_t;
 #endif /* RDXTREE_KEY_32 */
 
 /*
+ * Radix tree initialization flags.
+ */
+#define RDXTREE_KEY_ALLOC 0x1 /* Enable key allocation */
+
+/*
  * Radix tree.
  */
 struct rdxtree;
@@ -72,9 +77,12 @@ struct rdxtree_iter;
  * Initialize a tree.
  */
 static inline void
-rdxtree_init(struct rdxtree *tree)
+rdxtree_init(struct rdxtree *tree, unsigned short flags)
 {
+    assert((flags & ~RDXTREE_KEY_ALLOC) == 0);
+
     tree->height = 0;
+    tree->flags = flags;
     tree->root = NULL;
 }
 
