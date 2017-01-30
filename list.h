@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015 Richard Braun.
+ * Copyright (c) 2009-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -250,6 +250,8 @@ list_set_head(struct list *new_head, const struct list *old_head)
 
 /*
  * Add a node between two nodes.
+ *
+ * This function is private.
  */
 static inline void
 list_add(struct list *prev, struct list *next, struct list *node)
@@ -384,6 +386,147 @@ for (entry = list_entry(list_last(list), typeof(*entry), member),   \
      !list_end(list, &entry->member);                               \
      entry = tmp, tmp = list_entry(list_prev(&entry->member),       \
                                    typeof(*entry), member))
+
+/*
+ * Lockless variants
+ *
+ * This is a subset of the main interface that only supports forward traversal.
+ * In addition, list_end() is also allowed in read-side critical sections.
+ */
+
+/*
+ * These macros can be replaced by actual functions in an environment
+ * that provides lockless synchronization such as RCU.
+ */
+#define llsync_assign_ptr(ptr, value)   ((ptr) = (value))
+#define llsync_read_ptr(ptr)            (ptr)
+
+/*
+ * Macro that evaluates to the address of the structure containing the
+ * given node based on the given type and member.
+ */
+#define list_llsync_entry(node, type, member) \
+    structof(llsync_read_ptr(node), type, member)
+
+/*
+ * Return the first node of a list.
+ */
+static inline struct list *
+list_llsync_first(const struct list *list)
+{
+    return llsync_read_ptr(list->next);
+}
+
+/*
+ * Return the node next to the given node.
+ */
+static inline struct list *
+list_llsync_next(const struct list *node)
+{
+    return llsync_read_ptr(node->next);
+}
+
+/*
+ * Get the first entry of a list.
+ *
+ * Unlike list_entry(), this macro may evaluate to NULL, because the node
+ * pointer can only be read once, preventing the combination of lockless
+ * list_empty()/list_first_entry() variants.
+ *
+ * Return NULL if the list is empty.
+ */
+#define list_llsync_first_entry(list, type, member)         \
+MACRO_BEGIN                                                 \
+    struct list *___list = (list);                          \
+    struct list *___first = llsync_read_ptr(___list->next); \
+    list_end(___list, ___first)                             \
+        ? NULL                                              \
+        : list_entry(___first, type, member);               \
+MACRO_END
+
+/*
+ * Add a node between two nodes.
+ *
+ * This function is private.
+ */
+static inline void
+list_llsync_add(struct list *prev, struct list *next, struct list *node)
+{
+    node->next = next;
+    node->prev = prev;
+    llsync_assign_ptr(prev->next, node);
+    next->prev = node;
+}
+
+/*
+ * Insert a node at the head of a list.
+ */
+static inline void
+list_llsync_insert_head(struct list *list, struct list *node)
+{
+    list_llsync_add(list, list->next, node);
+}
+
+/*
+ * Insert a node at the tail of a list.
+ */
+static inline void
+list_llsync_insert_tail(struct list *list, struct list *node)
+{
+    list_llsync_add(list->prev, list, node);
+}
+
+/*
+ * Insert a node before another node.
+ */
+static inline void
+list_llsync_insert_before(struct list *next, struct list *node)
+{
+    list_llsync_add(next->prev, next, node);
+}
+
+/*
+ * Insert a node after another node.
+ */
+static inline void
+list_llsync_insert_after(struct list *prev, struct list *node)
+{
+    list_llsync_add(prev, prev->next, node);
+}
+
+/*
+ * Remove a node from a list.
+ *
+ * After completion, the node is stale.
+ */
+static inline void
+list_llsync_remove(struct list *node)
+{
+    node->next->prev = node->prev;
+    llsync_assign_ptr(node->prev->next, node->next);
+}
+
+/*
+ * Forge a loop to process all nodes of a list.
+ *
+ * The node must not be altered during the loop.
+ */
+#define list_llsync_for_each(list, node)    \
+for (node = list_llsync_first(list);        \
+     !list_end(list, node);                 \
+     node = list_llsync_next(node))
+
+/*
+ * Forge a loop to process all entries of a list.
+ *
+ * The entry node must not be altered during the loop.
+ */
+#define list_llsync_for_each_entry(list, entry, member)     \
+for (entry = list_llsync_entry(list_first(list),            \
+                               typeof(*entry), member);     \
+     !list_end(list, &entry->member);                       \
+     entry = list_llsync_entry(list_next(&entry->member),   \
+                               typeof(*entry), member))
 
 /*
  * Sort a list.
