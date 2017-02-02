@@ -32,6 +32,7 @@
 #ifndef _LIST_H
 #define _LIST_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #include "macros.h"
@@ -54,6 +55,9 @@ struct list {
 /*
  * Function type for list sorting.
  *
+ * Return a value less than, equal to, or greater than 0 if node A
+ * is repsectively less than, equal to, or greater than node B.
+ *
  * Use list_entry() to obtain the entries from the given nodes.
  *
  * See list_sort().
@@ -68,7 +72,8 @@ typedef int (*list_sort_cmp_fn_t)(struct list *node_a, struct list *node_b);
 /*
  * Initialize a list.
  */
-static inline void list_init(struct list *list)
+static inline void
+list_init(struct list *list)
 {
     list->prev = list;
     list->next = list;
@@ -77,7 +82,7 @@ static inline void list_init(struct list *list)
 /*
  * Initialize a list node.
  *
- * An entry is in no list when its node members point to NULL.
+ * An entry is in no lists when its node members point to NULL.
  */
 static inline void
 list_node_init(struct list *node)
@@ -87,9 +92,9 @@ list_node_init(struct list *node)
 }
 
 /*
- * Return true if node is in no list.
+ * Return true if node is in no lists.
  */
-static inline int
+static inline bool
 list_node_unlinked(const struct list *node)
 {
     return node->prev == NULL;
@@ -150,9 +155,21 @@ list_prev(const struct list *node)
     list_entry(list_last(list), type, member)
 
 /*
+ * Get the entry next to the given entry.
+ */
+#define list_next_entry(entry, member) \
+    list_entry(list_next(&(entry)->member), typeof(*(entry)), member)
+
+/*
+ * Get the entry previous to the given entry.
+ */
+#define list_prev_entry(entry, member) \
+    list_entry(list_prev(&(entry)->member), typeof(*(entry)), member)
+
+/*
  * Return true if node is after the last or before the first node of the list.
  */
-static inline int
+static inline bool
 list_end(const struct list *list, const struct list *node)
 {
     return list == node;
@@ -161,7 +178,7 @@ list_end(const struct list *list, const struct list *node)
 /*
  * Return true if list is empty.
  */
-static inline int
+static inline bool
 list_empty(const struct list *list)
 {
     return list == list->next;
@@ -170,7 +187,7 @@ list_empty(const struct list *list)
 /*
  * Return true if list contains exactly one node.
  */
-static inline int
+static inline bool
 list_singular(const struct list *list)
 {
     return (list != list->next) && (list->next == list->prev);
@@ -351,41 +368,35 @@ for (node = list_last(list), tmp = list_prev(node); \
  * The entry node must not be altered during the loop.
  */
 #define list_for_each_entry(list, entry, member)                    \
-for (entry = list_entry(list_first(list), typeof(*entry), member);  \
+for (entry = list_first_entry(list, typeof(*entry), member);        \
      !list_end(list, &entry->member);                               \
-     entry = list_entry(list_next(&entry->member), typeof(*entry),  \
-                        member))
+     entry = list_next_entry(entry, member))
 
 /*
  * Forge a loop to process all entries of a list.
  */
 #define list_for_each_entry_safe(list, entry, tmp, member)          \
-for (entry = list_entry(list_first(list), typeof(*entry), member),  \
-       tmp = list_entry(list_next(&entry->member), typeof(*entry),  \
-                        member);                                    \
+for (entry = list_first_entry(list, typeof(*entry), member),        \
+       tmp = list_next_entry(entry, member);                        \
      !list_end(list, &entry->member);                               \
-     entry = tmp, tmp = list_entry(list_next(&entry->member),       \
-                                   typeof(*entry), member))
+     entry = tmp, tmp = list_next_entry(entry, member))
 
 /*
  * Version of list_for_each_entry() that processes entries backward.
  */
 #define list_for_each_entry_reverse(list, entry, member)            \
-for (entry = list_entry(list_last(list), typeof(*entry), member);   \
+for (entry = list_last_entry(list, typeof(*entry), member);         \
      !list_end(list, &entry->member);                               \
-     entry = list_entry(list_prev(&entry->member), typeof(*entry),  \
-                        member))
+     entry = list_prev_entry(entry, member))
 
 /*
  * Version of list_for_each_entry_safe() that processes entries backward.
  */
 #define list_for_each_entry_reverse_safe(list, entry, tmp, member)  \
-for (entry = list_entry(list_last(list), typeof(*entry), member),   \
-       tmp = list_entry(list_prev(&entry->member), typeof(*entry),  \
-                        member);                                    \
+for (entry = list_last_entry(list, typeof(*entry), member),         \
+       tmp = list_prev_entry(entry, member);                        \
      !list_end(list, &entry->member);                               \
-     entry = tmp, tmp = list_entry(list_prev(&entry->member),       \
-                                   typeof(*entry), member))
+     entry = tmp, tmp = list_prev_entry(entry, member))
 
 /*
  * Lockless variants
