@@ -29,6 +29,8 @@ librbraun_la_SOURCES = \
 	list.c \
 	list.h \
 	macros.h \
+	plist.c \
+	plist.h \
 	rbtree.c \
 	rbtree.h \
 	rbtree_i.h \
