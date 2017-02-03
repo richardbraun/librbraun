@@ -26,7 +26,9 @@
  * Priority list.
  *
  * This container acts as a doubly-linked list sorted by priority in
- * ascending order.
+ * ascending order. All operations behave as with a regular linked list
+ * except insertion, which is O(k), k being the number of priorities
+ * among the entries.
  *
  * Upstream site with license notes :
  * http://git.sceen.net/rbraun/librbraun.git/
@@ -37,11 +39,29 @@
 
 #include "list.h"
 
+/*
+ * Priority list.
+ *
+ * The list member is used as the underlying regular linked list and
+ * contains all entries, sorted by priority in ascending order. The
+ * prio_list member contains exactly one entry for each priority
+ * present, also sorted by priority in ascending order. An entry
+ * on prio_list is the first entry in list for that priority.
+ * Here is a representation of a possible priority list :
+ *
+ *      list--|1|--|3|--|3|--|3|--|4|--|6|--|6|--|8|
+ *            | |  | |            | |  | |       |
+ * prio_list--+ +--+ +------------+ +--+ +-------+
+ *
+ */
 struct plist {
     struct list list;
     struct list prio_list;
 };
 
+/*
+ * Priority list node.
+ */
 struct plist_node {
     unsigned int priority;
     struct list node;
