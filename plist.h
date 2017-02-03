@@ -142,13 +142,13 @@ plist_prev(const struct plist_node *pnode)
  * Get the entry next to the given entry.
  */
 #define plist_next_entry(entry, member) \
-    list_next_entry(&(entry)->member, node)
+    plist_entry(plist_next(&(entry)->member), typeof(*(entry)), member)
 
 /*
  * Get the entry previous to the given entry.
  */
 #define plist_prev_entry(entry, member) \
-    list_prev_entry(&(entry)->member, node)
+    plist_entry(plist_prev(&(entry)->member), typeof(*(entry)), member)
 
 /*
  * Return true if node is after the last or before the first node of
@@ -180,10 +180,9 @@ plist_singular(const struct plist *plist)
 
 /*
  * Add a node to a priority list.
- *
- * The node must be initialized before calling this function.
  */
-void plist_add(struct plist *plist, struct plist_node *pnode);
+void plist_add(struct plist *plist, struct plist_node *pnode,
+               unsigned int priority);
 
 /*
  * Remove a node from a priority list.
@@ -231,25 +230,25 @@ for (pnode = plist_last(plist), tmp = plist_prev(pnode);    \
  *
  * The entry node must not be altered during the loop.
  */
-#define plist_for_each_entry(plist, entry, member)      \
-    list_for_each_entry(&(plist)->list, entry, member)
+#define plist_for_each_entry(plist, entry, member) \
+    list_for_each_entry(&(plist)->list, entry, member.node)
 
 /*
  * Forge a loop to process all entries of a priority list.
  */
-#define plist_for_each_entry_safe(plist, entry, tmp, member)        \
-    list_for_each_entry_safe(&(plist)->list, entry, tmp, member)
+#define plist_for_each_entry_safe(plist, entry, tmp, member) \
+    list_for_each_entry_safe(&(plist)->list, entry, tmp, member.node)
 
 /*
  * Version of plist_for_each_entry() that processes entries backward.
  */
-#define plist_for_each_entry_reverse(plist, entry, member)      \
-    list_for_each_entry_reverse(&(plist)->list, entry, member)
+#define plist_for_each_entry_reverse(plist, entry, member) \
+    list_for_each_entry_reverse(&(plist)->list, entry, member.node)
 
 /*
  * Version of plist_for_each_entry_safe() that processes entries backward.
  */
-#define plist_for_each_entry_reverse_safe(plist, entry, tmp, member)  \
-    list_for_each_entry_reverse_safe(&(plist)->list, entry, tmp, member)
+#define plist_for_each_entry_reverse_safe(plist, entry, tmp, member) \
+    list_for_each_entry_reverse_safe(&(plist)->list, entry, tmp, member.node)
 
 #endif /* _PLIST_H */
