@@ -46,12 +46,16 @@ librbraun_la_LIBADD = -lrt -lpthread
 
 bin_PROGRAMS = \
 	test_avltree \
+	test_plist \
 	test_rbtree \
 	test_rdxtree \
 	test_shell
 
 test_avltree_SOURCES = test/test_avltree.c
 test_avltree_LDADD = librbraun.la
+
+test_plist_SOURCES = test/test_plist.c
+test_plist_LDADD = librbraun.la
 
 test_rbtree_SOURCES = test/test_rbtree.c
 test_rbtree_LDADD = librbraun.la
