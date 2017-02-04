@@ -84,7 +84,7 @@ int
 main(int argc, char *argv[])
 {
     struct obj *obj, *tmp;
-    unsigned int prev_priority;
+    unsigned int prev_priority __attribute__((unused));
 
     (void)argc;
     (void)argv;
