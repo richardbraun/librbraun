@@ -3,7 +3,7 @@ MOSTLYCLEANFILES =
 
 AM_CPPFLAGS = \
 	-pipe \
-	-std=gnu99 \
+	-std=gnu11 \
 	-imacros config.h \
 	-I$(top_srcdir)
 
