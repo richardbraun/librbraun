@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2015 Richard Braun.
+ * Copyright (c) 2010-2017 Richard Braun.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,12 +50,14 @@
 #ifndef _HASH_H
 #define _HASH_H
 
+#include <assert.h>
 #include <stdint.h>
 
 #ifdef __LP64__
 #define HASH_ALLBITS 64
 #define hash_long(n, bits) hash_int64(n, bits)
 #else /* __LP64__ */
+static_assert(sizeof(long) == 4, "unsupported data model");
 #define HASH_ALLBITS 32
 #define hash_long(n, bits) hash_int32(n, bits)
 #endif
@@ -93,10 +95,14 @@ hash_int64(uint64_t n, unsigned int bits)
     return hash >> (64 - bits);
 }
 
-static inline unsigned long
+static inline uintptr_t
 hash_ptr(const void *ptr, unsigned int bits)
 {
-    return hash_long((unsigned long)ptr, bits);
+    if (sizeof(uintptr_t) == 8) {
+        return hash_int64((uintptr_t)ptr, bits);
+    } else {
+        return hash_int32((uintptr_t)ptr, bits);
+    }
 }
 
 static inline unsigned long
