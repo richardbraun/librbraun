@@ -37,6 +37,8 @@
 #ifndef _PLIST_H
 #define _PLIST_H
 
+#include <stdbool.h>
+
 #include "list.h"
 
 /*
