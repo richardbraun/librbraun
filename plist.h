@@ -40,6 +40,7 @@
 #include <stdbool.h>
 
 #include "list.h"
+#include "macros.h"
 
 /*
  * Priority list.
