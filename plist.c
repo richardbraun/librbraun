@@ -31,11 +31,9 @@
 #include "plist.h"
 
 void
-plist_add(struct plist *plist, struct plist_node *pnode, unsigned int priority)
+plist_add(struct plist *plist, struct plist_node *pnode)
 {
     struct plist_node *next;
-
-    pnode->priority = priority;
 
     if (plist_empty(plist)) {
         list_insert_head(&plist->list, &pnode->node);

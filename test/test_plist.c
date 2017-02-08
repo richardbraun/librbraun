@@ -57,8 +57,9 @@ add_obj(struct plist *list, unsigned int priority)
     }
 
     obj->priority = priority;
+    plist_node_init(&obj->node, priority);
     printf("add: %p:%u\n", obj, obj->priority);
-    plist_add(list, &obj->node, priority);
+    plist_add(list, &obj->node);
     return obj;
 }
 

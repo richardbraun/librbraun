@@ -99,6 +99,15 @@ plist_node_init(struct plist_node *pnode, unsigned int priority)
 }
 
 /*
+ * Return the priority associated with a node.
+ */
+static inline unsigned int
+plist_node_priority(const struct plist_node *pnode)
+{
+    return pnode->priority;
+}
+
+/*
  * Return true if pnode is in no priority lists.
  */
 static inline bool
@@ -203,9 +212,10 @@ plist_singular(const struct plist *plist)
 
 /*
  * Add a node to a priority list.
+ *
+ * The node must be initialized before calling this function.
  */
-void plist_add(struct plist *plist, struct plist_node *pnode,
-               unsigned int priority);
+void plist_add(struct plist *plist, struct plist_node *pnode);
 
 /*
  * Remove a node from a priority list.
