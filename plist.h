@@ -108,6 +108,15 @@ plist_node_priority(const struct plist_node *pnode)
 }
 
 /*
+ * Update the priority of an already initialized node.
+ */
+static inline void
+plist_node_set_priority(struct plist_node *pnode, unsigned int priority)
+{
+    pnode->priority = priority;
+}
+
+/*
  * Return true if pnode is in no priority lists.
  */
 static inline bool
