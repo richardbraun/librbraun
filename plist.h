@@ -222,6 +222,9 @@ plist_singular(const struct plist *plist)
 /*
  * Add a node to a priority list.
  *
+ * If the priority list already contains nodes with the same priority
+ * as the given node, it is inserted before them.
+ *
  * The node must be initialized before calling this function.
  */
 void plist_add(struct plist *plist, struct plist_node *pnode);
