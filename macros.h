@@ -33,7 +33,7 @@
 #define _MACROS_H
 
 #if !defined(__GNUC__) || (__GNUC__ < 4)
-#error "GCC 4+ required"
+#error GCC 4+ required
 #endif
 
 #include <stddef.h>
