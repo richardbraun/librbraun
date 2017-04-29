@@ -46,7 +46,7 @@
  * divisions.
  */
 #if (NR_CPUS < 1) || !ISP2(NR_CPUS)
-#error invalid number of configured processors
+#error "invalid number of configured processors"
 #endif
 
 /*

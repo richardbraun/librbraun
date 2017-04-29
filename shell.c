@@ -113,7 +113,7 @@ struct shell_line {
 #define SHELL_HISTORY_SIZE 21
 
 #if SHELL_HISTORY_SIZE == 0
-#error shell history size must be non-zero
+#error "shell history size must be non-zero"
 #endif /* SHELL_HISTORY_SIZE == 0 */
 
 /*
