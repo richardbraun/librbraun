@@ -1134,7 +1134,7 @@ shell_run(void)
                 error = 0;
             } else if (shell_is_ctrl_char(c)) {
                 if (c == '\e') {
-                    escape = 1;
+                    escape = SHELL_ESC_STATE_START;
                     error = 0;
                 } else {
                     error = shell_process_ctrl_char(c);
