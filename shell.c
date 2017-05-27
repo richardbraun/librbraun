@@ -746,15 +746,16 @@ shell_process_left(void)
     printf("\e[1D");
 }
 
-static void
+static int
 shell_process_right(void)
 {
     if (shell_cursor >= shell_line_size(shell_history_get_newest())) {
-        return;
+        return ERR_AGAIN;
     }
 
     shell_cursor++;
     printf("\e[1C");
+    return 0;
 }
 
 static void
@@ -923,7 +924,14 @@ shell_esc_seq_home(void)
 static void
 shell_esc_seq_del(void)
 {
-    shell_process_right();
+    int error;
+
+    error = shell_process_right();
+
+    if (error) {
+        return;
+    }
+
     shell_process_backspace();
 }
 
