@@ -1090,6 +1090,7 @@ shell_process_ctrl_char(char c)
     case '\t':
         return shell_process_tabulation();
     case '\n':
+    case '\r':
         putchar('\n');
         shell_process_line();
         return ERR_AGAIN;
