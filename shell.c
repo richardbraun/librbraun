@@ -303,15 +303,16 @@ shell_cmd_complete(const char *str, unsigned long *sizep,
         next = next->ls_next;
     }
 
-    if (size != 0) {
-        while ((cmd->name[size - 1] != '\0')
-               && (cmd->name[size - 1] == next->name[size - 1])) {
-            size++;
-        }
-
-        size--;
+    if (size == 0) {
+        size = 1;
     }
 
+    while ((cmd->name[size - 1] != '\0')
+           && (cmd->name[size - 1] == next->name[size - 1])) {
+        size++;
+    }
+
+    size--;
     *sizep = size;
     return ERR_AGAIN;
 }
