@@ -821,6 +821,10 @@ shell_process_raw_char(char c)
         goto out;
     }
 
+    /*
+     * This assumes that the backspace character only moves the cursor
+     * without erasing characters.
+     */
     printf("%s", shell_line_str(current_line) + shell_cursor - 1);
     remaining_chars = shell_line_size(current_line) - shell_cursor;
 
