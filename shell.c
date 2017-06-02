@@ -233,6 +233,10 @@ shell_cmd_lookup(const char *name)
 }
 
 /*
+ * Look up the first command that matches a given string.
+ *
+ * The input string is defined by the given string pointer and size.
+ *
  * The global lock must be acquired before calling this function.
  */
 static const struct shell_cmd *
@@ -251,6 +255,21 @@ shell_cmd_match(const struct shell_cmd *cmd, const char *str,
 }
 
 /*
+ * Attempt command auto-completion.
+ *
+ * The given string is the beginning of a command, or the empty string.
+ * The sizep parameter initially points to the size of the given string.
+ * If the string matches any registered command, the cmdp pointer is
+ * updated to point to the first matching command in the sorted list of
+ * commands, and sizep is updated to the number of characters in the
+ * command name that are common in subsequent commands. The command
+ * pointer and the returned size can be used to print a list of commands
+ * eligible for completion.
+ *
+ * If there is a single match for the given string, return 0. If there
+ * are more than one match, return ERR_AGAIN. If there is no match,
+ * return ERR_INVAL.
+ *
  * The global lock must be acquired before calling this function.
  */
 static int
@@ -318,6 +337,10 @@ shell_cmd_complete(const char *str, unsigned long *sizep,
 }
 
 /*
+ * Print a list of commands eligible for completion, starting at the
+ * given command. Other eligible commands share the same prefix, as
+ * defined by the size argument.
+ *
  * The global lock must be acquired before calling this function.
  */
 static void
