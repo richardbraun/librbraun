@@ -74,9 +74,6 @@
 #define __noreturn          __attribute__((noreturn))
 #define __alias(x)          __attribute__((alias(x)))
 
-#define __format_printf(fmt, args) \
-    __attribute__((format(printf, fmt, args)))
-
 /*
  * The following macros may be provided by the C environment.
  */
