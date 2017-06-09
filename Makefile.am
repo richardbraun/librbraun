@@ -27,6 +27,8 @@ librbraun_la_SOURCES = \
 	cpu.h \
 	error.c \
 	error.h \
+	fmt.c \
+	fmt.h \
 	hash.h \
 	list.c \
 	list.h \
@@ -48,6 +50,8 @@ librbraun_la_LIBADD = -lrt -lpthread
 
 bin_PROGRAMS = \
 	test_avltree \
+	test_fmt_sprintf \
+	test_fmt_sscanf \
 	test_plist \
 	test_rbtree \
 	test_rdxtree \
@@ -55,6 +59,12 @@ bin_PROGRAMS = \
 
 test_avltree_SOURCES = test/test_avltree.c
 test_avltree_LDADD = librbraun.la
+
+test_fmt_sprintf_SOURCES = test/test_fmt_sprintf.c
+test_fmt_sprintf_LDADD = librbraun.la
+
+test_fmt_sscanf_SOURCES = test/test_fmt_sscanf.c
+test_fmt_sscanf_LDADD = librbraun.la
 
 test_plist_SOURCES = test/test_plist.c
 test_plist_LDADD = librbraun.la
