@@ -50,6 +50,7 @@
 #define _FMT_H
 
 #include <stdarg.h>
+#include <stddef.h>
 
 int fmt_sprintf(char *str, const char *format, ...)
     __attribute__((format(printf, 2, 3)));
