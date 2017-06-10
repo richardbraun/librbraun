@@ -677,6 +677,38 @@ test_38(void)
 #undef STRING
 }
 
+static void
+test_39(void)
+{
+    int reta, retb;
+    unsigned int ia, ib;
+
+#define STRING "0"
+#define FORMAT "%u"
+    reta = sscanf(STRING, FORMAT, &ia);
+    retb = fmt_sscanf(STRING, FORMAT, &ib);
+    check(reta == retb);
+    check(ia == ib);
+#undef FORMAT
+#undef STRING
+}
+
+static void
+test_40(void)
+{
+    int reta, retb;
+    int ia, ib;
+
+#define STRING "-0"
+#define FORMAT "%d"
+    reta = sscanf(STRING, FORMAT, &ia);
+    retb = fmt_sscanf(STRING, FORMAT, &ib);
+    check(reta == retb);
+    check(ia == ib);
+#undef FORMAT
+#undef STRING
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -721,6 +753,8 @@ main(int argc, char *argv[])
     test_36();
     test_37();
     test_38();
+    test_39();
+    test_40();
 
     return 0;
 }
