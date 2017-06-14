@@ -38,6 +38,7 @@
 
 #include "error.h"
 #include "fmt.h"
+#include "macros.h"
 
 /*
  * Size for the temporary number buffer. The minimum base is 8 so 3 bits
