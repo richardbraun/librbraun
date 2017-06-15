@@ -91,7 +91,7 @@ bitmap_find_next_bit(const unsigned long *bm, int nr_bits, int bit,
     end = bm + BITMAP_LONGS(nr_bits);
 
     if (bit >= LONG_BIT) {
-        bitmap_lookup(bm, bit);
+        bitmap_lookup(&bm, &bit);
         nr_bits -= ((bm - start) * LONG_BIT);
     }
 
