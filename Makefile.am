@@ -50,6 +50,7 @@ librbraun_la_LIBADD = -lrt -lpthread
 
 bin_PROGRAMS = \
 	test_avltree \
+	test_cbuf \
 	test_fmt_sprintf \
 	test_fmt_sscanf \
 	test_plist \
@@ -59,6 +60,9 @@ bin_PROGRAMS = \
 
 test_avltree_SOURCES = test/test_avltree.c
 test_avltree_LDADD = librbraun.la
+
+test_cbuf_SOURCES = test/test_cbuf.c
+test_cbuf_LDADD = librbraun.la
 
 test_fmt_sprintf_SOURCES = test/test_fmt_sprintf.c
 test_fmt_sprintf_LDADD = librbraun.la
