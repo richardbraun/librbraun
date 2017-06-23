@@ -483,7 +483,7 @@ static void
 test_28(void)
 {
     int reta, retb;
-    int ia, ib;
+    void *ia, *ib;
 
 #define STRING QUOTE(TEST_INT_HEX)
 #define FORMAT "%p"
