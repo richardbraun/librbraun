@@ -709,6 +709,40 @@ test_40(void)
 #undef STRING
 }
 
+static void
+test_41(void)
+{
+    int reta, retb;
+    unsigned int ia, ib;
+    char ja, jb;
+    unsigned int ka, kb;
+
+#define STRING "34800"
+#define FORMAT "%u%c%1u"
+    reta = sscanf(STRING, FORMAT, &ia, &ja, &ka);
+    retb = fmt_sscanf(STRING, FORMAT, &ib, &jb, &kb);
+    check(reta == retb);
+    check(ia == ib);
+#undef FORMAT
+#undef STRING
+}
+
+static void
+test_42(void)
+{
+    int reta, retb;
+    char ia, ib;
+
+#define STRING "abc"
+#define FORMAT "%0c"
+    reta = sscanf(STRING, FORMAT, &ia);
+    retb = fmt_sscanf(STRING, FORMAT, &ib);
+    check(reta == retb);
+    check(ia == ib);
+#undef FORMAT
+#undef STRING
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -755,6 +789,8 @@ main(int argc, char *argv[])
     test_38();
     test_39();
     test_40();
+    test_41();
+    test_42();
 
     return 0;
 }
