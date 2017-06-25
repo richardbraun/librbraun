@@ -61,23 +61,16 @@
 #define structof(ptr, type, member) \
     ((type *)((char *)(ptr) - offsetof(type, member)))
 
-#define alignof(x)          __alignof__(x)
-
 #define likely(expr)        __builtin_expect(!!(expr), 1)
 #define unlikely(expr)      __builtin_expect(!!(expr), 0)
 
 #define barrier()           asm volatile("" : : : "memory")
 
-#define __noreturn          __attribute__((noreturn))
 #define __alias(x)          __attribute__((alias(x)))
 
 /*
  * The following macros may be provided by the C environment.
  */
-
-#ifndef __aligned
-#define __aligned(x)        __attribute__((aligned(x)))
-#endif
 
 #ifndef __always_inline
 #define __always_inline     inline __attribute__((always_inline))
