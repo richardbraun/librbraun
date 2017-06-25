@@ -66,8 +66,6 @@
 
 #define barrier()           asm volatile("" : : : "memory")
 
-#define __alias(x)          __attribute__((alias(x)))
-
 /*
  * The following macros may be provided by the C environment.
  */
