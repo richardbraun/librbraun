@@ -30,6 +30,8 @@
 #ifndef _ERROR_H
 #define _ERROR_H
 
+#include <stdnoreturn.h>
+
 #include "macros.h"
 
 /*
@@ -85,6 +87,6 @@ unsigned int error_from_errno(int errno_code);
  * This function will report the given error and make the process exit,
  * using the error code as the exit() parameter.
  */
-void __noreturn error_die(unsigned int error);
+noreturn void error_die(unsigned int error);
 
 #endif /* _ERROR_H */
