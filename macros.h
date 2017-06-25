@@ -70,6 +70,10 @@
  * The following macros may be provided by the C environment.
  */
 
+#ifndef __noinline
+#define __noinline          __attribute__((noinline))
+#endif
+
 #ifndef __always_inline
 #define __always_inline     inline __attribute__((always_inline))
 #endif
