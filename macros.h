@@ -54,9 +54,9 @@
 
 #define P2ALIGNED(x, a)     (((x) & ((a) - 1)) == 0)
 #define ISP2(x)             P2ALIGNED(x, x)
-#define P2ALIGN(x, a)       ((x) & -(a))
-#define P2ROUND(x, a)       (-(-(x) & -(a)))
-#define P2END(x, a)         (-(~(x) & -(a)))
+#define P2ALIGN(x, a)       ((x) & -(a))        /* decreases if not aligned */
+#define P2ROUND(x, a)       (-(-(x) & -(a)))    /* increases if not aligned */
+#define P2END(x, a)         (-(~(x) & -(a)))    /* always increases */
 
 #define structof(ptr, type, member) \
     ((type *)((char *)(ptr) - offsetof(type, member)))
