@@ -39,6 +39,13 @@
 #include <stdint.h>
 
 /*
+ * These macros can be replaced by actual functions in an environment
+ * that provides lockless synchronization such as RCU.
+ */
+#define llsync_assign_ptr(ptr, value)   ((ptr) = (value))
+#define llsync_read_ptr(ptr)            (ptr)
+
+/*
  * This macro selects between 32 or 64-bits (the default) keys.
  */
 #if 0
@@ -172,6 +179,12 @@ static inline void **
 rdxtree_lookup_slot(const struct rdxtree *tree, rdxtree_key_t key)
 {
     return rdxtree_lookup_common(tree, key, 1);
+}
+
+static inline void *
+rdxtree_load_slot(void **slot)
+{
+    return llsync_read_ptr(*slot);
 }
 
 /*

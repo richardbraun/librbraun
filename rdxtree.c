@@ -76,13 +76,6 @@ typedef unsigned long long rdxtree_bm_t;
     ((~(rdxtree_bm_t)0) >> (RDXTREE_BM_SIZE - RDXTREE_RADIX_SIZE))
 
 /*
- * These macros can be replaced by actual functions in an environment
- * that provides lockless synchronization such as RCU.
- */
-#define llsync_assign_ptr(ptr, value)   ((ptr) = (value))
-#define llsync_read_ptr(ptr)            (ptr)
-
-/*
  * Radix tree node.
  *
  * The height of a tree is the number of nodes to traverse until stored
