@@ -139,8 +139,9 @@ MACRO_BEGIN                                                 \
     while (___cur != NULL) {                                \
         ___diff = cmp_fn(key, ___cur);                      \
                                                             \
-        if (___diff == 0)                                   \
+        if (___diff == 0) {                                 \
             break;                                          \
+        }                                                   \
                                                             \
         ___cur = ___cur->children[avltree_d2i(___diff)];    \
     }                                                       \
@@ -170,16 +171,18 @@ MACRO_BEGIN                                                 \
     while (___cur != NULL) {                                \
         ___diff = cmp_fn(key, ___cur);                      \
                                                             \
-        if (___diff == 0)                                   \
+        if (___diff == 0) {                                 \
             break;                                          \
+        }                                                   \
                                                             \
         ___prev = ___cur;                                   \
         ___index = avltree_d2i(___diff);                    \
         ___cur = ___cur->children[___index];                \
     }                                                       \
                                                             \
-    if (___cur == NULL)                                     \
+    if (___cur == NULL) {                                   \
         ___cur = avltree_nearest(___prev, ___index, dir);   \
+    }                                                       \
                                                             \
     ___cur;                                                 \
 MACRO_END
@@ -241,8 +244,9 @@ MACRO_BEGIN                                             \
     while (___cur != NULL) {                            \
         ___diff = cmp_fn(key, ___cur);                  \
                                                         \
-        if (___diff == 0)                               \
+        if (___diff == 0) {                             \
             break;                                      \
+        }                                               \
                                                         \
         ___prev = ___cur;                               \
         ___index = avltree_d2i(___diff);                \
