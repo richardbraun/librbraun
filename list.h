@@ -101,12 +101,6 @@ list_node_unlinked(const struct list *node)
 }
 
 /*
- * Macro that evaluates to the address of the structure containing the
- * given node based on the given type and member.
- */
-#define list_entry(node, type, member) structof(node, type, member)
-
-/*
  * Return the first node of a list.
  */
 static inline struct list *
@@ -143,31 +137,7 @@ list_prev(const struct list *node)
 }
 
 /*
- * Get the first entry of a list.
- */
-#define list_first_entry(list, type, member) \
-    list_entry(list_first(list), type, member)
-
-/*
- * Get the last entry of a list.
- */
-#define list_last_entry(list, type, member) \
-    list_entry(list_last(list), type, member)
-
-/*
- * Get the entry next to the given entry.
- */
-#define list_next_entry(entry, member) \
-    list_entry(list_next(&(entry)->member), typeof(*(entry)), member)
-
-/*
- * Get the entry previous to the given entry.
- */
-#define list_prev_entry(entry, member) \
-    list_entry(list_prev(&(entry)->member), typeof(*(entry)), member)
-
-/*
- * Return true if node is after the last or before the first node of the list.
+ * Return true if node is invalid and denotes one of the ends of the list.
  */
 static inline bool
 list_end(const struct list *list, const struct list *node)
@@ -190,7 +160,7 @@ list_empty(const struct list *list)
 static inline bool
 list_singular(const struct list *list)
 {
-    return (list != list->next) && (list->next == list->prev);
+    return !list_empty(list) && (list->next == list->prev);
 }
 
 /*
@@ -329,6 +299,36 @@ list_remove(struct list *node)
 }
 
 /*
+ * Macro that evaluates to the address of the structure containing the
+ * given node based on the given type and member.
+ */
+#define list_entry(node, type, member) structof(node, type, member)
+
+/*
+ * Get the first entry of a list.
+ */
+#define list_first_entry(list, type, member) \
+    list_entry(list_first(list), type, member)
+
+/*
+ * Get the last entry of a list.
+ */
+#define list_last_entry(list, type, member) \
+    list_entry(list_last(list), type, member)
+
+/*
+ * Get the entry next to the given entry.
+ */
+#define list_next_entry(entry, member) \
+    list_entry(list_next(&(entry)->member), typeof(*(entry)), member)
+
+/*
+ * Get the entry previous to the given entry.
+ */
+#define list_prev_entry(entry, member) \
+    list_entry(list_prev(&(entry)->member), typeof(*(entry)), member)
+
+/*
  * Forge a loop to process all nodes of a list.
  *
  * The node must not be altered during the loop.
@@ -413,13 +413,6 @@ for (entry = list_last_entry(list, typeof(*entry), member),         \
 #define llsync_read_ptr(ptr)            (ptr)
 
 /*
- * Macro that evaluates to the address of the structure containing the
- * given node based on the given type and member.
- */
-#define list_llsync_entry(node, type, member) \
-    structof(llsync_read_ptr(node), type, member)
-
-/*
  * Return the first node of a list.
  */
 static inline struct list *
@@ -436,24 +429,6 @@ list_llsync_next(const struct list *node)
 {
     return llsync_read_ptr(node->next);
 }
-
-/*
- * Get the first entry of a list.
- *
- * Unlike list_entry(), this macro may evaluate to NULL, because the node
- * pointer can only be read once, preventing the combination of lockless
- * list_empty()/list_first_entry() variants.
- *
- * Return NULL if the list is empty.
- */
-#define list_llsync_first_entry(list, type, member)         \
-MACRO_BEGIN                                                 \
-    struct list *___list = (list);                          \
-    struct list *___first = llsync_read_ptr(___list->next); \
-    list_end(___list, ___first)                             \
-        ? NULL                                              \
-        : list_entry(___first, type, member);               \
-MACRO_END
 
 /*
  * Add a node between two nodes.
@@ -516,6 +491,42 @@ list_llsync_remove(struct list *node)
     node->next->prev = node->prev;
     llsync_assign_ptr(node->prev->next, node->next);
 }
+
+/*
+ * Macro that evaluates to the address of the structure containing the
+ * given node based on the given type and member.
+ */
+#define list_llsync_entry(node, type, member) \
+    structof(llsync_read_ptr(node), type, member)
+
+/*
+ * Get the first entry of a list.
+ *
+ * Unlike list_first_entry(), this macro may evaluate to NULL, because
+ * the node pointer can only be read once, preventing the combination
+ * of lockless list_empty()/list_first_entry() variants.
+ */
+#define list_llsync_first_entry(list, type, member)         \
+MACRO_BEGIN                                                 \
+    struct list *___list;                                   \
+    struct list *___first;                                  \
+                                                            \
+    ___list = (list);                                       \
+    ___first = list_llsync_first(___list);                  \
+    list_end(___list, ___first)                             \
+        ? NULL                                              \
+        : list_entry(___first, type, member);               \
+MACRO_END
+
+/*
+ * Get the entry next to the given entry.
+ *
+ * Unlike list_next_entry(), this macro may evaluate to NULL, because
+ * the node pointer can only be read once, preventing the combination
+ * of lockless list_empty()/list_next_entry() variants.
+ */
+#define list_llsync_next_entry(entry, member) \
+    list_llsync_first_entry(&entry->member, typeof(*entry), member)
 
 /*
  * Forge a loop to process all nodes of a list.
