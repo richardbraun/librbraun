@@ -1,6 +1,7 @@
 EXTRA_DIST =
 MOSTLYCLEANFILES =
 
+# TODO Remove tabs
 AM_CPPFLAGS = \
 	-pipe \
 	-std=gnu11 \
@@ -41,6 +42,7 @@ librbraun_la_SOURCES = \
 	rdxtree.c \
 	rdxtree.h \
 	rdxtree_i.h \
+	slist.h \
 	shell.c \
 	shell.h \
 	x86/atomic.h \
@@ -54,6 +56,7 @@ bin_PROGRAMS = \
 	test_fmt_sprintf \
 	test_fmt_sscanf \
 	test_plist \
+	test_slist \
 	test_rbtree \
 	test_rdxtree \
 	test_shell
@@ -72,6 +75,9 @@ test_fmt_sscanf_LDADD = librbraun.la
 
 test_plist_SOURCES = test/test_plist.c
 test_plist_LDADD = librbraun.la
+
+test_slist_SOURCES = test/test_slist.c
+test_slist_LDADD = librbraun.la
 
 test_rbtree_SOURCES = test/test_rbtree.c
 test_rbtree_LDADD = librbraun.la
