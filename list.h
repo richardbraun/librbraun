@@ -82,7 +82,7 @@ list_init(struct list *list)
 /*
  * Initialize a list node.
  *
- * An entry is in no lists when its node members point to NULL.
+ * A node is in no list when its node members point to NULL.
  */
 static inline void
 list_node_init(struct list *node)
@@ -92,7 +92,7 @@ list_node_init(struct list *node)
 }
 
 /*
- * Return true if node is in no lists.
+ * Return true if node is in no list.
  */
 static inline bool
 list_node_unlinked(const struct list *node)
