@@ -69,12 +69,6 @@ slist_init(struct slist *list)
 }
 
 /*
- * Macro that evaluates to the address of the structure containing the
- * given node based on the given type and member.
- */
-#define slist_entry(node, type, member) structof(node, type, member)
-
-/*
  * Return the first node of a list.
  */
 static inline struct slist_node *
@@ -102,42 +96,7 @@ slist_next(const struct slist_node *node)
 }
 
 /*
- * Get the first entry of a list.
- */
-#define slist_first_entry(list, type, member)                           \
-MACRO_BEGIN                                                             \
-    struct slist_node *___first;                                        \
-                                                                        \
-    ___first = (list)->first;                                           \
-    slist_end(___first) ? NULL : slist_entry(___first, type, member);   \
-MACRO_END
-
-/*
- * Get the last entry of a list.
- */
-#define slist_last_entry(list, type, member)                            \
-MACRO_BEGIN                                                             \
-    struct slist_node *___last;                                         \
-                                                                        \
-    ___last = (list)->last;                                             \
-    slist_end(___last) ? NULL : slist_entry(___last, type, member);     \
-MACRO_END
-
-/*
- * Get the entry next to the given entry.
- */
-#define slist_next_entry(entry, member) \
-MACRO_BEGIN                                                             \
-    struct slist_node *___next;                                         \
-                                                                        \
-    ___next = (entry)->member.next;                                     \
-    slist_end(___next)                                                  \
-        ? NULL                                                          \
-        : slist_entry(___next, typeof(*entry), member);                 \
-MACRO_END
-
-/*
- * Return true if node is invalid and denotes the end of the list.
+ * Return true if node is invalid and denotes one of the ends of the list.
  */
 static inline bool
 slist_end(const struct slist_node *node)
@@ -282,6 +241,47 @@ slist_remove(struct slist *list, struct slist_node *prev)
 }
 
 /*
+ * Macro that evaluates to the address of the structure containing the
+ * given node based on the given type and member.
+ */
+#define slist_entry(node, type, member) structof(node, type, member)
+
+/*
+ * Get the first entry of a list.
+ */
+#define slist_first_entry(list, type, member)                           \
+MACRO_BEGIN                                                             \
+    struct slist_node *___first;                                        \
+                                                                        \
+    ___first = (list)->first;                                           \
+    slist_end(___first) ? NULL : slist_entry(___first, type, member);   \
+MACRO_END
+
+/*
+ * Get the last entry of a list.
+ */
+#define slist_last_entry(list, type, member)                            \
+MACRO_BEGIN                                                             \
+    struct slist_node *___last;                                         \
+                                                                        \
+    ___last = (list)->last;                                             \
+    slist_end(___last) ? NULL : slist_entry(___last, type, member);     \
+MACRO_END
+
+/*
+ * Get the entry next to the given entry.
+ */
+#define slist_next_entry(entry, member) \
+MACRO_BEGIN                                                             \
+    struct slist_node *___next;                                         \
+                                                                        \
+    ___next = (entry)->member.next;                                     \
+    slist_end(___next)                                                  \
+        ? NULL                                                          \
+        : slist_entry(___next, typeof(*entry), member);                 \
+MACRO_END
+
+/*
  * Forge a loop to process all nodes of a list.
  *
  * The node must not be altered during the loop.
@@ -335,13 +335,6 @@ for (entry = slist_first_entry(list, typeof(*entry), member),           \
 #define llsync_read_ptr(ptr)            (ptr)
 
 /*
- * Macro that evaluates to the address of the structure containing the
- * given node based on the given type and member.
- */
-#define slist_llsync_entry(node, type, member) \
-    structof(llsync_read_ptr(node), type, member)
-
-/*
  * Return the first node of a list.
  */
 static inline struct slist_node *
@@ -358,30 +351,6 @@ slist_llsync_next(const struct slist_node *node)
 {
     return llsync_read_ptr(node->next);
 }
-
-/*
- * Get the first entry of a list.
- */
-#define slist_llsync_first_entry(list, type, member)                    \
-MACRO_BEGIN                                                             \
-    struct slist_node *___first;                                        \
-                                                                        \
-    ___first = slist_llsync_first(list);                                \
-    slist_end(___first) ? NULL : slist_entry(___first, type, member);   \
-MACRO_END
-
-/*
- * Get the entry next to the given entry.
- */
-#define slist_llsync_next_entry(entry, member)                          \
-MACRO_BEGIN                                                             \
-    struct slist_node *___next;                                         \
-                                                                        \
-    ___next = slist_llsync_next(&entry->member);                        \
-    slist_end(___next)                                                  \
-        ? NULL                                                          \
-        : slist_entry(___next, typeof(*entry), member);                 \
-MACRO_END
 
 /*
  * Insert a node at the head of a list.
@@ -468,9 +437,38 @@ slist_llsync_remove(struct slist *list, struct slist_node *prev)
 }
 
 /*
+ * Macro that evaluates to the address of the structure containing the
+ * given node based on the given type and member.
+ */
+#define slist_llsync_entry(node, type, member) \
+    structof(llsync_read_ptr(node), type, member)
+
+/*
+ * Get the first entry of a list.
+ */
+#define slist_llsync_first_entry(list, type, member)                    \
+MACRO_BEGIN                                                             \
+    struct slist_node *___first;                                        \
+                                                                        \
+    ___first = slist_llsync_first(list);                                \
+    slist_end(___first) ? NULL : slist_entry(___first, type, member);   \
+MACRO_END
+
+/*
+ * Get the entry next to the given entry.
+ */
+#define slist_llsync_next_entry(entry, member)                          \
+MACRO_BEGIN                                                             \
+    struct slist_node *___next;                                         \
+                                                                        \
+    ___next = slist_llsync_next(&entry->member);                        \
+    slist_end(___next)                                                  \
+        ? NULL                                                          \
+        : slist_entry(___next, typeof(*entry), member);                 \
+MACRO_END
+
+/*
  * Forge a loop to process all nodes of a list.
- *
- * The node must not be altered during the loop.
  */
 #define slist_llsync_for_each(list, node)   \
 for (node = slist_llsync_first(list);       \
@@ -479,8 +477,6 @@ for (node = slist_llsync_first(list);       \
 
 /*
  * Forge a loop to process all entries of a list.
- *
- * The entry node must not be altered during the loop.
  */
 #define slist_llsync_for_each_entry(list, entry, member)                \
 for (entry = slist_llsync_first_entry(list, typeof(*entry), member);    \
