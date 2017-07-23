@@ -32,7 +32,6 @@
 #ifndef _SLIST_H
 #define _SLIST_H
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 
