@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *
- * Simple doubly-linked list.
+ * Doubly-linked list.
  *
  * Upstream site with license notes :
  * http://git.sceen.net/rbraun/librbraun.git/
