@@ -42,7 +42,7 @@ test_push(struct cbuf *cbuf, const char *s)
     len = strlen(s) + 1;
 
     for (i = 0; i < len; i++) {
-        cbuf_push(cbuf, s[i]);
+        cbuf_pushb(cbuf, s[i], true);
     }
 }
 
@@ -258,12 +258,79 @@ test_write_overflow(void)
 #undef STRING
 }
 
-int
-main(int argc, char *argv[])
+static void
+test_push_buf(void)
 {
-    (void)argc;
-    (void)argv;
+    char cbuf_buf[TEST_BUF_SIZE];
+    struct cbuf cbuf;
+    int error;
 
+    cbuf_init(&cbuf, cbuf_buf, sizeof(cbuf_buf));
+
+#define STRING "abcdef"
+    error = cbuf_push(&cbuf, STRING, STRLEN(STRING) + 1, false);
+    check(!error);
+    test_check(&cbuf, cbuf_start(&cbuf), STRING, STRLEN(STRING) + 1);
+    check(cbuf_size(&cbuf) == (STRLEN(STRING) + 1));
+#undef STRING
+}
+
+static void
+test_push_buf_overflow(void)
+{
+    char cbuf_buf[TEST_BUF_SIZE];
+    struct cbuf cbuf;
+    int error;
+
+    cbuf_init(&cbuf, cbuf_buf, sizeof(cbuf_buf));
+    cbuf.start = 0;
+    cbuf.end = TEST_BUF_SIZE - 1;
+
+#define STRING "abcdef"
+    error = cbuf_push(&cbuf, STRING, STRLEN(STRING) + 1, false);
+    check(error);
+#undef STRING
+}
+
+static void
+test_pop_buf(void)
+{
+    char cbuf_buf[TEST_BUF_SIZE];
+    struct cbuf cbuf;
+    size_t size;
+    int error;
+
+    cbuf_init(&cbuf, cbuf_buf, sizeof(cbuf_buf));
+
+#define STRING "abcdef"
+    error = cbuf_push(&cbuf, STRING, STRLEN(STRING) + 1, false);
+    check(!error);
+    size = sizeof(cbuf_buf);
+    error = cbuf_pop(&cbuf, cbuf_buf, &size);
+    check(!error && (size == (STRLEN(STRING) + 1)));
+#undef STRING
+}
+
+static void
+test_pop_buf_overflow(void)
+{
+    char cbuf_buf[TEST_BUF_SIZE];
+    struct cbuf cbuf;
+    size_t size;
+    int error;
+
+    cbuf_init(&cbuf, cbuf_buf, sizeof(cbuf_buf));
+
+#define STRING "abcdef"
+    size = sizeof(cbuf_buf);
+    error = cbuf_pop(&cbuf, cbuf_buf, &size);
+    check(error);
+#undef STRING
+}
+
+int
+main(void)
+{
     test_read_0();
     test_read_regular();
     test_read_overflow();
@@ -274,6 +341,10 @@ main(int argc, char *argv[])
     test_append_overwrite();
     test_write_regular();
     test_write_overflow();
+    test_push_buf();
+    test_push_buf_overflow();
+    test_pop_buf();
+    test_pop_buf_overflow();
 
     return 0;
 }
