@@ -76,8 +76,7 @@ cbuf_push(struct cbuf *cbuf, const void *buf, size_t size, bool erase)
         }
     }
 
-    cbuf_write(cbuf, cbuf_end(cbuf), buf, size);
-    return 0;
+    return cbuf_write(cbuf, cbuf_end(cbuf), buf, size);
 }
 
 int
