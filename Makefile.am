@@ -31,6 +31,7 @@ librbraun_la_SOURCES = \
         fmt.c \
         fmt.h \
         hash.h \
+        hlist.h \
         list.c \
         list.h \
         macros.h \
@@ -55,11 +56,12 @@ bin_PROGRAMS = \
         test_cbuf \
         test_fmt_sprintf \
         test_fmt_sscanf \
+        test_hlist \
         test_plist \
-        test_slist \
         test_rbtree \
         test_rdxtree \
-        test_shell
+        test_shell \
+        test_slist
 
 test_avltree_SOURCES = test/test_avltree.c
 test_avltree_LDADD = librbraun.la
@@ -73,11 +75,11 @@ test_fmt_sprintf_LDADD = librbraun.la
 test_fmt_sscanf_SOURCES = test/test_fmt_sscanf.c
 test_fmt_sscanf_LDADD = librbraun.la
 
+test_hlist_SOURCES = test/test_hlist.c
+test_hlist_LDADD = librbraun.la
+
 test_plist_SOURCES = test/test_plist.c
 test_plist_LDADD = librbraun.la
-
-test_slist_SOURCES = test/test_slist.c
-test_slist_LDADD = librbraun.la
 
 test_rbtree_SOURCES = test/test_rbtree.c
 test_rbtree_LDADD = librbraun.la
@@ -87,3 +89,6 @@ test_rdxtree_LDADD = -lrt -lpthread
 
 test_shell_SOURCES = test/test_shell.c
 test_shell_LDADD = librbraun.la
+
+test_slist_SOURCES = test/test_slist.c
+test_slist_LDADD = librbraun.la
