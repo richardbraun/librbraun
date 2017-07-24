@@ -189,19 +189,12 @@ slist_insert_tail(struct slist *list, struct slist_node *node)
 /*
  * Insert a node after another node.
  *
- * The prev argument is used to determine the insertion point. It may safely
- * denote the end of the given list, in which case the node is inserted at
- * the head of the list.
+ * The prev node must be valid.
  */
 static inline void
 slist_insert_after(struct slist *list, struct slist_node *prev,
                    struct slist_node *node)
 {
-    if (slist_end(prev)) {
-        slist_insert_head(list, node);
-        return;
-    }
-
     node->next = prev->next;
     prev->next = node;
 
@@ -393,11 +386,6 @@ static inline void
 slist_llsync_insert_after(struct slist *list, struct slist_node *prev,
                           struct slist_node *node)
 {
-    if (slist_end(prev)) {
-        slist_llsync_insert_head(list, node);
-        return;
-    }
-
     node->next = prev->next;
     llsync_assign_ptr(prev->next, node);
 

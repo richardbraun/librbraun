@@ -66,24 +66,6 @@ add_obj_head_llsync(struct slist *list)
 }
 
 static void
-add_obj_head2(struct slist *list)
-{
-    struct obj *obj;
-
-    obj = obj_create();
-    slist_insert_after(list, NULL, &obj->node);
-}
-
-static void
-add_obj_head2_llsync(struct slist *list)
-{
-    struct obj *obj;
-
-    obj = obj_create();
-    slist_llsync_insert_after(list, NULL, &obj->node);
-}
-
-static void
 add_obj_tail(struct slist *list)
 {
     struct obj *obj;
@@ -324,8 +306,6 @@ main(void)
     add_obj_head(&list);
     add_obj_head(&list);
     add_obj_head(&list);
-    add_obj_head2(&list);
-    add_obj_head2_llsync(&list);
     add_obj_tail2(&list);
     add_obj_tail2_llsync(&list);
 
