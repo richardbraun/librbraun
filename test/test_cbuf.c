@@ -80,7 +80,7 @@ test_read_0(void)
 
     size = 0;
     error = cbuf_read(&cbuf, index, buf, &size);
-    check(error == ERR_INVAL);
+    check(error == ERROR_INVAL);
     check(size == 0);
 
     test_push(&cbuf, "a");

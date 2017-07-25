@@ -408,12 +408,12 @@ fmt_sprintf_state_consume(struct fmt_sprintf_state *state)
     c = fmt_consume(&state->format);
 
     if (c == '\0') {
-        return ERR_NORES;
+        return ERROR_NORES;
     }
 
     if (c != '%') {
         fmt_sprintf_state_produce_raw_char(state, c);
-        return ERR_AGAIN;
+        return ERROR_AGAIN;
     }
 
     fmt_sprintf_state_consume_flags(state);
@@ -792,7 +792,7 @@ fmt_vsnprintf(char *str, size_t size, const char *format, va_list ap)
     for (;;) {
         error = fmt_sprintf_state_consume(&state);
 
-        if (error == ERR_AGAIN) {
+        if (error == ERROR_AGAIN) {
             continue;
         } else if (error) {
             break;
@@ -1073,7 +1073,7 @@ fmt_sscanf_state_discard_char(struct fmt_sscanf_state *state, char c)
             state->nr_convs = EOF;
         }
 
-        return ERR_FORMAT;
+        return ERROR_FORMAT;
     }
 
     return 0;
@@ -1090,7 +1090,7 @@ fmt_sscanf_state_consume(struct fmt_sscanf_state *state)
     c = fmt_consume(&state->format);
 
     if (c == '\0') {
-        return ERR_NORES;
+        return ERROR_NORES;
     }
 
     if (c != '%') {
@@ -1100,7 +1100,7 @@ fmt_sscanf_state_consume(struct fmt_sscanf_state *state)
             return error;
         }
 
-        return ERR_AGAIN;
+        return ERROR_AGAIN;
     }
 
     fmt_sscanf_state_consume_flags(state);
@@ -1192,7 +1192,7 @@ fmt_sscanf_state_produce_int(struct fmt_sscanf_state *state)
     if (i == 0) {
         if (c == '\0') {
             fmt_sscanf_state_report_error(state);
-            return ERR_FORMAT;
+            return ERROR_FORMAT;
         }
 
         buf[0] = '0';
@@ -1386,7 +1386,7 @@ fmt_sscanf_state_produce_str(struct fmt_sscanf_state *state)
 
     if (state->str == orig) {
         fmt_sscanf_state_report_error(state);
-        return ERR_FORMAT;
+        return ERROR_FORMAT;
     }
 
     if (dest != NULL) {
@@ -1421,7 +1421,7 @@ fmt_sscanf_state_produce(struct fmt_sscanf_state *state)
         return fmt_sscanf_state_discard_char(state, '%');
     default:
         fmt_sscanf_state_report_error(state);
-        return ERR_FORMAT;
+        return ERROR_FORMAT;
     }
 }
 
@@ -1449,7 +1449,7 @@ fmt_vsscanf(const char *str, const char *format, va_list ap)
     for (;;) {
         error = fmt_sscanf_state_consume(&state);
 
-        if (error == ERR_AGAIN) {
+        if (error == ERROR_AGAIN) {
             continue;
         } else if (error) {
             break;

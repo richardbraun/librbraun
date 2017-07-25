@@ -694,7 +694,7 @@ test_21(void)
     error = rdxtree_insert(&tree, 0, obj);
     check(!error);
     error = rdxtree_insert(&tree, 0, obj);
-    check(error == ERR_BUSY);
+    check(error == ERROR_BUSY);
     destroy_tree(&tree);
 }
 
@@ -712,7 +712,7 @@ test_22(void)
     error = rdxtree_insert(&tree, 123, obj);
     check(!error);
     error = rdxtree_insert(&tree, 123, obj);
-    check(error == ERR_BUSY);
+    check(error == ERROR_BUSY);
     destroy_tree(&tree);
 }
 
@@ -922,7 +922,7 @@ test_33(void)
     rdxtree_init(&tree, 0);
     obj = obj_create(1);
     error = rdxtree_insert(&tree, obj->id, obj);
-    check(error == ERR_NOMEM);
+    check(error == ERROR_NOMEM);
     obj_destroy(obj);
     print_tree(&tree);
 }
@@ -942,7 +942,7 @@ test_34(void)
     rdxtree_init(&tree, 0);
     obj = obj_create(64);
     error = rdxtree_insert(&tree, obj->id, obj);
-    check(error == ERR_NOMEM);
+    check(error == ERROR_NOMEM);
     obj_destroy(obj);
     print_tree(&tree);
 }
@@ -965,7 +965,7 @@ test_35(void)
     check(!error);
     obj = obj_create(64);
     error = rdxtree_insert(&tree, obj->id, obj);
-    check(error == ERR_NOMEM);
+    check(error == ERROR_NOMEM);
     obj_destroy(obj);
     print_tree(&tree);
     destroy_tree(&tree);
@@ -989,7 +989,7 @@ test_36(void)
     check(!error);
     obj = obj_create(64);
     error = rdxtree_insert(&tree, obj->id, obj);
-    check(error == ERR_NOMEM);
+    check(error == ERROR_NOMEM);
     obj_destroy(obj);
     print_tree(&tree);
     destroy_tree(&tree);

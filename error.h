@@ -37,7 +37,7 @@
 /*
  * List of errors this library can return.
  *
- * ERR_SUCCESS is guaranteed to be 0, allowing code such as :
+ * ERROR_SUCCESS is guaranteed to be 0, allowing code such as :
  *
  * error = do_smth();
  *
@@ -46,21 +46,21 @@
  * }
  */
 enum {
-    ERR_SUCCESS,
-    ERR_UNKNOWN,
-    ERR_INVAL,
-    ERR_NOMEM,
-    ERR_FORMAT,
-    ERR_NORES,
-    ERR_PERM,
-    ERR_BUSY,
-    ERR_MEMLIM,
-    ERR_TIMEDOUT,
-    ERR_WOULDBLOCK,
-    ERR_LOOKUP,
-    ERR_MEM_CACHE,
-    ERR_AGAIN,
-    ERR_EXIST,
+    ERROR_SUCCESS,
+    ERROR_UNKNOWN,
+    ERROR_INVAL,
+    ERROR_NOMEM,
+    ERROR_FORMAT,
+    ERROR_NORES,
+    ERROR_PERM,
+    ERROR_BUSY,
+    ERROR_MEMLIM,
+    ERROR_TIMEDOUT,
+    ERROR_WOULDBLOCK,
+    ERROR_LOOKUP,
+    ERROR_MEM_CACHE,
+    ERROR_AGAIN,
+    ERROR_EXIST,
 };
 
 /*
@@ -77,7 +77,7 @@ const char * error_str(unsigned int error);
  *
  * This function accepts a subset of the standard error codes in errno.h.
  * When called, and if the errno value is handled, it will return the
- * corresponding ERR_xxx code. Otherwise ERR_UNKNOWN is returned.
+ * corresponding ERROR_xxx code. Otherwise ERROR_UNKNOWN is returned.
  */
 unsigned int error_from_errno(int errno_code);
 

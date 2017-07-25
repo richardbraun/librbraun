@@ -74,22 +74,22 @@ error_from_errno(int errno_code)
 {
     switch (errno_code) {
     case 0:
-        return ERR_SUCCESS;
+        return ERROR_SUCCESS;
     case EINVAL:
-        return ERR_INVAL;
+        return ERROR_INVAL;
     case ENOMEM:
-        return ERR_NOMEM;
+        return ERROR_NOMEM;
     case EAGAIN:
-        return ERR_NORES;
+        return ERROR_NORES;
     case EPERM:
-        return ERR_PERM;
+        return ERROR_PERM;
     case EBUSY:
-        return ERR_BUSY;
+        return ERROR_BUSY;
     case ETIMEDOUT:
-        return ERR_TIMEDOUT;
+        return ERROR_TIMEDOUT;
     default:
         fprintf(stderr, "unable to translate errno code (%d)\n", errno_code);
-        return ERR_UNKNOWN;
+        return ERROR_UNKNOWN;
     }
 }
 

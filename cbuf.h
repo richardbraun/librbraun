@@ -98,7 +98,7 @@ void cbuf_init(struct cbuf *cbuf, void *buf, size_t capacity);
  * Push data to a circular buffer.
  *
  * If the function isn't allowed to erase old data and the circular buffer
- * doesn't have enough unused bytes for the new data, ERR_AGAIN is returned.
+ * doesn't have enough unused bytes for the new data, ERROR_AGAIN is returned.
  */
 int cbuf_push(struct cbuf *cbuf, const void *buf, size_t size, bool erase);
 
@@ -108,7 +108,7 @@ int cbuf_push(struct cbuf *cbuf, const void *buf, size_t size, bool erase);
  * On entry, the sizep argument points to the size of the output buffer.
  * On exit, it is updated to the number of bytes actually transferred.
  *
- * If the buffer is empty, ERR_AGAIN is returned, and the size of the
+ * If the buffer is empty, ERROR_AGAIN is returned, and the size of the
  * output buffer is undefined.
  */
 int cbuf_pop(struct cbuf *cbuf, void *buf, size_t *sizep);
@@ -117,21 +117,21 @@ int cbuf_pop(struct cbuf *cbuf, void *buf, size_t *sizep);
  * Push a byte to a circular buffer.
  *
  * If the function isn't allowed to erase old data and the circular buffer
- * is full, ERR_AGAIN is returned.
+ * is full, ERROR_AGAIN is returned.
  */
 int cbuf_pushb(struct cbuf *cbuf, uint8_t byte, bool erase);
 
 /*
  * Pop a byte from a circular buffer.
  *
- * If the buffer is empty, ERR_AGAIN is returned.
+ * If the buffer is empty, ERROR_AGAIN is returned.
  */
 int cbuf_popb(struct cbuf *cbuf, uint8_t *bytep);
 
 /*
  * Write into a circular buffer at a specific location.
  *
- * If the given index is outside buffer boundaries, ERR_INVAL is returned.
+ * If the given index is outside buffer boundaries, ERROR_INVAL is returned.
  * The given [index, size) range may extend beyond the end of the circular
  * buffer.
  */
@@ -143,7 +143,7 @@ int cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size);
  * On entry, the sizep argument points to the size of the output buffer.
  * On exit, it is updated to the number of bytes actually transferred.
  *
- * If the given index is outside buffer boundaries, ERR_INVAL is returned.
+ * If the given index is outside buffer boundaries, ERROR_INVAL is returned.
  *
  * The circular buffer isn't changed by this operation.
  */
