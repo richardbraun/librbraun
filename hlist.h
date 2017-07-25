@@ -290,8 +290,8 @@ for (entry = hlist_first_entry(list, typeof(*entry), member),           \
  * These macros can be replaced by actual functions in an environment
  * that provides lockless synchronization such as RCU.
  */
-#define llsync_assign_ptr(ptr, value)   ((ptr) = (value))
-#define llsync_read_ptr(ptr)            (ptr)
+#define llsync_store_ptr(ptr, value)    ((ptr) = (value))
+#define llsync_load_ptr(ptr)            (ptr)
 
 /*
  * Return the first node of a list.
@@ -299,7 +299,7 @@ for (entry = hlist_first_entry(list, typeof(*entry), member),           \
 static inline struct hlist_node *
 hlist_llsync_first(const struct hlist *list)
 {
-    return llsync_read_ptr(list->first);
+    return llsync_load_ptr(list->first);
 }
 
 /*
@@ -308,7 +308,7 @@ hlist_llsync_first(const struct hlist *list)
 static inline struct hlist_node *
 hlist_llsync_next(const struct hlist_node *node)
 {
-    return llsync_read_ptr(node->next);
+    return llsync_load_ptr(node->next);
 }
 
 /*
@@ -327,7 +327,7 @@ hlist_llsync_insert_head(struct hlist *list, struct hlist_node *node)
         first->pprev = &node->next;
     }
 
-    llsync_assign_ptr(list->first, node);
+    llsync_store_ptr(list->first, node);
 }
 
 /*
@@ -339,7 +339,7 @@ hlist_llsync_insert_before(struct hlist_node *next, struct hlist_node *node)
     node->next = next;
     node->pprev = next->pprev;
     next->pprev = &node->next;
-    llsync_assign_ptr(*node->pprev, node);
+    llsync_store_ptr(*node->pprev, node);
 }
 
 /*
@@ -355,7 +355,7 @@ hlist_llsync_insert_after(struct hlist_node *prev, struct hlist_node *node)
         node->next->pprev = &node->next;
     }
 
-    llsync_assign_ptr(prev->next, node);
+    llsync_store_ptr(prev->next, node);
 }
 
 /*
@@ -368,7 +368,7 @@ hlist_llsync_remove(struct hlist_node *node)
         node->next->pprev = node->pprev;
     }
 
-    llsync_assign_ptr(*node->pprev, node->next);
+    llsync_store_ptr(*node->pprev, node->next);
 }
 
 /*
@@ -376,7 +376,7 @@ hlist_llsync_remove(struct hlist_node *node)
  * given node based on the given type and member.
  */
 #define hlist_llsync_entry(node, type, member) \
-    structof(llsync_read_ptr(node), type, member)
+    structof(llsync_load_ptr(node), type, member)
 
 /*
  * Get the first entry of a list.
