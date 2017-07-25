@@ -28,6 +28,7 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "cbuf.h"
@@ -38,7 +39,7 @@
 #define CBUF_INIT_INDEX ((size_t)-500)
 
 void
-cbuf_init(struct cbuf *cbuf, char *buf, size_t capacity)
+cbuf_init(struct cbuf *cbuf, void *buf, size_t capacity)
 {
     assert(ISP2(capacity));
 
@@ -95,7 +96,7 @@ cbuf_pop(struct cbuf *cbuf, void *buf, size_t *sizep)
 }
 
 int
-cbuf_pushb(struct cbuf *cbuf, char byte, bool erase)
+cbuf_pushb(struct cbuf *cbuf, uint8_t byte, bool erase)
 {
     size_t free_size;
 
@@ -114,7 +115,7 @@ cbuf_pushb(struct cbuf *cbuf, char byte, bool erase)
 }
 
 int
-cbuf_popb(struct cbuf *cbuf, char *bytep)
+cbuf_popb(struct cbuf *cbuf, uint8_t *bytep)
 {
     if (cbuf_size(cbuf) == 0) {
         return ERR_AGAIN;
@@ -128,7 +129,7 @@ cbuf_popb(struct cbuf *cbuf, char *bytep)
 int
 cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size)
 {
-    char *start, *end, *buf_end;
+    uint8_t *start, *end, *buf_end;
     size_t new_end, skip;
 
     if (!cbuf_range_valid(cbuf, index, cbuf->end)) {
@@ -168,7 +169,7 @@ cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size)
 int
 cbuf_read(const struct cbuf *cbuf, size_t index, void *buf, size_t *sizep)
 {
-    const char *start, *end, *buf_end;
+    const uint8_t *start, *end, *buf_end;
     size_t size;
 
     /* At least one byte must be available */
