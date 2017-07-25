@@ -115,13 +115,16 @@ cbuf_pushb(struct cbuf *cbuf, uint8_t byte, bool erase)
 }
 
 int
-cbuf_popb(struct cbuf *cbuf, uint8_t *bytep)
+cbuf_popb(struct cbuf *cbuf, void *bytep)
 {
+    uint8_t *ptr;
+
     if (cbuf_size(cbuf) == 0) {
         return ERROR_AGAIN;
     }
 
-    *bytep = cbuf->buf[cbuf_index(cbuf, cbuf->start)];
+    ptr = bytep;
+    *ptr = cbuf->buf[cbuf_index(cbuf, cbuf->start)];
     cbuf->start++;
     return 0;
 }

@@ -126,7 +126,7 @@ int cbuf_pushb(struct cbuf *cbuf, uint8_t byte, bool erase);
  *
  * If the buffer is empty, ERROR_AGAIN is returned.
  */
-int cbuf_popb(struct cbuf *cbuf, uint8_t *bytep);
+int cbuf_popb(struct cbuf *cbuf, void *bytep);
 
 /*
  * Write into a circular buffer at a specific location.
