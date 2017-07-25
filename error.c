@@ -48,11 +48,7 @@ static const char *errormsg_table[] = {
     "not enough resources",
     "operation not permitted",
     "resource busy",
-    "memory limit exceeded",
     "operation timed out",
-    "operation would block",
-    "entry not found",
-    "internal memory allocator failure",
     "resource temporarily unavailable",
     "entry exist",
 };
