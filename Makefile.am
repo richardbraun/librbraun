@@ -1,7 +1,6 @@
 EXTRA_DIST =
 MOSTLYCLEANFILES =
 
-# TODO Remove tabs
 AM_CPPFLAGS = \
         -pipe \
         -std=gnu11 \
