@@ -35,10 +35,10 @@
 #define _BITMAP_H
 
 #include <limits.h>
+#include <stdatomic.h>
 #include <string.h>
 
 #include "bitmap_i.h"
-#include "x86/atomic.h"
 
 #define BITMAP_DECLARE(name, nr_bits) unsigned long name[BITMAP_LONGS(nr_bits)]
 
@@ -88,7 +88,7 @@ bitmap_set_atomic(unsigned long *bm, int bit)
         bitmap_lookup(&bm, &bit);
     }
 
-    atomic_or_ulong(bm, bitmap_mask(bit));
+    atomic_fetch_or_explicit(bm, bitmap_mask(bit), memory_order_release);
 }
 
 static inline void
@@ -108,7 +108,7 @@ bitmap_clear_atomic(unsigned long *bm, int bit)
         bitmap_lookup(&bm, &bit);
     }
 
-    atomic_and_ulong(bm, ~bitmap_mask(bit));
+    atomic_fetch_and_explicit(bm, ~bitmap_mask(bit), memory_order_acquire);
 }
 
 static inline int
@@ -119,6 +119,17 @@ bitmap_test(const unsigned long *bm, int bit)
     }
 
     return ((*bm & bitmap_mask(bit)) != 0);
+}
+
+static inline int
+bitmap_test_atomic(const unsigned long *bm, int bit)
+{
+    if (bit >= LONG_BIT) {
+        bitmap_lookup(&bm, &bit);
+    }
+
+    return ((atomic_load_explicit(bm, memory_order_acquire)
+            & bitmap_mask(bit)) != 0);
 }
 
 static inline void

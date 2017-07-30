@@ -44,9 +44,7 @@ librbraun_la_SOURCES = \
         rdxtree_i.h \
         slist.h \
         shell.c \
-        shell.h \
-        x86/atomic.h \
-        x86/mb.h
+        shell.h
 
 librbraun_la_LIBADD = -lrt -lpthread
 
