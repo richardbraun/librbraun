@@ -139,7 +139,7 @@ bitmap_test_atomic(const unsigned long *bm, int bit)
 
     ptr = (atomic_ulong *)bm;
     return ((atomic_load_explicit(ptr, memory_order_acquire)
-            & bitmap_mask(bit)) != 0);
+             & bitmap_mask(bit)) != 0);
 }
 
 static inline void
