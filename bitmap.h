@@ -85,11 +85,14 @@ bitmap_set(unsigned long *bm, int bit)
 static inline void
 bitmap_set_atomic(unsigned long *bm, int bit)
 {
+    atomic_ulong *ptr;
+
     if (bit >= LONG_BIT) {
         bitmap_lookup(&bm, &bit);
     }
 
-    atomic_fetch_or_explicit(bm, bitmap_mask(bit), memory_order_release);
+    ptr = (atomic_ulong *)bm;
+    atomic_fetch_or_explicit(ptr, bitmap_mask(bit), memory_order_release);
 }
 
 static inline void
@@ -105,11 +108,14 @@ bitmap_clear(unsigned long *bm, int bit)
 static inline void
 bitmap_clear_atomic(unsigned long *bm, int bit)
 {
+    atomic_ulong *ptr;
+
     if (bit >= LONG_BIT) {
         bitmap_lookup(&bm, &bit);
     }
 
-    atomic_fetch_and_explicit(bm, ~bitmap_mask(bit), memory_order_acquire);
+    ptr = (atomic_ulong *)bm;
+    atomic_fetch_and_explicit(ptr, ~bitmap_mask(bit), memory_order_acquire);
 }
 
 static inline int
@@ -125,11 +131,14 @@ bitmap_test(const unsigned long *bm, int bit)
 static inline int
 bitmap_test_atomic(const unsigned long *bm, int bit)
 {
+    atomic_ulong *ptr;
+
     if (bit >= LONG_BIT) {
         bitmap_lookup(&bm, &bit);
     }
 
-    return ((atomic_load_explicit(bm, memory_order_acquire)
+    ptr = (atomic_ulong *)bm;
+    return ((atomic_load_explicit(ptr, memory_order_acquire)
             & bitmap_mask(bit)) != 0);
 }
 
