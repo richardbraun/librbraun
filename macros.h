@@ -86,6 +86,10 @@
 #define __packed            __attribute__((packed))
 #endif
 
+#ifndef __unused
+#define __unused            __attribute__((unused))
+#endif
+
 /*
  * XXX Suppress warnings caused by some implementations of assert().
  */
