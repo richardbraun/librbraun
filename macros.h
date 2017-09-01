@@ -90,12 +90,4 @@
 #define __unused            __attribute__((unused))
 #endif
 
-/*
- * XXX Suppress warnings caused by some implementations of assert().
- */
-#ifdef NDEBUG
-#undef assert
-#define assert(x) ((void)(x))
-#endif /* NDEBUG */
-
 #endif /* _MACROS_H */
