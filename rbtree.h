@@ -278,6 +278,15 @@ rbtree_insert_slot(struct rbtree *tree, rbtree_slot_t slot,
 }
 
 /*
+ * Replace a node at an insertion point in a tree.
+ *
+ * The given node must compare strictly equal to the previous node,
+ * which is returned on completion.
+ */
+void * rbtree_replace_slot(struct rbtree *tree, rbtree_slot_t slot,
+                           struct rbtree_node *node);
+
+/*
  * Remove a node from a tree.
  *
  * After completion, the node is stale.

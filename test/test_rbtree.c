@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../check.h"
 #include "../hash.h"
 #include "../macros.h"
 #include "../rbtree.h"
@@ -88,7 +89,7 @@ main(int argc, char *argv[])
 {
     struct rbtree tree;
     struct rbtree_node *node, *tmp;
-    struct obj *obj;
+    struct obj *obj, *prev;
     rbtree_slot_t slot;
     int i, id;
 
@@ -110,6 +111,20 @@ main(int argc, char *argv[])
         printf("%d ", obj->id);
         rbtree_insert_slot(&tree, slot, &obj->node);
     }
+
+    id = get_id(0);
+    node = rbtree_lookup_slot(&tree, id, obj_cmp_lookup, slot);
+    check(node);
+    obj = malloc(sizeof(*obj));
+    check(obj);
+    obj->id = id;
+    printf("replacing: %d ", obj->id);
+    node = rbtree_replace_slot(&tree, slot, &obj->node);
+    check(node != &obj->node);
+    prev = rbtree_entry(node, struct obj, node);
+    free(prev);
+    node = rbtree_lookup(&tree, id, obj_cmp_lookup);
+    check(node == &obj->node);
 
     printf("\n");
     print_tree(&tree);

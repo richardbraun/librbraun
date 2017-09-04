@@ -254,6 +254,40 @@ rbtree_insert_rebalance(struct rbtree *tree, struct rbtree_node *parent,
     assert(rbtree_node_is_black(tree->root));
 }
 
+void *
+rbtree_replace_slot(struct rbtree *tree, rbtree_slot_t slot,
+                    struct rbtree_node *node)
+{
+    struct rbtree_node *parent, *prev;
+    int index;
+
+    parent = rbtree_slot_parent(slot);
+
+    if (!parent) {
+        prev = tree->root;
+        tree->root = node;
+    } else {
+        index = rbtree_slot_index(slot);
+        assert(rbtree_check_index(index));
+        prev = parent->children[index];
+        parent->children[index] = node;
+    }
+
+    assert(prev);
+    *node = *prev;
+
+    for (size_t i = 0; i < ARRAY_SIZE(node->children); i++) {
+        if (!node->children[i]) {
+            continue;
+        }
+
+
+        rbtree_node_set_parent(node->children[i], node);
+    }
+
+    return prev;
+}
+
 void
 rbtree_remove(struct rbtree *tree, struct rbtree_node *node)
 {
