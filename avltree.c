@@ -310,6 +310,40 @@ avltree_insert_rebalance(struct avltree *tree, struct avltree_node *parent,
     avltree_rotate(tree, node, new_balance);
 }
 
+void *
+avltree_replace_slot(struct avltree *tree, avltree_slot_t slot,
+                     struct avltree_node *node)
+{
+    struct avltree_node *parent, *prev;
+    int index;
+
+    parent = avltree_slot_parent(slot);
+
+    if (!parent) {
+        prev = tree->root;
+        tree->root = node;
+    } else {
+        index = avltree_slot_index(slot);
+        assert(avltree_check_index(index));
+        prev = parent->children[index];
+        parent->children[index] = node;
+    }
+
+    assert(prev);
+    *node = *prev;
+
+    for (size_t i = 0; i < ARRAY_SIZE(node->children); i++) {
+        if (!node->children[i]) {
+            continue;
+        }
+
+
+        avltree_node_set_parent(node->children[i], node);
+    }
+
+    return prev;
+}
+
 void
 avltree_remove(struct avltree *tree, struct avltree_node *node)
 {

@@ -279,6 +279,15 @@ avltree_insert_slot(struct avltree *tree, avltree_slot_t slot,
 }
 
 /*
+ * Replace a node at an insertion point in a tree.
+ *
+ * The given node must compare strictly equal to the previous node,
+ * which is returned on completion.
+ */
+void * avltree_replace_slot(struct avltree *tree, avltree_slot_t slot,
+                            struct avltree_node *node);
+
+/*
  * Remove a node from a tree.
  *
  * After completion, the node is stale.

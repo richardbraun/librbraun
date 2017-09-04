@@ -27,9 +27,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../avltree.h"
+#include "../check.h"
 #include "../hash.h"
 #include "../macros.h"
-#include "../avltree.h"
 
 #define SIZE 28
 
@@ -103,7 +104,7 @@ main(int argc, char *argv[])
 {
     struct avltree tree;
     struct avltree_node *node, *tmp;
-    struct obj *obj;
+    struct obj *obj, *prev;
     avltree_slot_t slot;
     int i, id;
 
@@ -125,6 +126,20 @@ main(int argc, char *argv[])
         printf("%d ", obj->id);
         avltree_insert_slot(&tree, slot, &obj->node);
     }
+
+    id = get_id(0);
+    node = avltree_lookup_slot(&tree, id, obj_cmp_lookup, slot);
+    check(node);
+    obj = malloc(sizeof(*obj));
+    check(obj);
+    obj->id = id;
+    printf("replacing: %d ", obj->id);
+    node = avltree_replace_slot(&tree, slot, &obj->node);
+    check(node != &obj->node);
+    prev = avltree_entry(node, struct obj, node);
+    free(prev);
+    node = avltree_lookup(&tree, id, obj_cmp_lookup);
+    check(node == &obj->node);
 
     printf("\n");
     print_tree(&tree);
