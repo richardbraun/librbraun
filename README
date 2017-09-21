@@ -1,0 +1,9 @@
+Basic modules library for C.
+
+This library is not meant to be linked against, but rather used as a
+repository of modules to include in your own projects as needed.
+
+See https://www.sceen.net/basic-modules-library-for-c/.
+
+Bug reports relating to this distribution should be sent to
+rbraun@sceen.net.
