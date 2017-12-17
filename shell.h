@@ -29,6 +29,8 @@
 #ifndef _SHELL_H
 #define _SHELL_H
 
+#include <stddef.h>
+
 typedef void (*shell_fn_t)(int argc, char *argv[]);
 
 struct shell_cmd {

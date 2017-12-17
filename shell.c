@@ -24,7 +24,9 @@
  */
 
 #include <pthread.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "macros.h"
