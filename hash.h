@@ -108,7 +108,13 @@ hash_str(const char *str, unsigned int bits)
     unsigned long hash;
     char c;
 
-    for (hash = 0; (c = *str) != '\0'; str++) {
+    for (hash = 0; /* no condition */; str++) {
+        c = *str;
+
+        if (c == '\0') {
+            break;
+        }
+
         hash = ((hash << 5) - hash) + c;
     }
 
