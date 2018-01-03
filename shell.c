@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Richard Braun.
+ * Copyright (c) 2015-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1191,16 +1191,6 @@ shell_run(void)
 void
 shell_setup(void)
 {
-    unsigned long i;
-    int error;
-
     pthread_mutex_init(&shell_lock, NULL);
-
-    for (i = 0; i < ARRAY_SIZE(shell_default_cmds); i++) {
-        error = shell_cmd_register(&shell_default_cmds[i]);
-
-        if (error) {
-            error_die(error);
-        }
-    }
+    SHELL_REGISTER_CMDS(shell_default_cmds);
 }
