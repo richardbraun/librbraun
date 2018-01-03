@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015 Richard Braun.
+ * Copyright (c) 2009-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,11 +74,9 @@ const char * error_str(unsigned int error);
 unsigned int error_from_errno(int errno_code);
 
 /*
- * Exit the current process, reporting an error.
- *
- * This function will report the given error and make the process exit,
- * using the error code as the exit() parameter.
+ * If error denotes an actual error (i.e. is not 0), abort, using the given
+ * string as a prefix for the error message. A NULL prefix is allowed.
  */
-noreturn void error_die(unsigned int error);
+void error_check(int error, const char *prefix);
 
 #endif /* _ERROR_H */

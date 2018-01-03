@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015 Richard Braun.
+ * Copyright (c) 2009-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -86,8 +86,15 @@ error_from_errno(int errno_code)
 }
 
 void
-error_die(unsigned int error)
+error_check(int error, const char *prefix)
 {
-    fprintf(stderr, "process terminating, reason: %s\n", error_str(error));
+    if (!error) {
+        return;
+    }
+
+    fprintf(stderr, "%s%s%s\n",
+            (prefix == NULL) ? "" : prefix,
+            (prefix == NULL) ? "" : ": ",
+            error_str(error));
     abort();
 }

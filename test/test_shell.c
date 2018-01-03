@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Richard Braun.
+ * Copyright (c) 2015-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,10 +95,7 @@ main(int argc, char *argv[])
 
     for (i = 0; i < ARRAY_SIZE(test_shell_cmds); i++) {
         ret = shell_cmd_register(&test_shell_cmds[i]);
-
-        if (ret) {
-            error_die(ret);
-        }
+        error_check(ret, "shell_cmd_register");
     }
 
     setbuf(stdin, NULL);
