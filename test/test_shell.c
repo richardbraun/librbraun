@@ -87,16 +87,12 @@ int
 main(int argc, char *argv[])
 {
     struct termios termios;
-    unsigned int i;
     int ret;
 
     (void)argc;
     (void)argv;
 
-    for (i = 0; i < ARRAY_SIZE(test_shell_cmds); i++) {
-        ret = shell_cmd_register(&test_shell_cmds[i]);
-        error_check(ret, "shell_cmd_register");
-    }
+    SHELL_REGISTER_CMDS(test_shell_cmds);
 
     setbuf(stdin, NULL);
     ret = tcgetattr(fileno(stdin), &termios);
