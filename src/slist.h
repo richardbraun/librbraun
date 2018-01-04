@@ -189,8 +189,8 @@ slist_insert_tail(struct slist *list, struct slist_node *node)
  * The prev node must be valid.
  */
 static inline void
-slist_insert_after(struct slist *list, struct slist_node *prev,
-                   struct slist_node *node)
+slist_insert_after(struct slist *list, struct slist_node *node,
+                   struct slist_node *prev)
 {
     node->next = prev->next;
     prev->next = node;
@@ -378,8 +378,8 @@ slist_llsync_insert_tail(struct slist *list, struct slist_node *node)
  * The prev node must be valid.
  */
 static inline void
-slist_llsync_insert_after(struct slist *list, struct slist_node *prev,
-                          struct slist_node *node)
+slist_llsync_insert_after(struct slist *list, struct slist_node *node,
+                          struct slist_node *prev)
 {
     node->next = prev->next;
     llsync_store_ptr(prev->next, node);

@@ -86,7 +86,7 @@ add_obj_tail2(struct slist *list)
     struct obj *obj;
 
     obj = obj_create();
-    slist_insert_after(list, slist_last(list), &obj->node);
+    slist_insert_after(list, &obj->node, slist_last(list));
 }
 
 static void
@@ -95,7 +95,7 @@ add_obj_tail2_llsync(struct slist *list)
     struct obj *obj;
 
     obj = obj_create();
-    slist_llsync_insert_after(list, slist_last(list), &obj->node);
+    slist_llsync_insert_after(list, &obj->node, slist_last(list));
 }
 
 static void
@@ -106,7 +106,7 @@ add_obj_second(struct slist *list)
 
     obj = obj_create();
     first = slist_first(list);
-    slist_insert_after(list, first, &obj->node);
+    slist_insert_after(list, &obj->node, first);
 }
 
 static void

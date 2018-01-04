@@ -67,7 +67,7 @@ add_obj_head2(struct hlist *list)
     obj = obj_create();
     check(hlist_node_unlinked(&obj->node));
     node = hlist_first(list);
-    hlist_insert_before(node, &obj->node);
+    hlist_insert_before(&obj->node, node);
 }
 
 static void
@@ -79,7 +79,7 @@ add_obj_second(struct hlist *list)
     obj = obj_create();
     check(hlist_node_unlinked(&obj->node));
     node = hlist_first(list);
-    hlist_insert_after(node, &obj->node);
+    hlist_insert_after(&obj->node, node);
 }
 
 static void
@@ -100,7 +100,7 @@ add_obj_head2_llsync(struct hlist *list)
     obj = obj_create();
     check(hlist_node_unlinked(&obj->node));
     node = hlist_first(list);
-    hlist_llsync_insert_before(node, &obj->node);
+    hlist_llsync_insert_before(&obj->node, node);
 }
 
 static void
@@ -112,7 +112,7 @@ add_obj_second_llsync(struct hlist *list)
     obj = obj_create();
     check(hlist_node_unlinked(&obj->node));
     node = hlist_first(list);
-    hlist_llsync_insert_after(node, &obj->node);
+    hlist_llsync_insert_after(&obj->node, node);
 }
 
 static void
