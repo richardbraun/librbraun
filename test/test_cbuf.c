@@ -20,13 +20,13 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "../cbuf.h"
 #include "../check.h"
-#include "../error.h"
 #include "../macros.h"
 
 #define TEST_BUF_SIZE 1024
@@ -77,7 +77,7 @@ test_read_0(void)
 
     size = 0;
     error = cbuf_read(&cbuf, index, buf, &size);
-    check(error == ERROR_INVAL);
+    check(error == EINVAL);
     check(size == 0);
 
     test_push(&cbuf, "a");

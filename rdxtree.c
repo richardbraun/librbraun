@@ -26,13 +26,13 @@
 #include <stdbool.h>
 
 #include <assert.h>
+#include <errno.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "error.h"
 #include "macros.h"
 #include "rdxtree.h"
 #include "rdxtree_i.h"
@@ -142,7 +142,7 @@ rdxtree_node_create(struct rdxtree_node **nodep, unsigned short height)
         rdxtree_nr_node_creations++;
 
         if (rdxtree_nr_node_creations == rdxtree_fail_node_creation_threshold) {
-            return ERROR_NOMEM;
+            return ENOMEM;
         }
     }
 #endif /* RDXTREE_ENABLE_NODE_CREATION_FAILURES */
@@ -150,7 +150,7 @@ rdxtree_node_create(struct rdxtree_node **nodep, unsigned short height)
     node = malloc(sizeof(*node));
 
     if (node == NULL) {
-        return ERROR_NOMEM;
+        return ENOMEM;
     }
 
     rdxtree_assert_alignment(node);
@@ -348,7 +348,7 @@ rdxtree_grow(struct rdxtree *tree, rdxtree_key_t key)
 
     if (tree->root == NULL) {
         tree->height = new_height;
-        return ERROR_SUCCESS;
+        return 0;
     }
 
     root = rdxtree_entry_addr(tree->root);
@@ -380,7 +380,7 @@ rdxtree_grow(struct rdxtree *tree, rdxtree_key_t key)
         root = node;
     } while (new_height > tree->height);
 
-    return ERROR_SUCCESS;
+    return 0;
 }
 
 static void
@@ -451,7 +451,7 @@ rdxtree_insert_common(struct rdxtree *tree, rdxtree_key_t key,
 
     if (unlikely(height == 0)) {
         if (tree->root != NULL) {
-            return ERROR_BUSY;
+            return EBUSY;
         }
 
         llsync_store_ptr(tree->root, ptr);
@@ -460,7 +460,7 @@ rdxtree_insert_common(struct rdxtree *tree, rdxtree_key_t key,
             *slotp = &tree->root;
         }
 
-        return ERROR_SUCCESS;
+        return 0;
     }
 
     node = rdxtree_entry_addr(tree->root);
@@ -497,7 +497,7 @@ rdxtree_insert_common(struct rdxtree *tree, rdxtree_key_t key,
     } while (height > 0);
 
     if (unlikely(node != NULL)) {
-        return ERROR_BUSY;
+        return EBUSY;
     }
 
     rdxtree_node_insert(prev, index, ptr);
@@ -510,7 +510,7 @@ rdxtree_insert_common(struct rdxtree *tree, rdxtree_key_t key,
         *slotp = &prev->entries[index];
     }
 
-    return ERROR_SUCCESS;
+    return 0;
 }
 
 int
@@ -538,7 +538,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
                 *slotp = &tree->root;
             }
 
-            return ERROR_SUCCESS;
+            return 0;
         }
 
         goto grow;
@@ -594,7 +594,7 @@ grow:
 
 out:
     *keyp = key;
-    return ERROR_SUCCESS;
+    return 0;
 }
 
 static void

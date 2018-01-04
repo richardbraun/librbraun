@@ -25,8 +25,6 @@ librbraun_la_SOURCES = \
         cbuf.h \
         check.h \
         cpu.h \
-        error.c \
-        error.h \
         fmt.c \
         fmt.h \
         hash.h \

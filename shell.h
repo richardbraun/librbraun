@@ -30,19 +30,25 @@
 #define _SHELL_H
 
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <error.h>
 #include <macros.h>
 
-#define SHELL_REGISTER_CMDS(cmds)                           \
-MACRO_BEGIN                                                 \
-    size_t ___i;                                            \
-    int ___error;                                           \
-                                                            \
-    for (___i = 0; ___i < ARRAY_SIZE(cmds); ___i++) {       \
-        ___error = shell_cmd_register(&(cmds)[___i]);       \
-        error_check(___error, __func__);                    \
-    }                                                       \
+#define SHELL_REGISTER_CMDS(cmds)                                       \
+MACRO_BEGIN                                                             \
+    size_t ___i;                                                        \
+    int ___error;                                                       \
+                                                                        \
+    for (___i = 0; ___i < ARRAY_SIZE(cmds); ___i++) {                   \
+        ___error = shell_cmd_register(&(cmds)[___i]);                   \
+                                                                        \
+        if (___error) {                                                 \
+            fprintf(stderr, "%s: %s\n", __func__, strerror(___error));  \
+            abort();                                                    \
+        }                                                               \
+    }                                                                   \
 MACRO_END
 
 typedef void (*shell_fn_t)(int argc, char *argv[]);
