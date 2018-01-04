@@ -25,9 +25,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../cbuf.h"
-#include "../check.h"
-#include "../macros.h"
+#include <cbuf.h>
+#include <check.h>
+#include <macros.h>
 
 #define TEST_BUF_SIZE 1024
 

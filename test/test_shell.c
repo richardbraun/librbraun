@@ -26,8 +26,8 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "../macros.h"
-#include "../shell.h"
+#include <macros.h>
+#include <shell.h>
 
 static void
 test_exit(int argc, char *argv[])

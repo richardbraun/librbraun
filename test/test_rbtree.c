@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../check.h"
-#include "../hash.h"
-#include "../macros.h"
-#include "../rbtree.h"
+#include <check.h>
+#include <hash.h>
+#include <macros.h>
+#include <rbtree.h>
 
 #define SIZE 28
 

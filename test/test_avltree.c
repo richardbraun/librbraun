@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../avltree.h"
-#include "../check.h"
-#include "../hash.h"
-#include "../macros.h"
+#include <avltree.h>
+#include <check.h>
+#include <hash.h>
+#include <macros.h>
 
 #define SIZE 28
 

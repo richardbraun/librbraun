@@ -25,8 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../macros.h"
-#include "../plist.h"
+#include <macros.h>
+#include <plist.h>
 
 struct obj {
     struct plist_node node;

@@ -26,9 +26,9 @@
 
 #pragma GCC diagnostic ignored "-Wformat"
 
-#include "../check.h"
-#include "../fmt.h"
-#include "../macros.h"
+#include <check.h>
+#include <fmt.h>
+#include <macros.h>
 
 #define TEST_SPRINTF(format, ...)                                    \
 MACRO_BEGIN                                                         \

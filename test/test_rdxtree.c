@@ -26,9 +26,9 @@
 
 #define RDXTREE_ENABLE_NODE_CREATION_FAILURES
 
-#include "../check.h"
-#include "../macros.h"
-#include "../rdxtree.c"
+#include <check.h>
+#include <macros.h>
+#include <rdxtree.c>
 
 #define TITLE(str) printf("%s: %s\n", __func__, str)
 

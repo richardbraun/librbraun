@@ -24,9 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../check.h"
-#include "../macros.h"
-#include "../slist.h"
+#include <check.h>
+#include <macros.h>
+#include <slist.h>
 
 struct obj {
     struct slist_node node;

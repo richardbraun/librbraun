@@ -1,6 +1,6 @@
 AC_INIT([librbraun], [0.1], [rbraun@sceen.net], [librbraun])
 
-AC_CONFIG_SRCDIR([macros.h])
+AC_CONFIG_SRCDIR([src/macros.h])
 AC_CONFIG_AUX_DIR([build-aux])
 
 LT_INIT
