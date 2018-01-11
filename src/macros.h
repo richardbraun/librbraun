@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2015 Richard Braun.
+ * Copyright (c) 2009-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -85,6 +85,10 @@
 
 #ifndef __unused
 #define __unused            __attribute__((unused))
+#endif
+
+#ifndef __used
+#define __used              __attribute__((used))
 #endif
 
 #endif /* _MACROS_H */
