@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2017 Richard Braun.
+ * Copyright (c) 2010-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -333,6 +333,7 @@ fmt_sprintf_state_consume_modifier(struct fmt_sprintf_state *state)
         break;
     case 'z':
         state->modifier = FMT_MODIFIER_SIZE;
+        __fallthrough;
     case 't':
         state->modifier = FMT_MODIFIER_PTRDIFF;
         break;
@@ -354,6 +355,7 @@ fmt_sprintf_state_consume_specifier(struct fmt_sprintf_state *state)
     case 'd':
     case 'i':
         state->flags |= FMT_FORMAT_CONV_SIGNED;
+        __fallthrough;
     case 'u':
         state->base = 10;
         state->specifier = FMT_SPECIFIER_INT;
@@ -365,8 +367,10 @@ fmt_sprintf_state_consume_specifier(struct fmt_sprintf_state *state)
     case 'p':
         state->flags |= FMT_FORMAT_ALT_FORM;
         state->modifier = FMT_MODIFIER_PTR;
+        __fallthrough;
     case 'x':
         state->flags |= FMT_FORMAT_LOWER;
+        __fallthrough;
     case 'X':
         state->base = 16;
         state->specifier = FMT_SPECIFIER_INT;
@@ -1018,6 +1022,7 @@ fmt_sscanf_state_consume_specifier(struct fmt_sscanf_state *state)
         break;
     case 'd':
         state->flags |= FMT_FORMAT_CONV_SIGNED;
+        __fallthrough;
     case 'u':
         state->base = 10;
         state->specifier = FMT_SPECIFIER_INT;
@@ -1028,6 +1033,7 @@ fmt_sscanf_state_consume_specifier(struct fmt_sscanf_state *state)
         break;
     case 'p':
         state->modifier = FMT_MODIFIER_PTR;
+        __fallthrough;
     case 'x':
     case 'X':
         state->base = 16;
