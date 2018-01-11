@@ -91,4 +91,12 @@
 #define __used              __attribute__((used))
 #endif
 
+#ifndef __fallthrough
+#if __GNUC__ >= 7
+#define __fallthrough       __attribute__((fallthrough))
+#else /* __GNUC__ >= 7 */
+#define __fallthrough
+#endif /* __GNUC__ >= 7 */
+#endif
+
 #endif /* _MACROS_H */
