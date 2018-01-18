@@ -10,6 +10,8 @@ AM_CPPFLAGS = \
 AM_CFLAGS = \
         -Wall \
         -Wextra \
+        -Wshadow \
+        -Wstrict-prototypes \
         -Wmissing-prototypes
 
 lib_LTLIBRARIES = librbraun.la
