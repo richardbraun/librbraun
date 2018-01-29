@@ -204,8 +204,8 @@ slist_insert_after(struct slist *list, struct slist_node *node,
  * Remove a node from a list.
  *
  * The prev argument must point to the node immediately preceding the target
- * node. It may safely denote the end of the given list, in which case the
- * first node is removed.
+ * node. It may safely denote the end of the given list (NULL), in which case
+ * the first node is removed.
  */
 static inline void
 slist_remove(struct slist *list, struct slist_node *prev)
