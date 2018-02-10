@@ -24,6 +24,8 @@
  *
  *
  * Helper macros.
+ *
+ * TODO Improve documentation.
  */
 
 #ifndef _MACROS_H
