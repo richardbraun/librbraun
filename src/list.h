@@ -26,8 +26,8 @@
  * Doubly-linked list.
  */
 
-#ifndef _LIST_H
-#define _LIST_H
+#ifndef LIST_H
+#define LIST_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -505,14 +505,14 @@ list_llsync_remove(struct list *node)
  */
 #define list_llsync_first_entry(list, type, member)         \
 MACRO_BEGIN                                                 \
-    struct list *___list;                                   \
-    struct list *___first;                                  \
+    struct list *list___;                                   \
+    struct list *first___;                                  \
                                                             \
-    ___list = (list);                                       \
-    ___first = list_llsync_first(___list);                  \
-    list_end(___list, ___first)                             \
+    list___ = (list);                                       \
+    first___ = list_llsync_first(list___);                  \
+    list_end(list___, first___)                             \
         ? NULL                                              \
-        : list_entry(___first, type, member);               \
+        : list_entry(first___, type, member);               \
 MACRO_END
 
 /*
@@ -552,4 +552,4 @@ for (entry = list_llsync_entry(list_first(list),            \
  */
 void list_sort(struct list *list, list_sort_cmp_fn_t cmp_fn);
 
-#endif /* _LIST_H */
+#endif /* LIST_H */

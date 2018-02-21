@@ -23,8 +23,8 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  */
 
-#ifndef _CPU_H
-#define _CPU_H
+#ifndef CPU_H
+#define CPU_H
 
 #include <sched.h>
 
@@ -81,4 +81,4 @@ cpu_id(void)
 #endif
 }
 
-#endif /* _CPU_H */
+#endif /* CPU_H */

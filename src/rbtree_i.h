@@ -23,8 +23,8 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  */
 
-#ifndef _RBTREE_I_H
-#define _RBTREE_I_H
+#ifndef RBTREE_I_H
+#define RBTREE_I_H
 
 #include <assert.h>
 #include <stddef.h>
@@ -194,4 +194,4 @@ struct rbtree_node * rbtree_postwalk_deepest(const struct rbtree *tree);
  */
 struct rbtree_node * rbtree_postwalk_unlink(struct rbtree_node *node);
 
-#endif /* _RBTREE_I_H */
+#endif /* RBTREE_I_H */

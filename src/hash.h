@@ -44,8 +44,8 @@
  * HASH_ALLBITS macro.
  */
 
-#ifndef _HASH_H
-#define _HASH_H
+#ifndef HASH_H
+#define HASH_H
 
 #include <assert.h>
 #include <stdint.h>
@@ -121,4 +121,4 @@ hash_str(const char *str, unsigned int bits)
     return hash & ((1UL << bits) - 1);
 }
 
-#endif /* _HASH_H */
+#endif /* HASH_H */

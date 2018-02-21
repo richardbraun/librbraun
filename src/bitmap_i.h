@@ -23,8 +23,8 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  */
 
-#ifndef _BITMAP_I_H
-#define _BITMAP_I_H
+#ifndef BITMAP_I_H
+#define BITMAP_I_H
 
 #include <limits.h>
 
@@ -66,4 +66,4 @@ bitmap_mask(int bit)
 int bitmap_find_next_bit(const unsigned long *bm, int nr_bits, int bit,
                          int complement);
 
-#endif /* _BITMAP_I_H */
+#endif /* BITMAP_I_H */

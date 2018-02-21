@@ -23,8 +23,8 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  */
 
-#ifndef _CHECK_H
-#define _CHECK_H
+#ifndef CHECK_H
+#define CHECK_H
 
 #include <stdlib.h>
 
@@ -44,4 +44,4 @@ MACRO_BEGIN                                     \
     }                                           \
 MACRO_END
 
-#endif /* _CHECK_H */
+#endif /* CHECK_H */

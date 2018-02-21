@@ -29,8 +29,8 @@
  * can allocate keys for the caller at insertion time.
  */
 
-#ifndef _RDXTREE_H
-#define _RDXTREE_H
+#ifndef RDXTREE_H
+#define RDXTREE_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -221,4 +221,4 @@ rdxtree_iter_key(const struct rdxtree_iter *iter)
  */
 void rdxtree_remove_all(struct rdxtree *tree);
 
-#endif /* _RDXTREE_H */
+#endif /* RDXTREE_H */

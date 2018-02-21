@@ -26,8 +26,8 @@
  * Doubly-linked list specialized for forward traversals and O(1) removals.
  */
 
-#ifndef _HLIST_H
-#define _HLIST_H
+#ifndef HLIST_H
+#define HLIST_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -218,10 +218,10 @@ hlist_remove(struct hlist_node *node)
  */
 #define hlist_first_entry(list, type, member)                           \
 MACRO_BEGIN                                                             \
-    struct hlist_node *___first;                                        \
+    struct hlist_node *first___;                                        \
                                                                         \
-    ___first = (list)->first;                                           \
-    hlist_end(___first) ? NULL : hlist_entry(___first, type, member);   \
+    first___ = (list)->first;                                           \
+    hlist_end(first___) ? NULL : hlist_entry(first___, type, member);   \
 MACRO_END
 
 /*
@@ -229,12 +229,12 @@ MACRO_END
  */
 #define hlist_next_entry(entry, member) \
 MACRO_BEGIN                                                             \
-    struct hlist_node *___next;                                         \
+    struct hlist_node *next___;                                         \
                                                                         \
-    ___next = (entry)->member.next;                                     \
-    hlist_end(___next)                                                  \
+    next___ = (entry)->member.next;                                     \
+    hlist_end(next___)                                                  \
         ? NULL                                                          \
-        : hlist_entry(___next, typeof(*entry), member);                 \
+        : hlist_entry(next___, typeof(*entry), member);                 \
 MACRO_END
 
 /*
@@ -380,10 +380,10 @@ hlist_llsync_remove(struct hlist_node *node)
  */
 #define hlist_llsync_first_entry(list, type, member)                    \
 MACRO_BEGIN                                                             \
-    struct hlist_node *___first;                                        \
+    struct hlist_node *first___;                                        \
                                                                         \
-    ___first = hlist_llsync_first(list);                                \
-    hlist_end(___first) ? NULL : hlist_entry(___first, type, member);   \
+    first___ = hlist_llsync_first(list);                                \
+    hlist_end(first___) ? NULL : hlist_entry(first___, type, member);   \
 MACRO_END
 
 /*
@@ -391,12 +391,12 @@ MACRO_END
  */
 #define hlist_llsync_next_entry(entry, member)                          \
 MACRO_BEGIN                                                             \
-    struct hlist_node *___next;                                         \
+    struct hlist_node *next___;                                         \
                                                                         \
-    ___next = hlist_llsync_next(&entry->member);                        \
-    hlist_end(___next)                                                  \
+    next___ = hlist_llsync_next(&entry->member);                        \
+    hlist_end(next___)                                                  \
         ? NULL                                                          \
-        : hlist_entry(___next, typeof(*entry), member);                 \
+        : hlist_entry(next___, typeof(*entry), member);                 \
 MACRO_END
 
 /*
@@ -415,4 +415,4 @@ for (entry = hlist_llsync_first_entry(list, typeof(*entry), member);    \
      entry != NULL;                                                     \
      entry = hlist_llsync_next_entry(entry, member))
 
-#endif /* _HLIST_H */
+#endif /* HLIST_H */

@@ -26,8 +26,8 @@
  * Minimalist shell for embedded systems.
  */
 
-#ifndef _SHELL_H
-#define _SHELL_H
+#ifndef SHELL_H
+#define SHELL_H
 
 #include <stddef.h>
 #include <stdio.h>
@@ -38,14 +38,14 @@
 
 #define SHELL_REGISTER_CMDS(cmds)                                       \
 MACRO_BEGIN                                                             \
-    size_t ___i;                                                        \
-    int ___error;                                                       \
+    size_t i___;                                                        \
+    int error___;                                                       \
                                                                         \
-    for (___i = 0; ___i < ARRAY_SIZE(cmds); ___i++) {                   \
-        ___error = shell_cmd_register(&(cmds)[___i]);                   \
+    for (i___ = 0; i___ < ARRAY_SIZE(cmds); i___++) {                   \
+        error___ = shell_cmd_register(&(cmds)[i___]);                   \
                                                                         \
-        if (___error) {                                                 \
-            fprintf(stderr, "%s: %s\n", __func__, strerror(___error));  \
+        if (error___) {                                                 \
+            fprintf(stderr, "%s: %s\n", __func__, strerror(error___));  \
             abort();                                                    \
         }                                                               \
     }                                                                   \
@@ -103,4 +103,4 @@ int shell_cmd_register(struct shell_cmd *cmd);
  */
 void shell_run(void);
 
-#endif /* _SHELL_H */
+#endif /* SHELL_H */

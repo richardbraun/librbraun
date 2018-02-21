@@ -28,8 +28,8 @@
  * TODO Improve documentation.
  */
 
-#ifndef _MACROS_H
-#define _MACROS_H
+#ifndef MACROS_H
+#define MACROS_H
 
 #if !defined(__GNUC__) || (__GNUC__ < 4)
 #error "GCC 4+ required"
@@ -101,4 +101,4 @@
 #endif /* __GNUC__ >= 7 */
 #endif
 
-#endif /* _MACROS_H */
+#endif /* MACROS_H */

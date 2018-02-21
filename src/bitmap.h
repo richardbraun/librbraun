@@ -29,8 +29,8 @@
  * is the responsibility of the caller.
  */
 
-#ifndef _BITMAP_H
-#define _BITMAP_H
+#ifndef BITMAP_H
+#define BITMAP_H
 
 #include <limits.h>
 #include <stdatomic.h>
@@ -211,4 +211,4 @@ for ((bit) = 0;                                                     \
      && (((bit) = bitmap_find_next_zero(bm, nr_bits, bit)) != -1);  \
      (bit)++)
 
-#endif /* _BITMAP_H */
+#endif /* BITMAP_H */

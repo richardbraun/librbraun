@@ -23,8 +23,8 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  */
 
-#ifndef _RDXTREE_I_H
-#define _RDXTREE_I_H
+#ifndef RDXTREE_I_H
+#define RDXTREE_I_H
 
 /*
  * Radix tree.
@@ -68,4 +68,4 @@ void * rdxtree_lookup_common(const struct rdxtree *tree, rdxtree_key_t key,
 
 void * rdxtree_walk(struct rdxtree *tree, struct rdxtree_iter *iter);
 
-#endif /* _RDXTREE_I_H */
+#endif /* RDXTREE_I_H */

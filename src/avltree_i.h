@@ -23,8 +23,8 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  */
 
-#ifndef _AVLTREE_I_H
-#define _AVLTREE_I_H
+#ifndef AVLTREE_I_H
+#define AVLTREE_I_H
 
 #include <assert.h>
 #include <stddef.h>
@@ -200,4 +200,4 @@ struct avltree_node * avltree_postwalk_deepest(const struct avltree *tree);
  */
 struct avltree_node * avltree_postwalk_unlink(struct avltree_node *node);
 
-#endif /* _AVLTREE_I_H */
+#endif /* AVLTREE_I_H */
