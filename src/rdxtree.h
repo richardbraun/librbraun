@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 Richard Braun.
+ * Copyright (c) 2011-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -32,6 +32,7 @@
 #ifndef RDXTREE_H
 #define RDXTREE_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -158,7 +159,7 @@ void * rdxtree_remove(struct rdxtree *tree, rdxtree_key_t key);
 static inline void *
 rdxtree_lookup(const struct rdxtree *tree, rdxtree_key_t key)
 {
-    return rdxtree_lookup_common(tree, key, 0);
+    return rdxtree_lookup_common(tree, key, false);
 }
 
 /*
@@ -175,7 +176,7 @@ rdxtree_lookup(const struct rdxtree *tree, rdxtree_key_t key)
 static inline void **
 rdxtree_lookup_slot(const struct rdxtree *tree, rdxtree_key_t key)
 {
-    return rdxtree_lookup_common(tree, key, 1);
+    return rdxtree_lookup_common(tree, key, true);
 }
 
 static inline void *

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2017 Richard Braun.
+ * Copyright (c) 2011-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -25,6 +25,8 @@
 
 #ifndef RDXTREE_I_H
 #define RDXTREE_I_H
+
+#include <stdbool.h>
 
 /*
  * Radix tree.
@@ -64,7 +66,7 @@ int rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
                                 rdxtree_key_t *keyp, void ***slotp);
 
 void * rdxtree_lookup_common(const struct rdxtree *tree, rdxtree_key_t key,
-                             int get_slot);
+                             bool get_slot);
 
 void * rdxtree_walk(struct rdxtree *tree, struct rdxtree_iter *iter);
 
