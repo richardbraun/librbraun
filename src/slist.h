@@ -320,53 +320,53 @@ for (entry = slist_first_entry(list, typeof(*entry), member),           \
  * These macros can be replaced by actual functions in an environment
  * that provides lockless synchronization such as RCU.
  */
-#define llsync_store_ptr(ptr, value)    ((ptr) = (value))
-#define llsync_load_ptr(ptr)            (ptr)
+#define rcu_store_ptr(ptr, value)    ((ptr) = (value))
+#define rcu_load_ptr(ptr)            (ptr)
 
 /*
  * Return the first node of a list.
  */
 static inline struct slist_node *
-slist_llsync_first(const struct slist *list)
+slist_rcu_first(const struct slist *list)
 {
-    return llsync_load_ptr(list->first);
+    return rcu_load_ptr(list->first);
 }
 
 /*
  * Return the node next to the given node.
  */
 static inline struct slist_node *
-slist_llsync_next(const struct slist_node *node)
+slist_rcu_next(const struct slist_node *node)
 {
-    return llsync_load_ptr(node->next);
+    return rcu_load_ptr(node->next);
 }
 
 /*
  * Insert a node at the head of a list.
  */
 static inline void
-slist_llsync_insert_head(struct slist *list, struct slist_node *node)
+slist_rcu_insert_head(struct slist *list, struct slist_node *node)
 {
     if (slist_empty(list)) {
         list->last = node;
     }
 
     node->next = list->first;
-    llsync_store_ptr(list->first, node);
+    rcu_store_ptr(list->first, node);
 }
 
 /*
  * Insert a node at the tail of a list.
  */
 static inline void
-slist_llsync_insert_tail(struct slist *list, struct slist_node *node)
+slist_rcu_insert_tail(struct slist *list, struct slist_node *node)
 {
     node->next = NULL;
 
     if (slist_empty(list)) {
-        llsync_store_ptr(list->first, node);
+        rcu_store_ptr(list->first, node);
     } else {
-        llsync_store_ptr(list->last->next, node);
+        rcu_store_ptr(list->last->next, node);
     }
 
     list->last = node;
@@ -378,11 +378,11 @@ slist_llsync_insert_tail(struct slist *list, struct slist_node *node)
  * The prev node must be valid.
  */
 static inline void
-slist_llsync_insert_after(struct slist *list, struct slist_node *node,
+slist_rcu_insert_after(struct slist *list, struct slist_node *node,
                           struct slist_node *prev)
 {
     node->next = prev->next;
-    llsync_store_ptr(prev->next, node);
+    rcu_store_ptr(prev->next, node);
 
     if (list->last == prev) {
         list->last = node;
@@ -397,20 +397,20 @@ slist_llsync_insert_after(struct slist *list, struct slist_node *node,
  * first node is removed.
  */
 static inline void
-slist_llsync_remove(struct slist *list, struct slist_node *prev)
+slist_rcu_remove(struct slist *list, struct slist_node *prev)
 {
     struct slist_node *node;
 
     if (slist_end(prev)) {
         node = list->first;
-        llsync_store_ptr(list->first, node->next);
+        rcu_store_ptr(list->first, node->next);
 
         if (list->last == node) {
             list->last = NULL;
         }
     } else {
         node = prev->next;
-        llsync_store_ptr(prev->next, node->next);
+        rcu_store_ptr(prev->next, node->next);
 
         if (list->last == node) {
             list->last = prev;
@@ -422,28 +422,28 @@ slist_llsync_remove(struct slist *list, struct slist_node *prev)
  * Macro that evaluates to the address of the structure containing the
  * given node based on the given type and member.
  */
-#define slist_llsync_entry(node, type, member) \
-    structof(llsync_load_ptr(node), type, member)
+#define slist_rcu_entry(node, type, member) \
+    structof(rcu_load_ptr(node), type, member)
 
 /*
  * Get the first entry of a list.
  */
-#define slist_llsync_first_entry(list, type, member)                    \
+#define slist_rcu_first_entry(list, type, member)                       \
 MACRO_BEGIN                                                             \
     struct slist_node *first___;                                        \
                                                                         \
-    first___ = slist_llsync_first(list);                                \
+    first___ = slist_rcu_first(list);                                   \
     slist_end(first___) ? NULL : slist_entry(first___, type, member);   \
 MACRO_END
 
 /*
  * Get the entry next to the given entry.
  */
-#define slist_llsync_next_entry(entry, member)                          \
+#define slist_rcu_next_entry(entry, member)                             \
 MACRO_BEGIN                                                             \
     struct slist_node *next___;                                         \
                                                                         \
-    next___ = slist_llsync_next(&entry->member);                        \
+    next___ = slist_rcu_next(&entry->member);                           \
     slist_end(next___)                                                  \
         ? NULL                                                          \
         : slist_entry(next___, typeof(*entry), member);                 \
@@ -452,17 +452,17 @@ MACRO_END
 /*
  * Forge a loop to process all nodes of a list.
  */
-#define slist_llsync_for_each(list, node)   \
-for (node = slist_llsync_first(list);       \
+#define slist_rcu_for_each(list, node)      \
+for (node = slist_rcu_first(list);          \
      !slist_end(node);                      \
-     node = slist_llsync_next(node))
+     node = slist_rcu_next(node))
 
 /*
  * Forge a loop to process all entries of a list.
  */
-#define slist_llsync_for_each_entry(list, entry, member)                \
-for (entry = slist_llsync_first_entry(list, typeof(*entry), member);    \
+#define slist_rcu_for_each_entry(list, entry, member)                   \
+for (entry = slist_rcu_first_entry(list, typeof(*entry), member);       \
      entry != NULL;                                                     \
-     entry = slist_llsync_next_entry(entry, member))
+     entry = slist_rcu_next_entry(entry, member))
 
 #endif /* SLIST_H */

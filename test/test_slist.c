@@ -54,12 +54,12 @@ add_obj_head(struct slist *list)
 }
 
 static void
-add_obj_head_llsync(struct slist *list)
+add_obj_head_rcu(struct slist *list)
 {
     struct obj *obj;
 
     obj = obj_create();
-    slist_llsync_insert_head(list, &obj->node);
+    slist_rcu_insert_head(list, &obj->node);
 }
 
 static void
@@ -72,12 +72,12 @@ add_obj_tail(struct slist *list)
 }
 
 static void
-add_obj_tail_llsync(struct slist *list)
+add_obj_tail_rcu(struct slist *list)
 {
     struct obj *obj;
 
     obj = obj_create();
-    slist_llsync_insert_tail(list, &obj->node);
+    slist_rcu_insert_tail(list, &obj->node);
 }
 
 static void
@@ -90,12 +90,12 @@ add_obj_tail2(struct slist *list)
 }
 
 static void
-add_obj_tail2_llsync(struct slist *list)
+add_obj_tail2_rcu(struct slist *list)
 {
     struct obj *obj;
 
     obj = obj_create();
-    slist_llsync_insert_after(list, &obj->node, slist_last(list));
+    slist_rcu_insert_after(list, &obj->node, slist_last(list));
 }
 
 static void
@@ -120,12 +120,12 @@ del_obj_head(struct slist *list)
 }
 
 static void
-del_obj_head_llsync(struct slist *list)
+del_obj_head_rcu(struct slist *list)
 {
     struct obj *obj;
 
     obj = slist_first_entry(list, struct obj, node);
-    slist_llsync_remove(list, NULL);
+    slist_rcu_remove(list, NULL);
     obj_destroy(obj);
 }
 
@@ -140,12 +140,12 @@ del_obj_tail(struct slist *list)
 }
 
 static void
-del_obj_tail_llsync(struct slist *list)
+del_obj_tail_rcu(struct slist *list)
 {
     struct obj *obj;
 
     obj = slist_last_entry(list, struct obj, node);
-    slist_llsync_remove(list, slist_first(list));
+    slist_rcu_remove(list, slist_first(list));
     obj_destroy(obj);
 }
 
@@ -160,12 +160,12 @@ del_obj_second(struct slist *list)
 }
 
 static void
-del_obj_second_llsync(struct slist *list)
+del_obj_second_rcu(struct slist *list)
 {
     struct obj *obj;
 
     obj = slist_entry(slist_next(slist_first(list)), struct obj, node);
-    slist_llsync_remove(list, slist_first(list));
+    slist_rcu_remove(list, slist_first(list));
     obj_destroy(obj);
 }
 
@@ -178,11 +178,11 @@ walk_all_objs1(struct slist *list)
 }
 
 static void
-walk_all_objs1_llsync(struct slist *list)
+walk_all_objs1_rcu(struct slist *list)
 {
     struct slist_node *node;
 
-    slist_llsync_for_each(list, node);
+    slist_rcu_for_each(list, node);
 }
 
 static void
@@ -202,11 +202,11 @@ walk_all_objs3(struct slist *list)
 }
 
 static void
-walk_all_objs3_llsync(struct slist *list)
+walk_all_objs3_rcu(struct slist *list)
 {
     struct obj *obj;
 
-    slist_llsync_for_each_entry(list, obj, node);
+    slist_rcu_for_each_entry(list, obj, node);
 }
 
 static void
@@ -230,13 +230,13 @@ del_all_objs(struct slist *list)
 }
 
 static void
-del_all_objs_llsync(struct slist *list)
+del_all_objs_rcu(struct slist *list)
 {
     struct obj *obj;
 
     while (!slist_empty(list)) {
         obj = slist_first_entry(list, struct obj, node);
-        slist_llsync_remove(list, NULL);
+        slist_rcu_remove(list, NULL);
         obj_destroy(obj);
     }
 }
@@ -249,10 +249,10 @@ main(void)
     slist_init(&list);
     slist_init(&list2);
 
-    check(!slist_llsync_first_entry(&list, struct obj, node));
+    check(!slist_rcu_first_entry(&list, struct obj, node));
 
     add_obj_head(&list);
-    check(slist_llsync_first_entry(&list, struct obj, node));
+    check(slist_rcu_first_entry(&list, struct obj, node));
     check(slist_singular(&list));
     del_all_objs(&list);
 
@@ -260,7 +260,7 @@ main(void)
     add_obj_tail(&list);
     del_obj_tail(&list);
     add_obj_tail(&list);
-    del_obj_tail_llsync(&list);
+    del_obj_tail_rcu(&list);
 
     slist_concat(&list, &list2);
     slist_set_head(&list2, &list);
@@ -284,16 +284,16 @@ main(void)
     slist_init(&list);
 
     add_obj_head(&list);
-    add_obj_head_llsync(&list);
+    add_obj_head_rcu(&list);
     slist_init(&list2);
-    add_obj_head_llsync(&list2);
+    add_obj_head_rcu(&list2);
     del_all_objs(&list2);
     add_obj_head(&list);
     add_obj_head(&list);
     add_obj_tail(&list);
-    add_obj_tail_llsync(&list);
+    add_obj_tail_rcu(&list);
     slist_init(&list2);
-    add_obj_tail_llsync(&list2);
+    add_obj_tail_rcu(&list2);
     del_all_objs(&list2);
     add_obj_tail(&list);
     add_obj_tail(&list);
@@ -304,22 +304,22 @@ main(void)
     add_obj_head(&list);
     add_obj_head(&list);
     add_obj_tail2(&list);
-    add_obj_tail2_llsync(&list);
+    add_obj_tail2_rcu(&list);
 
     walk_all_objs1(&list);
     walk_all_objs2(&list);
     walk_all_objs3(&list);
     walk_all_objs4(&list);
-    walk_all_objs1_llsync(&list);
-    walk_all_objs3_llsync(&list);
+    walk_all_objs1_rcu(&list);
+    walk_all_objs3_rcu(&list);
 
     del_obj_head(&list);
-    del_obj_head_llsync(&list);
+    del_obj_head_rcu(&list);
     del_obj_second(&list);
-    del_obj_second_llsync(&list);
+    del_obj_second_rcu(&list);
     add_obj_second(&list);
 
-    del_all_objs_llsync(&list);
+    del_all_objs_rcu(&list);
 
     return 0;
 }

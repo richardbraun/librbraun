@@ -39,8 +39,8 @@
  * These macros can be replaced by actual functions in an environment
  * that provides lockless synchronization such as RCU.
  */
-#define llsync_store_ptr(ptr, value)    ((ptr) = (value))
-#define llsync_load_ptr(ptr)            (ptr)
+#define rcu_store_ptr(ptr, value)       ((ptr) = (value))
+#define rcu_load_ptr(ptr)               (ptr)
 
 /*
  * This macro selects between 32 or 64-bits (the default) keys.
@@ -181,7 +181,7 @@ rdxtree_lookup_slot(const struct rdxtree *tree, rdxtree_key_t key)
 static inline void *
 rdxtree_load_slot(void **slot)
 {
-    return llsync_load_ptr(*slot);
+    return rcu_load_ptr(*slot);
 }
 
 /*
