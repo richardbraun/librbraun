@@ -27,6 +27,7 @@
 #define RDXTREE_I_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 /*
  * Radix tree.

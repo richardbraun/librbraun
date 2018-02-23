@@ -32,6 +32,7 @@
 #ifndef RDXTREE_H
 #define RDXTREE_H
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

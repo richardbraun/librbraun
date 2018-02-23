@@ -23,11 +23,10 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  */
 
-#include <stdbool.h>
-
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
