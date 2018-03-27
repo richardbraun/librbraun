@@ -24,7 +24,6 @@
  */
 
 #include <limits.h>
-#include <stddef.h>
 #include <string.h>
 
 #include "bitmap.h"
