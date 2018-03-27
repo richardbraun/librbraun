@@ -24,6 +24,8 @@
  *
  *
  * Doubly-linked list.
+ *
+ * TODO Tests.
  */
 
 #ifndef LIST_H
@@ -503,12 +505,12 @@ list_rcu_remove(struct list *node)
  * the node pointer can only be read once, preventing the combination
  * of lockless list_empty()/list_first_entry() variants.
  */
-#define list_rcu_first_entry(list, type, member)            \
+#define list_rcu_first_entry(head, type, member)            \
 MACRO_BEGIN                                                 \
     struct list *list___;                                   \
     struct list *first___;                                  \
                                                             \
-    list___ = (list);                                       \
+    list___ = (head);                                       \
     first___ = list_rcu_first(list___);                     \
     list_end(list___, first___)                             \
         ? NULL                                              \
@@ -522,8 +524,17 @@ MACRO_END
  * the node pointer can only be read once, preventing the combination
  * of lockless list_empty()/list_next_entry() variants.
  */
-#define list_rcu_next_entry(entry, member) \
-    list_rcu_first_entry(&entry->member, typeof(*entry), member)
+#define list_rcu_next_entry(head, entry, member)            \
+MACRO_BEGIN                                                 \
+    struct list *list___;                                   \
+    struct list *next___;                                   \
+                                                            \
+    list___ = (head);                                       \
+    next___ = list_rcu_next(&entry->member);                \
+    list_end(list___, next___)                              \
+        ? NULL                                              \
+        : list_entry(next___, typeof(*entry), member);      \
+MACRO_END
 
 /*
  * Forge a loop to process all nodes of a list.
@@ -540,12 +551,10 @@ for (node = list_rcu_first(list);           \
  *
  * The entry node must not be altered during the loop.
  */
-#define list_rcu_for_each_entry(list, entry, member)        \
-for (entry = list_rcu_entry(list_first(list),               \
-                               typeof(*entry), member);     \
-     !list_end(list, &entry->member);                       \
-     entry = list_rcu_entry(list_next(&entry->member),      \
-                               typeof(*entry), member))
+#define list_rcu_for_each_entry(list, entry, member)                \
+for (entry = list_rcu_first_entry(list, typeof(*entry), member);    \
+     entry != NULL;                                                 \
+     entry = list_rcu_next_entry(list, entry, member))
 
 /*
  * Sort a list.
