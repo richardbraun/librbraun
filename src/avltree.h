@@ -128,22 +128,22 @@ avltree_empty(const struct avltree *tree)
  */
 #define avltree_lookup(tree, key, cmp_fn)                   \
 MACRO_BEGIN                                                 \
-    struct avltree_node *cur___;                            \
-    int diff___;                                            \
+    struct avltree_node *cur_;                              \
+    int diff_;                                              \
                                                             \
-    cur___ = (tree)->root;                                  \
+    cur_ = (tree)->root;                                    \
                                                             \
-    while (cur___ != NULL) {                                \
-        diff___ = cmp_fn(key, cur___);                      \
+    while (cur_ != NULL) {                                  \
+        diff_ = cmp_fn(key, cur_);                          \
                                                             \
-        if (diff___ == 0) {                                 \
+        if (diff_ == 0) {                                   \
             break;                                          \
         }                                                   \
                                                             \
-        cur___ = cur___->children[avltree_d2i(diff___)];    \
+        cur_ = cur_->children[avltree_d2i(diff_)];          \
     }                                                       \
                                                             \
-    cur___;                                                 \
+    cur_;                                                   \
 MACRO_END
 
 /*
@@ -158,30 +158,30 @@ MACRO_END
  */
 #define avltree_lookup_nearest(tree, key, cmp_fn, dir)      \
 MACRO_BEGIN                                                 \
-    struct avltree_node *cur___, *prev___;                  \
-    int diff___, index___;                                  \
+    struct avltree_node *cur_, *prev_;                      \
+    int diff_, index_;                                      \
                                                             \
-    prev___ = NULL;                                         \
-    index___ = 0;                                           \
-    cur___ = (tree)->root;                                  \
+    prev_ = NULL;                                           \
+    index_ = 0;                                             \
+    cur_ = (tree)->root;                                    \
                                                             \
-    while (cur___ != NULL) {                                \
-        diff___ = cmp_fn(key, cur___);                      \
+    while (cur_ != NULL) {                                  \
+        diff_ = cmp_fn(key, cur_);                          \
                                                             \
-        if (diff___ == 0) {                                 \
+        if (diff_ == 0) {                                   \
             break;                                          \
         }                                                   \
                                                             \
-        prev___ = cur___;                                   \
-        index___ = avltree_d2i(diff___);                    \
-        cur___ = cur___->children[index___];                \
+        prev_ = cur_;                                       \
+        index_ = avltree_d2i(diff_);                        \
+        cur_ = cur_->children[index_];                      \
     }                                                       \
                                                             \
-    if (cur___ == NULL) {                                   \
-        cur___ = avltree_nearest(prev___, index___, dir);   \
+    if (cur_ == NULL) {                                     \
+        cur_ = avltree_nearest(prev_, index_, dir);         \
     }                                                       \
                                                             \
-    cur___;                                                 \
+    cur_;                                                   \
 MACRO_END
 
 /*
@@ -200,22 +200,22 @@ MACRO_END
  */
 #define avltree_insert(tree, node, cmp_fn)                      \
 MACRO_BEGIN                                                     \
-    struct avltree_node *cur___, *prev___;                      \
-    int diff___, index___;                                      \
+    struct avltree_node *cur_, *prev_;                          \
+    int diff_, index_;                                          \
                                                                 \
-    prev___ = NULL;                                             \
-    index___ = 0;                                               \
-    cur___ = (tree)->root;                                      \
+    prev_ = NULL;                                               \
+    index_ = 0;                                                 \
+    cur_ = (tree)->root;                                        \
                                                                 \
-    while (cur___ != NULL) {                                    \
-        diff___ = cmp_fn(node, cur___);                         \
-        assert(diff___ != 0);                                   \
-        prev___ = cur___;                                       \
-        index___ = avltree_d2i(diff___);                        \
-        cur___ = cur___->children[index___];                    \
+    while (cur_ != NULL) {                                      \
+        diff_ = cmp_fn(node, cur_);                             \
+        assert(diff_ != 0);                                     \
+        prev_ = cur_;                                           \
+        index_ = avltree_d2i(diff_);                            \
+        cur_ = cur_->children[index_];                          \
     }                                                           \
                                                                 \
-    avltree_insert_rebalance(tree, prev___, index___, node);    \
+    avltree_insert_rebalance(tree, prev_, index_, node);        \
 MACRO_END
 
 /*
@@ -231,27 +231,27 @@ MACRO_END
  */
 #define avltree_lookup_slot(tree, key, cmp_fn, slot)    \
 MACRO_BEGIN                                             \
-    struct avltree_node *cur___, *prev___;              \
-    int diff___, index___;                              \
+    struct avltree_node *cur_, *prev_;                  \
+    int diff_, index_;                                  \
                                                         \
-    prev___ = NULL;                                     \
-    index___ = 0;                                       \
-    cur___ = (tree)->root;                              \
+    prev_ = NULL;                                       \
+    index_ = 0;                                         \
+    cur_ = (tree)->root;                                \
                                                         \
-    while (cur___ != NULL) {                            \
-        diff___ = cmp_fn(key, cur___);                  \
+    while (cur_ != NULL) {                              \
+        diff_ = cmp_fn(key, cur_);                      \
                                                         \
-        if (diff___ == 0) {                             \
+        if (diff_ == 0) {                               \
             break;                                      \
         }                                               \
                                                         \
-        prev___ = cur___;                               \
-        index___ = avltree_d2i(diff___);                \
-        cur___ = cur___->children[index___];            \
+        prev_ = cur_;                                   \
+        index_ = avltree_d2i(diff_);                    \
+        cur_ = cur_->children[index_];                  \
     }                                                   \
                                                         \
-    (slot) = avltree_slot(prev___, index___);           \
-    cur___;                                             \
+    (slot) = avltree_slot(prev_, index_);               \
+    cur_;                                               \
 MACRO_END
 
 /*
