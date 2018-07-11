@@ -106,12 +106,13 @@ unsigned int rdxtree_fail_node_creation_threshold;
 unsigned int rdxtree_nr_node_creations;
 #endif /* RDXTREE_ENABLE_NODE_CREATION_FAILURES */
 
-static inline void
-rdxtree_assert_alignment(const void *ptr)
+#ifndef NDEBUG
+static bool
+rdxtree_alignment_valid(const void *ptr)
 {
-    assert(((uintptr_t)ptr & ~RDXTREE_ENTRY_ADDR_MASK) == 0);
-    (void)ptr;
+    return (((uintptr_t)ptr & ~RDXTREE_ENTRY_ADDR_MASK) == 0);
 }
+#endif /* NDEBUG */
 
 static inline void *
 rdxtree_entry_addr(void *entry)
@@ -152,7 +153,7 @@ rdxtree_node_create(struct rdxtree_node **nodep, unsigned short height)
         return ENOMEM;
     }
 
-    rdxtree_assert_alignment(node);
+    assert(rdxtree_alignment_valid(node));
     node->parent = NULL;
     node->height = height;
     node->nr_entries = 0;
@@ -436,7 +437,7 @@ rdxtree_insert_common(struct rdxtree *tree, rdxtree_key_t key,
     int error;
 
     assert(ptr != NULL);
-    rdxtree_assert_alignment(ptr);
+    assert(rdxtree_alignment_valid(ptr));
 
     if (unlikely(key > rdxtree_max_key(tree->height))) {
         error = rdxtree_grow(tree, key);
@@ -524,7 +525,7 @@ rdxtree_insert_alloc_common(struct rdxtree *tree, void *ptr,
 
     assert(rdxtree_key_alloc_enabled(tree));
     assert(ptr != NULL);
-    rdxtree_assert_alignment(ptr);
+    assert(rdxtree_alignment_valid(ptr));
 
     height = tree->height;
 
@@ -715,11 +716,11 @@ rdxtree_replace_slot(void **slot, void *ptr)
     void *old;
 
     assert(ptr != NULL);
-    rdxtree_assert_alignment(ptr);
+    assert(rdxtree_alignment_valid(ptr));
 
     old = *slot;
     assert(old != NULL);
-    rdxtree_assert_alignment(old);
+    assert(rdxtree_alignment_valid(old));
     rcu_store_ptr(*slot, ptr);
     return old;
 }
