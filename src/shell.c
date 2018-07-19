@@ -23,8 +23,10 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <pthread.h>
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -33,39 +35,10 @@
 #include "macros.h"
 #include "hash.h"
 #include "shell.h"
-
-/*
- * Binary exponent and size of the hash table used to store commands.
- */
-#define SHELL_HTABLE_BITS   6
-#define SHELL_HTABLE_SIZE   (1 << SHELL_HTABLE_BITS)
-
-struct shell_bucket {
-    struct shell_cmd *cmd;
-};
-
-/*
- * Hash table for quick command lookup.
- */
-static struct shell_bucket shell_htable[SHELL_HTABLE_SIZE];
+#include "shell_i.h"
 
 #define SHELL_COMPLETION_MATCH_FMT              "-16s"
 #define SHELL_COMPLETION_NR_MATCHES_PER_LINE    4
-
-/*
- * Sorted command list.
- */
-static struct shell_cmd *shell_list;
-
-/*
- * Lock protecting access to the hash table and list of commands.
- *
- * Note that this lock only protects access to the commands containers,
- * not the commands themselves. In particular, it is not necessary to
- * hold this lock when a command is used, i.e. when accessing a command
- * name, function pointer, or description.
- */
-static pthread_mutex_t shell_lock;
 
 /*
  * Escape sequence states.
@@ -78,60 +51,12 @@ static pthread_mutex_t shell_lock;
 #define SHELL_ESC_STATE_START   1
 #define SHELL_ESC_STATE_CSI     2
 
-/*
- * This value changes depending on the standard used and was chosen arbitrarily.
- */
-#define SHELL_ESC_SEQ_MAX_SIZE 8
-
-typedef void (*shell_esc_seq_fn)(void);
+typedef void (*shell_esc_seq_fn)(struct shell *shell);
 
 struct shell_esc_seq {
     const char *str;
     shell_esc_seq_fn fn;
 };
-
-#define SHELL_LINE_MAX_SIZE 64
-
-/*
- * Line containing a shell entry.
- *
- * The string must be nul-terminated. The size doesn't include this
- * additional nul character, the same way strlen() doesn't account for it.
- */
-struct shell_line {
-    char str[SHELL_LINE_MAX_SIZE];
-    unsigned long size;
-};
-
-/*
- * Number of entries in the history.
- *
- * One of these entryes is used as the current line.
- */
-#define SHELL_HISTORY_SIZE 21
-
-#if SHELL_HISTORY_SIZE == 0
-#error "shell history size must be non-zero"
-#endif /* SHELL_HISTORY_SIZE == 0 */
-
-/*
- * Shell history.
- *
- * The history is never empty. There is always at least one entry, the
- * current line, referenced by the newest (most recent) index. The array
- * is used like a circular buffer, i.e. old entries are implicitely
- * erased by new ones. The index references the entry used as a template
- * for the current line.
- */
-static struct shell_line shell_history[SHELL_HISTORY_SIZE];
-static unsigned long shell_history_newest;
-static unsigned long shell_history_oldest;
-static unsigned long shell_history_index;
-
-/*
- * Cursor within the current line.
- */
-static unsigned long shell_cursor;
 
 #define SHELL_SEPARATOR ' '
 
@@ -142,20 +67,6 @@ static unsigned long shell_cursor;
  */
 #define SHELL_ERASE_BS  '\b'
 #define SHELL_ERASE_DEL '\x7f'
-
-/*
- * Buffer used to store the current line during argument processing.
- *
- * The pointers in the argv array point inside this buffer. The
- * separators immediately following the arguments are replaced with
- * nul characters.
- */
-static char shell_tmp_line[SHELL_LINE_MAX_SIZE];
-
-#define SHELL_MAX_ARGS 16
-
-static int shell_argc;
-static char *shell_argv[SHELL_MAX_ARGS];
 
 static const char *
 shell_find_word(const char *str)
@@ -191,181 +102,6 @@ shell_cmd_name(const struct shell_cmd *cmd)
     return cmd->name;
 }
 
-static inline struct shell_bucket *
-shell_bucket_get(const char *name)
-{
-    return &shell_htable[hash_str(name, SHELL_HTABLE_BITS)];
-}
-
-static void
-shell_cmd_acquire(void)
-{
-    pthread_mutex_lock(&shell_lock);
-}
-
-static void
-shell_cmd_release(void)
-{
-    pthread_mutex_unlock(&shell_lock);
-}
-
-static const struct shell_cmd *
-shell_cmd_lookup(const char *name)
-{
-    const struct shell_bucket *bucket;
-    const struct shell_cmd *cmd;
-
-    shell_cmd_acquire();
-
-    bucket = shell_bucket_get(name);
-
-    for (cmd = bucket->cmd; cmd != NULL; cmd = cmd->ht_next) {
-        if (strcmp(cmd->name, name) == 0) {
-            break;
-        }
-    }
-
-    shell_cmd_release();
-
-    return cmd;
-}
-
-/*
- * Look up the first command that matches a given string.
- *
- * The input string is defined by the given string pointer and size.
- *
- * The global lock must be acquired before calling this function.
- */
-static const struct shell_cmd *
-shell_cmd_match(const struct shell_cmd *cmd, const char *str,
-                unsigned long size)
-{
-    while (cmd != NULL) {
-        if (strncmp(cmd->name, str, size) == 0) {
-            return cmd;
-        }
-
-        cmd = cmd->ls_next;
-    }
-
-    return NULL;
-}
-
-/*
- * Attempt command auto-completion.
- *
- * The given string is the beginning of a command, or the empty string.
- * The sizep parameter initially points to the size of the given string.
- * If the string matches any registered command, the cmdp pointer is
- * updated to point to the first matching command in the sorted list of
- * commands, and sizep is updated to the number of characters in the
- * command name that are common in subsequent commands. The command
- * pointer and the returned size can be used to print a list of commands
- * eligible for completion.
- *
- * If there is a single match for the given string, return 0. If there
- * are more than one match, return EAGAIN. If there is no match,
- * return EINVAL.
- *
- * The global lock must be acquired before calling this function.
- */
-static int
-shell_cmd_complete(const char *str, unsigned long *sizep,
-                   const struct shell_cmd **cmdp)
-{
-    const struct shell_cmd *cmd, *next;
-    unsigned long size;
-
-    size = *sizep;
-
-    /*
-     * Start with looking up a command that matches the given argument.
-     * If there is no match, return an error.
-     */
-    cmd = shell_cmd_match(shell_list, str, size);
-
-    if (cmd == NULL) {
-        return EINVAL;
-    }
-
-    *cmdp = cmd;
-
-    /*
-     * If at least one command matches, try to complete it.
-     * There can be two cases :
-     * 1/ There is one and only one match, which is directly returned.
-     * 2/ There are several matches, in which case the common length is
-     *    computed.
-     */
-    next = cmd->ls_next;
-
-    if ((next == NULL)
-        || (strncmp(cmd->name, next->name, size) != 0)) {
-        *sizep = strlen(cmd->name);
-        return 0;
-    }
-
-    /*
-     * When computing the common length, all the commands that can match
-     * must be evaluated. Considering the current command is the first
-     * that can match, the only other variable missing is the last
-     * command that can match.
-     */
-    while (next->ls_next != NULL) {
-        if (strncmp(cmd->name, next->ls_next->name, size) != 0) {
-            break;
-        }
-
-        next = next->ls_next;
-    }
-
-    if (size == 0) {
-        size = 1;
-    }
-
-    while ((cmd->name[size - 1] != '\0')
-           && (cmd->name[size - 1] == next->name[size - 1])) {
-        size++;
-    }
-
-    size--;
-    *sizep = size;
-    return EAGAIN;
-}
-
-/*
- * Print a list of commands eligible for completion, starting at the
- * given command. Other eligible commands share the same prefix, as
- * defined by the size argument.
- *
- * The global lock must be acquired before calling this function.
- */
-static void
-shell_cmd_print_matches(const struct shell_cmd *cmd, unsigned long size)
-{
-    const struct shell_cmd *tmp;
-    unsigned int i;
-
-    printf("\n");
-
-    for (tmp = cmd, i = 1; tmp != NULL; tmp = tmp->ls_next, i++) {
-        if (strncmp(cmd->name, tmp->name, size) != 0) {
-            break;
-        }
-
-        printf("%" SHELL_COMPLETION_MATCH_FMT, tmp->name);
-
-        if ((i % SHELL_COMPLETION_NR_MATCHES_PER_LINE) == 0) {
-            printf("\n");
-        }
-    }
-
-    if ((i % SHELL_COMPLETION_NR_MATCHES_PER_LINE) != 1) {
-        printf("\n");
-    }
-}
-
 static int
 shell_cmd_check_char(char c)
 {
@@ -399,94 +135,6 @@ shell_cmd_check(const struct shell_cmd *cmd)
     }
 
     return 0;
-}
-
-/*
- * The global lock must be acquired before calling this function.
- */
-static void
-shell_cmd_add_list(struct shell_cmd *cmd)
-{
-    struct shell_cmd *prev, *next;
-
-    prev = shell_list;
-
-    if ((prev == NULL)
-        || (strcmp(cmd->name, prev->name) < 0)) {
-        shell_list = cmd;
-        cmd->ls_next = prev;
-        return;
-    }
-
-    for (;;) {
-        next = prev->ls_next;
-
-        if ((next == NULL)
-            || (strcmp(cmd->name, next->name) < 0)) {
-            break;
-        }
-
-        prev = next;
-    }
-
-    prev->ls_next = cmd;
-    cmd->ls_next = next;
-}
-
-/*
- * The global lock must be acquired before calling this function.
- */
-static int
-shell_cmd_add(struct shell_cmd *cmd)
-{
-    struct shell_bucket *bucket;
-    struct shell_cmd *tmp;
-
-    bucket = shell_bucket_get(cmd->name);
-    tmp = bucket->cmd;
-
-    if (tmp == NULL) {
-        bucket->cmd = cmd;
-        goto out;
-    }
-
-    for (;;) {
-        if (strcmp(cmd->name, tmp->name) == 0) {
-            fprintf(stderr, "shell: %s: shell command name collision",
-                    cmd->name);
-            return EEXIST;
-        }
-
-        if (tmp->ht_next == NULL) {
-            break;
-        }
-
-        tmp = tmp->ht_next;
-    }
-
-    tmp->ht_next = cmd;
-
-out:
-    shell_cmd_add_list(cmd);
-    return 0;
-}
-
-int
-shell_cmd_register(struct shell_cmd *cmd)
-{
-    int error;
-
-    error = shell_cmd_check(cmd);
-
-    if (error) {
-        return error;
-    }
-
-    shell_cmd_acquire();
-    error = shell_cmd_add(cmd);
-    shell_cmd_release();
-
-    return error;
 }
 
 static inline const char *
@@ -567,88 +215,252 @@ shell_line_erase(struct shell_line *line, unsigned long index)
 }
 
 static struct shell_line *
-shell_history_get(unsigned long index)
+shell_history_get(struct shell_history *history, unsigned long index)
 {
-    return &shell_history[index % ARRAY_SIZE(shell_history)];
-}
-
-static struct shell_line *
-shell_history_get_newest(void)
-{
-    return shell_history_get(shell_history_newest);
-}
-
-static struct shell_line *
-shell_history_get_index(void)
-{
-    return shell_history_get(shell_history_index);
+    return &history->lines[index % ARRAY_SIZE(history->lines)];
 }
 
 static void
-shell_history_reset_index(void)
+shell_history_init(struct shell_history *history)
 {
-    shell_history_index = shell_history_newest;
+    for (unsigned long i = 0; i < ARRAY_SIZE(history->lines); i++) {
+        shell_line_reset(shell_history_get(history, i));
+    }
+
+    history->newest = 0;
+    history->oldest = 0;
+    history->index = 0;
+}
+
+static struct shell_line *
+shell_history_get_newest(struct shell_history *history)
+{
+    return shell_history_get(history, history->newest);
+}
+
+static struct shell_line *
+shell_history_get_index(struct shell_history *history)
+{
+    return shell_history_get(history, history->index);
+}
+
+static void
+shell_history_reset_index(struct shell_history *history)
+{
+    history->index = history->newest;
 }
 
 static inline int
-shell_history_same_newest(void)
+shell_history_same_newest(struct shell_history *history)
 {
-    return (shell_history_newest != shell_history_oldest)
-           && shell_line_cmp(shell_history_get_newest(),
-                             shell_history_get(shell_history_newest - 1)) == 0;
+    return (history->newest != history->oldest)
+           && (shell_line_cmp(shell_history_get_newest(history),
+                              shell_history_get(history, history->newest - 1))
+               == 0);
 }
 
 static void
-shell_history_push(void)
+shell_history_push(struct shell_history *history)
 {
-    if ((shell_line_size(shell_history_get_newest()) == 0)
-        || shell_history_same_newest()) {
-        shell_history_reset_index();
+    if ((shell_line_size(shell_history_get_newest(history)) == 0)
+        || shell_history_same_newest(history)) {
+        shell_history_reset_index(history);
         return;
     }
 
-    shell_history_newest++;
-    shell_history_reset_index();
+    history->newest++;
+    shell_history_reset_index(history);
 
     /* Mind integer overflows */
-    if ((shell_history_newest - shell_history_oldest)
-        >= ARRAY_SIZE(shell_history)) {
-        shell_history_oldest = shell_history_newest
-                               - ARRAY_SIZE(shell_history) + 1;
+    if ((history->newest - history->oldest) >= ARRAY_SIZE(history->lines)) {
+        history->oldest = history->newest - ARRAY_SIZE(history->lines) + 1;
     }
 }
 
 static void
-shell_history_back(void)
+shell_history_back(struct shell_history *history)
 {
-    if (shell_history_index == shell_history_oldest) {
+    if (history->index == history->oldest) {
         return;
     }
 
-    shell_history_index--;
-    shell_line_copy(shell_history_get_newest(), shell_history_get_index());
+    history->index--;
+    shell_line_copy(shell_history_get_newest(history),
+                    shell_history_get_index(history));
 }
 
 static void
-shell_history_forward(void)
+shell_history_forward(struct shell_history *history)
 {
-    if (shell_history_index == shell_history_newest) {
+    if (history->index == history->newest) {
         return;
     }
 
-    shell_history_index++;
+    history->index++;
 
-    if (shell_history_index == shell_history_newest) {
-        shell_line_reset(shell_history_get_newest());
+    if (history->index == history->newest) {
+        shell_line_reset(shell_history_get_newest(history));
     } else {
-        shell_line_copy(shell_history_get_newest(), shell_history_get_index());
+        shell_line_copy(shell_history_get_newest(history),
+                        shell_history_get_index(history));
     }
 }
 
 static void
-shell_cmd_help(int argc, char *argv[])
+shell_cmd_set_lock(struct shell_cmd_set *cmd_set)
+{
+    pthread_mutex_lock(&cmd_set->lock);
+}
+
+static void
+shell_cmd_set_unlock(struct shell_cmd_set *cmd_set)
+{
+    pthread_mutex_unlock(&cmd_set->lock);
+}
+
+static inline struct shell_bucket *
+shell_cmd_set_get_bucket(struct shell_cmd_set *cmd_set, const char *name)
+{
+    unsigned long index;
+
+    index = hash_str(name, SHELL_HTABLE_BITS);
+    assert(index < ARRAY_SIZE(cmd_set->htable));
+    return &cmd_set->htable[index];
+}
+
+static const struct shell_cmd *
+shell_cmd_set_lookup(struct shell_cmd_set *cmd_set, const char *name)
+{
+    const struct shell_bucket *bucket;
+    const struct shell_cmd *cmd;
+
+    shell_cmd_set_lock(cmd_set);
+
+    bucket = shell_cmd_set_get_bucket(cmd_set, name);
+
+    for (cmd = bucket->cmd; cmd != NULL; cmd = cmd->ht_next) {
+        if (strcmp(cmd->name, name) == 0) {
+            break;
+        }
+    }
+
+    shell_cmd_set_unlock(cmd_set);
+
+    return cmd;
+}
+
+/*
+ * Look up the first command that matches a given string.
+ *
+ * The input string is defined by the given string pointer and size.
+ *
+ * The global lock must be acquired before calling this function.
+ */
+static const struct shell_cmd *
+shell_cmd_set_match(const struct shell_cmd_set *cmd_set, const char *str,
+                    unsigned long size)
 {
     const struct shell_cmd *cmd;
+
+    cmd = cmd_set->cmd_list;
+
+    while (cmd != NULL) {
+        if (strncmp(cmd->name, str, size) == 0) {
+            return cmd;
+        }
+
+        cmd = cmd->ls_next;
+    }
+
+    return NULL;
+}
+
+/*
+ * Attempt command auto-completion.
+ *
+ * The given string is the beginning of a command, or the empty string.
+ * The sizep parameter initially points to the size of the given string.
+ * If the string matches any registered command, the cmdp pointer is
+ * updated to point to the first matching command in the sorted list of
+ * commands, and sizep is updated to the number of characters in the
+ * command name that are common in subsequent commands. The command
+ * pointer and the returned size can be used to print a list of commands
+ * eligible for completion.
+ *
+ * If there is a single match for the given string, return 0. If there
+ * are more than one match, return EAGAIN. If there is no match,
+ * return EINVAL.
+ */
+static int
+shell_cmd_set_complete(struct shell_cmd_set *cmd_set, const char *str,
+                       unsigned long *sizep, const struct shell_cmd **cmdp)
+{
+    const struct shell_cmd *cmd, *next;
+    unsigned long size;
+
+    size = *sizep;
+
+    /*
+     * Start with looking up a command that matches the given argument.
+     * If there is no match, return an error.
+     */
+    cmd = shell_cmd_set_match(cmd_set, str, size);
+
+    if (cmd == NULL) {
+        return EINVAL;
+    }
+
+    *cmdp = cmd;
+
+    /*
+     * If at least one command matches, try to complete it.
+     * There can be two cases :
+     * 1/ There is one and only one match, which is directly returned.
+     * 2/ There are several matches, in which case the common length is
+     *    computed.
+     */
+    next = cmd->ls_next;
+
+    if ((next == NULL) || (strncmp(cmd->name, next->name, size) != 0)) {
+        *sizep = strlen(cmd->name);
+        return 0;
+    }
+
+    /*
+     * When computing the common length, all the commands that can match
+     * must be evaluated. Considering the current command is the first
+     * that can match, the only other variable missing is the last
+     * command that can match.
+     */
+    while (next->ls_next != NULL) {
+        if (strncmp(cmd->name, next->ls_next->name, size) != 0) {
+            break;
+        }
+
+        next = next->ls_next;
+    }
+
+    if (size == 0) {
+        size = 1;
+    }
+
+    while ((cmd->name[size - 1] != '\0')
+           && (cmd->name[size - 1] == next->name[size - 1])) {
+        size++;
+    }
+
+    size--;
+    *sizep = size;
+    return EAGAIN;
+}
+
+static void
+shell_cb_help(struct shell *shell, int argc, char *argv[])
+{
+    struct shell_cmd_set *cmd_set;
+    const struct shell_cmd *cmd;
+
+    cmd_set = shell->cmd_set;
 
     if (argc > 2) {
         argc = 2;
@@ -656,33 +468,34 @@ shell_cmd_help(int argc, char *argv[])
     }
 
     if (argc == 2) {
-        cmd = shell_cmd_lookup(argv[1]);
+        cmd = shell_cmd_set_lookup(cmd_set, argv[1]);
 
         if (cmd == NULL) {
-            printf("shell: help: %s: command not found\n", argv[1]);
+            shell_printf(shell, "shell: help: %s: command not found\n",
+                         argv[1]);
             return;
         }
 
-        printf("usage: %s\n%s\n", cmd->usage, cmd->short_desc);
+        shell_printf(shell, "usage: %s\n%s\n", cmd->usage, cmd->short_desc);
 
         if (cmd->long_desc != NULL) {
-            printf("\n%s\n", cmd->long_desc);
+            shell_printf(shell, "\n%s\n", cmd->long_desc);
         }
 
         return;
     }
 
-    shell_cmd_acquire();
+    shell_cmd_set_lock(cmd_set);
 
-    for (cmd = shell_list; cmd != NULL; cmd = cmd->ls_next) {
-        printf("%13s  %s\n", cmd->name, cmd->short_desc);
+    for (cmd = cmd_set->cmd_list; cmd != NULL; cmd = cmd->ls_next) {
+        shell_printf(shell, "%13s  %s\n", cmd->name, cmd->short_desc);
     }
 
-    shell_cmd_release();
+    shell_cmd_set_unlock(cmd_set);
 }
 
 static void
-shell_cmd_history(int argc, char *argv[])
+shell_cb_history(struct shell *shell, int argc, char *argv[])
 {
     unsigned long i;
 
@@ -690,65 +503,178 @@ shell_cmd_history(int argc, char *argv[])
     (void)argv;
 
     /* Mind integer overflows */
-    for (i = shell_history_oldest; i != shell_history_newest; i++) {
-        printf("%6lu  %s\n", i - shell_history_oldest,
-               shell_line_str(shell_history_get(i)));
+    /* TODO Accessors */
+    for (i = shell->history.oldest; i != shell->history.newest; i++) {
+        shell_printf(shell, "%6lu  %s\n", i - shell->history.oldest,
+                     shell_line_str(shell_history_get(&shell->history, i)));
     }
 }
 
 static struct shell_cmd shell_default_cmds[] = {
-    SHELL_CMD_INITIALIZER("help", shell_cmd_help,
+    SHELL_CMD_INITIALIZER("help", shell_cb_help,
                           "help [command]",
                           "obtain help about shell commands"),
-    SHELL_CMD_INITIALIZER("history", shell_cmd_history,
+    SHELL_CMD_INITIALIZER("history", shell_cb_history,
                           "history",
                           "display history list"),
 };
 
-static void
-shell_prompt(void)
+void
+shell_cmd_set_init(struct shell_cmd_set *cmd_set)
 {
-    printf("shell> ");
+    pthread_mutex_init(&cmd_set->lock, NULL);
+    memset(cmd_set->htable, 0, sizeof(cmd_set->htable));
+    cmd_set->cmd_list = NULL;
+    SHELL_REGISTER_CMDS(shell_default_cmds, cmd_set);
+}
+
+static int
+shell_cmd_set_add_htable(struct shell_cmd_set *cmd_set, struct shell_cmd *cmd)
+{
+    struct shell_bucket *bucket;
+    struct shell_cmd *tmp;
+
+    bucket = shell_cmd_set_get_bucket(cmd_set, cmd->name);
+    tmp = bucket->cmd;
+
+    if (tmp == NULL) {
+        bucket->cmd = cmd;
+        return 0;
+    }
+
+    for (;;) {
+        if (strcmp(cmd->name, tmp->name) == 0) {
+            return EEXIST;
+        }
+
+        if (tmp->ht_next == NULL) {
+            break;
+        }
+
+        tmp = tmp->ht_next;
+    }
+
+    tmp->ht_next = cmd;
+    return 0;
 }
 
 static void
-shell_reset(void)
+shell_cmd_set_add_list(struct shell_cmd_set *cmd_set, struct shell_cmd *cmd)
 {
-    shell_line_reset(shell_history_get_newest());
-    shell_cursor = 0;
-    shell_prompt();
+    struct shell_cmd *prev, *next;
+
+    prev = cmd_set->cmd_list;
+
+    if ((prev == NULL) || (strcmp(cmd->name, prev->name) < 0)) {
+        cmd_set->cmd_list = cmd;
+        cmd->ls_next = prev;
+        return;
+    }
+
+    for (;;) {
+        next = prev->ls_next;
+
+        if ((next == NULL) || (strcmp(cmd->name, next->name) < 0)) {
+            break;
+        }
+
+        prev = next;
+    }
+
+    prev->ls_next = cmd;
+    cmd->ls_next = next;
+}
+
+static int
+shell_cmd_set_add(struct shell_cmd_set *cmd_set, struct shell_cmd *cmd)
+{
+    int error;
+
+    error = shell_cmd_set_add_htable(cmd_set, cmd);
+
+    if (error) {
+        return error;
+    }
+
+    shell_cmd_set_add_list(cmd_set, cmd);
+    return 0;
+}
+
+int
+shell_cmd_set_register(struct shell_cmd_set *cmd_set, struct shell_cmd *cmd)
+{
+    int error;
+
+    error = shell_cmd_check(cmd);
+
+    if (error) {
+        return error;
+    }
+
+    shell_cmd_set_lock(cmd_set);
+    error = shell_cmd_set_add(cmd_set, cmd);
+    shell_cmd_set_unlock(cmd_set);
+
+    return error;
+}
+
+void
+shell_init(struct shell *shell, struct shell_cmd_set *cmd_set,
+           shell_getc_fn_t getc_fn, shell_vfprintf_fn_t vfprintf_fn,
+           void *io_object)
+{
+    shell->cmd_set = cmd_set;
+    shell->getc_fn = getc_fn;
+    shell->vfprintf_fn = vfprintf_fn;
+    shell->io_object = io_object;
+    shell_history_init(&shell->history);
+    shell->esc_seq_ptr = shell->esc_seq;
 }
 
 static void
-shell_erase(void)
+shell_prompt(struct shell *shell)
+{
+    shell_printf(shell, "shell> ");
+}
+
+static void
+shell_reset(struct shell *shell)
+{
+    shell_line_reset(shell_history_get_newest(&shell->history));
+    shell->cursor = 0;
+    shell_prompt(shell);
+}
+
+static void
+shell_erase(struct shell *shell)
 {
     struct shell_line *current_line;
     unsigned long remaining_chars;
 
-    current_line = shell_history_get_newest();
+    current_line = shell_history_get_newest(&shell->history);
     remaining_chars = shell_line_size(current_line);
 
-    while (shell_cursor != remaining_chars) {
-        putchar(' ');
-        shell_cursor++;
+    while (shell->cursor != remaining_chars) {
+        shell_printf(shell, " ");
+        shell->cursor++;
     }
 
     while (remaining_chars != 0) {
-        printf("\b \b");
+        shell_printf(shell, "\b \b");
         remaining_chars--;
     }
 
-    shell_cursor = 0;
+    shell->cursor = 0;
 }
 
 static void
-shell_restore(void)
+shell_restore(struct shell *shell)
 {
     struct shell_line *current_line;
 
-    current_line = shell_history_get_newest();
-    printf("%s", shell_line_str(current_line));
-    shell_cursor = shell_line_size(current_line);
+    current_line = shell_history_get_newest(&shell->history);
+    shell_printf(shell, "%s", shell_line_str(current_line));
+    shell->cursor = shell_line_size(current_line);
 }
 
 static int
@@ -758,87 +684,91 @@ shell_is_ctrl_char(char c)
 }
 
 static void
-shell_process_left(void)
+shell_process_left(struct shell *shell)
 {
-    if (shell_cursor == 0) {
+    if (shell->cursor == 0) {
         return;
     }
 
-    shell_cursor--;
-    printf("\e[1D");
+    shell->cursor--;
+    shell_printf(shell, "\e[1D");
 }
 
 static int
-shell_process_right(void)
+shell_process_right(struct shell *shell)
 {
-    if (shell_cursor >= shell_line_size(shell_history_get_newest())) {
+    unsigned long size;
+
+    size = shell_line_size(shell_history_get_newest(&shell->history));
+
+    if (shell->cursor >= size) {
         return EAGAIN;
     }
 
-    shell_cursor++;
-    printf("\e[1C");
+    shell->cursor++;
+    shell_printf(shell, "\e[1C");
     return 0;
 }
 
 static void
-shell_process_up(void)
+shell_process_up(struct shell *shell)
 {
-    shell_erase();
-    shell_history_back();
-    shell_restore();
+    shell_erase(shell);
+    shell_history_back(&shell->history);
+    shell_restore(shell);
 }
 
 static void
-shell_process_down(void)
+shell_process_down(struct shell *shell)
 {
-    shell_erase();
-    shell_history_forward();
-    shell_restore();
+    shell_erase(shell);
+    shell_history_forward(&shell->history);
+    shell_restore(shell);
 }
 
 static void
-shell_process_backspace(void)
+shell_process_backspace(struct shell *shell)
 {
     struct shell_line *current_line;
     unsigned long remaining_chars;
     int error;
 
-    current_line = shell_history_get_newest();
-    error = shell_line_erase(current_line, shell_cursor - 1);
+    current_line = shell_history_get_newest(&shell->history);
+    error = shell_line_erase(current_line, shell->cursor - 1);
 
     if (error) {
         return;
     }
 
-    shell_cursor--;
-    printf("\b%s ", shell_line_str(current_line) + shell_cursor);
-    remaining_chars = shell_line_size(current_line) - shell_cursor + 1;
+    shell->cursor--;
+    shell_printf(shell, "\b%s ", shell_line_str(current_line) + shell->cursor);
+    remaining_chars = shell_line_size(current_line) - shell->cursor + 1;
 
     while (remaining_chars != 0) {
-        putchar('\b');
+        shell_printf(shell, "\b");
         remaining_chars--;
     }
 }
 
 static int
-shell_process_raw_char(char c)
+shell_process_raw_char(struct shell *shell, char c)
 {
     struct shell_line *current_line;
     unsigned long remaining_chars;
     int error;
 
-    current_line = shell_history_get_newest();
-    error = shell_line_insert(current_line, shell_cursor, c);
+    current_line = shell_history_get_newest(&shell->history);
+    error = shell_line_insert(current_line, shell->cursor, c);
 
     if (error) {
-        printf("\nshell: line too long\n");
+        shell_printf(shell, "\nshell: line too long\n");
         return error;
     }
 
-    shell_cursor++;
+    shell->cursor++;
 
-    if (shell_cursor == shell_line_size(current_line)) {
-        putchar(c);
+    if (shell->cursor == shell_line_size(current_line)) {
+        shell_printf(shell, "%c", c);
         goto out;
     }
 
@@ -846,11 +776,11 @@ shell_process_raw_char(char c)
      * This assumes that the backspace character only moves the cursor
      * without erasing characters.
      */
-    printf("%s", shell_line_str(current_line) + shell_cursor - 1);
-    remaining_chars = shell_line_size(current_line) - shell_cursor;
+    shell_printf(shell, "%s", shell_line_str(current_line) + shell->cursor - 1);
+    remaining_chars = shell_line_size(current_line) - shell->cursor;
 
     while (remaining_chars != 0) {
-        putchar('\b');
+        shell_printf(shell, "\b");
         remaining_chars--;
     }
 
@@ -858,22 +788,58 @@ out:
     return 0;
 }
 
-static int
-shell_process_tabulation(void)
+/*
+ * Print a list of commands eligible for completion, starting at the
+ * given command. Other eligible commands share the same prefix, as
+ * defined by the size argument.
+ *
+ * The global lock must be acquired before calling this function.
+ */
+static void
+shell_print_cmd_matches(struct shell *shell, const struct shell_cmd *cmd,
+                        unsigned long size)
 {
+    const struct shell_cmd *tmp;
+    unsigned int i;
+
+    shell_printf(shell, "\n");
+
+    for (tmp = cmd, i = 1; tmp != NULL; tmp = tmp->ls_next, i++) {
+        if (strncmp(cmd->name, tmp->name, size) != 0) {
+            break;
+        }
+
+        shell_printf(shell, "%" SHELL_COMPLETION_MATCH_FMT, tmp->name);
+
+        if ((i % SHELL_COMPLETION_NR_MATCHES_PER_LINE) == 0) {
+            shell_printf(shell, "\n");
+        }
+    }
+
+    if ((i % SHELL_COMPLETION_NR_MATCHES_PER_LINE) != 1) {
+        shell_printf(shell, "\n");
+    }
+}
+
+static int
+shell_process_tabulation(struct shell *shell)
+{
+    struct shell_cmd_set *cmd_set;
     const struct shell_cmd *cmd = NULL; /* GCC */
     const char *name, *str, *word;
     unsigned long i, size, cmd_cursor;
     int error;
 
-    shell_cmd_acquire();
+    cmd_set = shell->cmd_set;
 
-    str = shell_line_str(shell_history_get_newest());
+    shell_cmd_set_lock(cmd_set);
+
+    str = shell_line_str(shell_history_get_newest(&shell->history));
     word = shell_find_word(str);
-    size = shell_cursor - (word - str);
-    cmd_cursor = shell_cursor - size;
+    size = shell->cursor - (word - str);
+    cmd_cursor = shell->cursor - size;
 
-    error = shell_cmd_complete(word, &size, &cmd);
+    error = shell_cmd_set_complete(cmd_set, word, &size, &cmd);
 
     if (error && (error != EAGAIN)) {
         error = 0;
@@ -883,25 +849,25 @@ shell_process_tabulation(void)
     if (error == EAGAIN) {
         unsigned long cursor;
 
-        cursor = shell_cursor;
-        shell_cmd_print_matches(cmd, size);
-        shell_prompt();
-        shell_restore();
+        cursor = shell->cursor;
+        shell_print_cmd_matches(shell, cmd, size);
+        shell_prompt(shell);
+        shell_restore(shell);
 
         /* Keep existing arguments as they are */
-        while (shell_cursor != cursor) {
-            shell_process_left();
+        while (shell->cursor != cursor) {
+            shell_process_left(shell);
         }
     }
 
     name = shell_cmd_name(cmd);
 
-    while (shell_cursor != cmd_cursor) {
-        shell_process_backspace();
+    while (shell->cursor != cmd_cursor) {
+        shell_process_backspace(shell);
     }
 
     for (i = 0; i < size; i++) {
-        error = shell_process_raw_char(name[i]);
+        error = shell_process_raw_char(shell, name[i]);
 
         if (error) {
             goto out;
@@ -911,65 +877,65 @@ shell_process_tabulation(void)
     error = 0;
 
 out:
-    shell_cmd_release();
+    shell_cmd_set_unlock(cmd_set);
     return error;
 }
 
 static void
-shell_esc_seq_up(void)
+shell_esc_seq_up(struct shell *shell)
 {
-    shell_process_up();
+    shell_process_up(shell);
 }
 
 static void
-shell_esc_seq_down(void)
+shell_esc_seq_down(struct shell *shell)
 {
-    shell_process_down();
+    shell_process_down(shell);
 }
 
 static void
-shell_esc_seq_next(void)
+shell_esc_seq_next(struct shell *shell)
 {
-    shell_process_right();
+    shell_process_right(shell);
 }
 
 static void
-shell_esc_seq_prev(void)
+shell_esc_seq_prev(struct shell *shell)
 {
-    shell_process_left();
+    shell_process_left(shell);
 }
 
 static void
-shell_esc_seq_home(void)
+shell_esc_seq_home(struct shell *shell)
 {
-    while (shell_cursor != 0) {
-        shell_process_left();
+    while (shell->cursor != 0) {
+        shell_process_left(shell);
     }
 }
 
 static void
-shell_esc_seq_del(void)
+shell_esc_seq_del(struct shell *shell)
 {
     int error;
 
-    error = shell_process_right();
+    error = shell_process_right(shell);
 
     if (error) {
         return;
     }
 
-    shell_process_backspace();
+    shell_process_backspace(shell);
 }
 
 static void
-shell_esc_seq_end(void)
+shell_esc_seq_end(struct shell *shell)
 {
     unsigned long size;
 
-    size = shell_line_size(shell_history_get_newest());
+    size = shell_line_size(shell_history_get_newest(&shell->history));
 
-    while (shell_cursor < size) {
-        shell_process_right();
+    while (shell->cursor < size) {
+        shell_process_right(shell);
     }
 }
 
@@ -1005,29 +971,27 @@ shell_esc_seq_lookup(const char *str)
  * Return the next escape state or 0 if the sequence is complete.
  */
 static int
-shell_process_esc_sequence(char c)
+shell_process_esc_sequence(struct shell *shell, char c)
 {
-    static char str[SHELL_ESC_SEQ_MAX_SIZE], *ptr = str;
-
     const struct shell_esc_seq *seq;
-    uintptr_t index;
+    size_t index;
 
-    index = ptr - str;
+    index = shell->esc_seq_ptr - shell->esc_seq;
 
-    if (index >= (ARRAY_SIZE(str) - 1)) {
-        printf("shell: escape sequence too long\n");
+    if (index >= (ARRAY_SIZE(shell->esc_seq) - 1)) {
+        shell_printf(shell, "shell: escape sequence too long\n");
         goto reset;
     }
 
-    *ptr = c;
-    ptr++;
-    *ptr = '\0';
+    *shell->esc_seq_ptr = c;
+    shell->esc_seq_ptr++;
+    *shell->esc_seq_ptr = '\0';
 
     if ((c >= '@') && (c <= '~')) {
-        seq = shell_esc_seq_lookup(str);
+        seq = shell_esc_seq_lookup(shell->esc_seq);
 
         if (seq != NULL) {
-            seq->fn();
+            seq->fn(shell);
         }
 
         goto reset;
@@ -1036,75 +1000,75 @@ shell_process_esc_sequence(char c)
     return SHELL_ESC_STATE_CSI;
 
 reset:
-    ptr = str;
+    shell->esc_seq_ptr = shell->esc_seq;
     return 0;
 }
 
 static int
-shell_process_args(void)
+shell_process_args(struct shell *shell)
 {
     unsigned long i;
     char c, prev;
     int j;
 
-    snprintf(shell_tmp_line, sizeof(shell_tmp_line), "%s",
-             shell_line_str(shell_history_get_newest()));
+    snprintf(shell->tmp_line, sizeof(shell->tmp_line), "%s",
+             shell_line_str(shell_history_get_newest(&shell->history)));
 
     for (i = 0, j = 0, prev = SHELL_SEPARATOR;
-         (c = shell_tmp_line[i]) != '\0';
+         (c = shell->tmp_line[i]) != '\0';
          i++, prev = c) {
         if (c == SHELL_SEPARATOR) {
             if (prev != SHELL_SEPARATOR) {
-                shell_tmp_line[i] = '\0';
+                shell->tmp_line[i] = '\0';
             }
         } else {
             if (prev == SHELL_SEPARATOR) {
-                shell_argv[j] = &shell_tmp_line[i];
+                shell->argv[j] = &shell->tmp_line[i];
                 j++;
 
-                if (j == ARRAY_SIZE(shell_argv)) {
-                    printf("shell: too many arguments\n");
+                if (j == ARRAY_SIZE(shell->argv)) {
+                    shell_printf(shell, "shell: too many arguments\n");
                     return EINVAL;
                 }
 
-                shell_argv[j] = NULL;
+                shell->argv[j] = NULL;
             }
         }
     }
 
-    shell_argc = j;
+    shell->argc = j;
     return 0;
 }
 
 static void
-shell_process_line(void)
+shell_process_line(struct shell *shell)
 {
     const struct shell_cmd *cmd;
     int error;
 
     cmd = NULL;
-    error = shell_process_args();
+    error = shell_process_args(shell);
 
     if (error) {
         goto out;
     }
 
-    if (shell_argc == 0) {
+    if (shell->argc == 0) {
         goto out;
     }
 
-    cmd = shell_cmd_lookup(shell_argv[0]);
+    cmd = shell_cmd_set_lookup(shell->cmd_set, shell->argv[0]);
 
     if (cmd == NULL) {
-        printf("shell: %s: command not found\n", shell_argv[0]);
+        shell_printf(shell, "shell: %s: command not found\n", shell->argv[0]);
         goto out;
     }
 
 out:
-    shell_history_push();
+    shell_history_push(&shell->history);
 
     if (cmd != NULL) {
-        cmd->fn(shell_argc, shell_argv);
+        cmd->fn(shell, shell->argc, shell->argv);
     }
 }
 
@@ -1114,19 +1078,19 @@ out:
  * Return an error if the caller should reset the current line state.
  */
 static int
-shell_process_ctrl_char(char c)
+shell_process_ctrl_char(struct shell *shell, char c)
 {
     switch (c) {
     case SHELL_ERASE_BS:
     case SHELL_ERASE_DEL:
-        shell_process_backspace();
+        shell_process_backspace(shell);
         break;
     case '\t':
-        return shell_process_tabulation();
+        return shell_process_tabulation(shell);
     case '\n':
     case '\r':
-        putchar('\n');
-        shell_process_line();
+        shell_printf(shell, "\n");
+        shell_process_line(shell);
         return EAGAIN;
     default:
         return 0;
@@ -1136,16 +1100,16 @@ shell_process_ctrl_char(char c)
 }
 
 void
-shell_run(void)
+shell_run(struct shell *shell)
 {
     int c, error, escape;
 
     for (;;) {
-        shell_reset();
+        shell_reset(shell);
         escape = 0;
 
         for (;;) {
-            c = getchar();
+            c = shell->getc_fn(shell->io_object);
 
             if (escape) {
                 switch (escape) {
@@ -1159,7 +1123,7 @@ shell_run(void)
 
                     break;
                 case SHELL_ESC_STATE_CSI:
-                    escape = shell_process_esc_sequence(c);
+                    escape = shell_process_esc_sequence(shell, c);
                     break;
                 default:
                     escape = 0;
@@ -1171,14 +1135,14 @@ shell_run(void)
                     escape = SHELL_ESC_STATE_START;
                     error = 0;
                 } else {
-                    error = shell_process_ctrl_char(c);
+                    error = shell_process_ctrl_char(shell, c);
 
                     if (error) {
                         break;
                     }
                 }
             } else {
-                error = shell_process_raw_char(c);
+                error = shell_process_raw_char(shell, c);
             }
 
             if (error) {
@@ -1189,8 +1153,11 @@ shell_run(void)
 }
 
 void
-shell_setup(void)
+shell_printf(struct shell *shell, const char *format, ...)
 {
-    pthread_mutex_init(&shell_lock, NULL);
-    SHELL_REGISTER_CMDS(shell_default_cmds);
+    va_list ap;
+
+    va_start(ap, format);
+    shell->vfprintf_fn(shell->io_object, format, ap);
+    va_end(ap);
 }

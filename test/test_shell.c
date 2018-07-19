@@ -21,6 +21,7 @@
  */
 
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <termios.h>
@@ -29,19 +30,57 @@
 #include <macros.h>
 #include <shell.h>
 
-static void
-test_exit(int argc, char *argv[])
-{
-    (void)argc;
-    (void)argv;
+struct test_iodev {
+    FILE *in;
+    FILE *out;
+};
 
+static void
+test_iodev_init(struct test_iodev *iodev, FILE *in, FILE *out)
+{
+    iodev->in = in;
+    iodev->out = out;
+}
+
+static int
+test_getc(void *io_object)
+{
+    struct test_iodev *iodev;
+
+    iodev = io_object;
+    return getc(iodev->in);
+}
+
+static void
+test_vfprintf(void *io_object, const char *format, va_list ap)
+{
+    struct test_iodev *iodev;
+
+    iodev = io_object;
+    vfprintf(iodev->out, format, ap);
+}
+
+static void
+test_exit(void)
+{
     /* Calling exit directly doesn't reset the terminal */
     raise(SIGINT);
 }
 
 static void
-test_top(int argc, char *argv[])
+test_shell_exit(struct shell *shell, int argc, char *argv[])
 {
+    (void)shell;
+    (void)argc;
+    (void)argv;
+
+    test_exit();
+}
+
+static void
+test_shell_top(struct shell *shell, int argc, char *argv[])
+{
+    (void)shell;
     (void)argc;
     (void)argv;
 
@@ -49,12 +88,12 @@ test_top(int argc, char *argv[])
 }
 
 static void
-test_add(int argc, char *argv[])
+test_shell_add(struct shell *shell, int argc, char *argv[])
 {
     int i, ret, tmp, total;
 
     if (argc < 3) {
-        printf("shell: add: invalid arguments\n");
+        shell_printf(shell, "shell: add: invalid arguments\n");
         return;
     }
 
@@ -62,36 +101,43 @@ test_add(int argc, char *argv[])
         ret = sscanf(argv[i], "%d", &tmp);
 
         if (ret != 1) {
-            printf("shell: add: '%s': invalid argument\n", argv[i]);
+            shell_printf(shell, "shell: add: '%s': invalid argument\n",
+                         argv[i]);
             return;
         }
 
         total += tmp;
     }
 
-    printf("%d\n", total);
+    shell_printf(shell, "%d\n", total);
 }
 
 static struct shell_cmd test_shell_cmds[] = {
-    SHELL_CMD_INITIALIZER2("add", test_add,
+    SHELL_CMD_INITIALIZER2("add", test_shell_add,
                            "add <i1 i2 [i3 ...]>", "add integers",
                            "The user must pass at least two integers"),
-    SHELL_CMD_INITIALIZER("top", test_top,
+    SHELL_CMD_INITIALIZER("top", test_shell_top,
                           "top", "display system processes"),
-    SHELL_CMD_INITIALIZER("exit", test_exit,
+    SHELL_CMD_INITIALIZER("exit", test_shell_exit,
                           "exit", "leave the shell"),
 };
 
 int
 main(int argc, char *argv[])
 {
+    struct test_iodev iodev;
     struct termios termios;
+    struct shell_cmd_set cmd_set;
+    struct shell shell;
     int ret;
 
     (void)argc;
     (void)argv;
 
-    SHELL_REGISTER_CMDS(test_shell_cmds);
+    test_iodev_init(&iodev, stdin, stdout);
+    shell_cmd_set_init(&cmd_set);
+    SHELL_REGISTER_CMDS(test_shell_cmds, &cmd_set);
+    shell_init(&shell, &cmd_set, test_getc, test_vfprintf, &iodev);
 
     setbuf(stdin, NULL);
     ret = tcgetattr(fileno(stdin), &termios);
@@ -110,7 +156,6 @@ main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    shell_setup();
-    shell_run();
-    test_exit(0, NULL);
+    shell_run(&shell);
+    test_exit();
 }
