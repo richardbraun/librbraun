@@ -119,10 +119,16 @@ shell_cmd_check_char(char c)
 static int
 shell_cmd_check(const struct shell_cmd *cmd)
 {
-    unsigned long i;
+    size_t len;
     int error;
 
-    for (i = 0; cmd->name[i] != '\0'; i++) {
+    len = strlen(cmd->name);
+
+    if (len == 0) {
+        return EINVAL;
+    }
+
+    for (size_t i = 0; i < len; i++) {
         error = shell_cmd_check_char(cmd->name[i]);
 
         if (error) {
@@ -130,49 +136,45 @@ shell_cmd_check(const struct shell_cmd *cmd)
         }
     }
 
-    if (i == 0) {
-        return EINVAL;
-    }
-
     return 0;
 }
 
-static inline const char *
+static const char *
 shell_line_str(const struct shell_line *line)
 {
     return line->str;
 }
 
-static inline unsigned long
+static size_t
 shell_line_size(const struct shell_line *line)
 {
     return line->size;
 }
 
-static inline void
+static void
 shell_line_reset(struct shell_line *line)
 {
     line->str[0] = '\0';
     line->size = 0;
 }
 
-static inline void
+static void
 shell_line_copy(struct shell_line *dest, const struct shell_line *src)
 {
     strcpy(dest->str, src->str);
     dest->size = src->size;
 }
 
-static inline int
+static int
 shell_line_cmp(const struct shell_line *a, const struct shell_line *b)
 {
     return strcmp(a->str, b->str);
 }
 
 static int
-shell_line_insert(struct shell_line *line, unsigned long index, char c)
+shell_line_insert(struct shell_line *line, size_t index, char c)
 {
-    unsigned long remaining_chars;
+    size_t remaining_chars;
 
     if (index > line->size) {
         return EINVAL;
@@ -195,9 +197,9 @@ shell_line_insert(struct shell_line *line, unsigned long index, char c)
 }
 
 static int
-shell_line_erase(struct shell_line *line, unsigned long index)
+shell_line_erase(struct shell_line *line, size_t index)
 {
-    unsigned long remaining_chars;
+    size_t remaining_chars;
 
     if (index >= line->size) {
         return EINVAL;
@@ -215,7 +217,7 @@ shell_line_erase(struct shell_line *line, unsigned long index)
 }
 
 static struct shell_line *
-shell_history_get(struct shell_history *history, unsigned long index)
+shell_history_get(struct shell_history *history, size_t index)
 {
     return &history->lines[index % ARRAY_SIZE(history->lines)];
 }
@@ -223,7 +225,7 @@ shell_history_get(struct shell_history *history, unsigned long index)
 static void
 shell_history_init(struct shell_history *history)
 {
-    for (unsigned long i = 0; i < ARRAY_SIZE(history->lines); i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(history->lines); i++) {
         shell_line_reset(shell_history_get(history, i));
     }
 
@@ -250,7 +252,7 @@ shell_history_reset_index(struct shell_history *history)
     history->index = history->newest;
 }
 
-static inline int
+static int
 shell_history_same_newest(struct shell_history *history)
 {
     return (history->newest != history->oldest)
@@ -307,6 +309,19 @@ shell_history_forward(struct shell_history *history)
 }
 
 static void
+shell_history_print(struct shell_history *history, struct shell *shell)
+{
+    const struct shell_line *line;
+
+    /* Mind integer overflows */
+    for (size_t i = history->oldest; i != history->newest; i++) {
+        line = shell_history_get(history, i);
+        shell_printf(shell, "%6lu  %s\n", i - history->oldest,
+                     shell_line_str(line));
+    }
+}
+
+static void
 shell_cmd_set_lock(struct shell_cmd_set *cmd_set)
 {
     pthread_mutex_lock(&cmd_set->lock);
@@ -318,10 +333,10 @@ shell_cmd_set_unlock(struct shell_cmd_set *cmd_set)
     pthread_mutex_unlock(&cmd_set->lock);
 }
 
-static inline struct shell_bucket *
+static struct shell_bucket *
 shell_cmd_set_get_bucket(struct shell_cmd_set *cmd_set, const char *name)
 {
-    unsigned long index;
+    size_t index;
 
     index = hash_str(name, SHELL_HTABLE_BITS);
     assert(index < ARRAY_SIZE(cmd_set->htable));
@@ -358,7 +373,7 @@ shell_cmd_set_lookup(struct shell_cmd_set *cmd_set, const char *name)
  */
 static const struct shell_cmd *
 shell_cmd_set_match(const struct shell_cmd_set *cmd_set, const char *str,
-                    unsigned long size)
+                    size_t size)
 {
     const struct shell_cmd *cmd;
 
@@ -393,10 +408,10 @@ shell_cmd_set_match(const struct shell_cmd_set *cmd_set, const char *str,
  */
 static int
 shell_cmd_set_complete(struct shell_cmd_set *cmd_set, const char *str,
-                       unsigned long *sizep, const struct shell_cmd **cmdp)
+                       size_t *sizep, const struct shell_cmd **cmdp)
 {
     const struct shell_cmd *cmd, *next;
-    unsigned long size;
+    size_t size;
 
     size = *sizep;
 
@@ -502,12 +517,7 @@ shell_cb_history(struct shell *shell, int argc, char *argv[])
     (void)argc;
     (void)argv;
 
-    /* Mind integer overflows */
-    /* TODO Accessors */
-    for (i = shell->history.oldest; i != shell->history.newest; i++) {
-        shell_printf(shell, "%6lu  %s\n", i - shell->history.oldest,
-                     shell_line_str(shell_history_get(&shell->history, i)));
-    }
+    shell_history_print(&shell->history, shell);
 }
 
 static struct shell_cmd shell_default_cmds[] = {
@@ -628,7 +638,7 @@ shell_init(struct shell *shell, struct shell_cmd_set *cmd_set,
     shell->vfprintf_fn = vfprintf_fn;
     shell->io_object = io_object;
     shell_history_init(&shell->history);
-    shell->esc_seq_ptr = shell->esc_seq;
+    shell->esc_seq_index = 0;
 }
 
 static void
@@ -649,7 +659,7 @@ static void
 shell_erase(struct shell *shell)
 {
     struct shell_line *current_line;
-    unsigned long remaining_chars;
+    size_t remaining_chars;
 
     current_line = shell_history_get_newest(&shell->history);
     remaining_chars = shell_line_size(current_line);
@@ -697,7 +707,7 @@ shell_process_left(struct shell *shell)
 static int
 shell_process_right(struct shell *shell)
 {
-    unsigned long size;
+    size_t size;
 
     size = shell_line_size(shell_history_get_newest(&shell->history));
 
@@ -730,7 +740,7 @@ static void
 shell_process_backspace(struct shell *shell)
 {
     struct shell_line *current_line;
-    unsigned long remaining_chars;
+    size_t remaining_chars;
     int error;
 
     current_line = shell_history_get_newest(&shell->history);
@@ -754,7 +764,7 @@ static int
 shell_process_raw_char(struct shell *shell, char c)
 {
     struct shell_line *current_line;
-    unsigned long remaining_chars;
+    size_t remaining_chars;
     int error;
 
     current_line = shell_history_get_newest(&shell->history);
@@ -827,7 +837,7 @@ shell_process_tabulation(struct shell *shell)
     struct shell_cmd_set *cmd_set;
     const struct shell_cmd *cmd = NULL; /* GCC */
     const char *name, *str, *word;
-    unsigned long i, size, cmd_cursor;
+    size_t size, cmd_cursor;
     int error;
 
     cmd_set = shell->cmd_set;
@@ -847,7 +857,7 @@ shell_process_tabulation(struct shell *shell)
     }
 
     if (error == EAGAIN) {
-        unsigned long cursor;
+        size_t cursor;
 
         cursor = shell->cursor;
         shell_print_cmd_matches(shell, cmd, size);
@@ -866,7 +876,7 @@ shell_process_tabulation(struct shell *shell)
         shell_process_backspace(shell);
     }
 
-    for (i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         error = shell_process_raw_char(shell, name[i]);
 
         if (error) {
@@ -930,7 +940,7 @@ shell_esc_seq_del(struct shell *shell)
 static void
 shell_esc_seq_end(struct shell *shell)
 {
-    unsigned long size;
+    size_t size;
 
     size = shell_line_size(shell_history_get_newest(&shell->history));
 
@@ -954,9 +964,7 @@ static const struct shell_esc_seq shell_esc_seqs[] = {
 static const struct shell_esc_seq *
 shell_esc_seq_lookup(const char *str)
 {
-    unsigned long i;
-
-    for (i = 0; i < ARRAY_SIZE(shell_esc_seqs); i++) {
+    for (size_t i = 0; i < ARRAY_SIZE(shell_esc_seqs); i++) {
         if (strcmp(shell_esc_seqs[i].str, str) == 0) {
             return &shell_esc_seqs[i];
         }
@@ -974,18 +982,15 @@ static int
 shell_process_esc_sequence(struct shell *shell, char c)
 {
     const struct shell_esc_seq *seq;
-    size_t index;
 
-    index = shell->esc_seq_ptr - shell->esc_seq;
-
-    if (index >= (ARRAY_SIZE(shell->esc_seq) - 1)) {
+    if (shell->esc_seq_index >= (ARRAY_SIZE(shell->esc_seq) - 1)) {
         shell_printf(shell, "shell: escape sequence too long\n");
         goto reset;
     }
 
-    *shell->esc_seq_ptr = c;
-    shell->esc_seq_ptr++;
-    *shell->esc_seq_ptr = '\0';
+    shell->esc_seq[shell->esc_seq_index] = c;
+    shell->esc_seq_index++;
+    shell->esc_seq[shell->esc_seq_index] = '\0';
 
     if ((c >= '@') && (c <= '~')) {
         seq = shell_esc_seq_lookup(shell->esc_seq);
@@ -1000,15 +1005,15 @@ shell_process_esc_sequence(struct shell *shell, char c)
     return SHELL_ESC_STATE_CSI;
 
 reset:
-    shell->esc_seq_ptr = shell->esc_seq;
+    shell->esc_seq_index = 0;
     return 0;
 }
 
 static int
 shell_process_args(struct shell *shell)
 {
-    unsigned long i;
     char c, prev;
+    size_t i;
     int j;
 
     snprintf(shell->tmp_line, sizeof(shell->tmp_line), "%s",

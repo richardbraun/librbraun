@@ -70,7 +70,7 @@ struct shell_cmd_set {
  */
 struct shell_line {
     char str[SHELL_LINE_MAX_SIZE];
-    unsigned long size;
+    size_t size;
 };
 
 /*
@@ -95,9 +95,9 @@ struct shell_line {
  */
 struct shell_history {
     struct shell_line lines[SHELL_HISTORY_SIZE];
-    unsigned long newest;
-    unsigned long oldest;
-    unsigned long index;
+    size_t newest;
+    size_t oldest;
+    size_t index;
 };
 
 /*
@@ -122,11 +122,11 @@ struct shell {
     struct shell_history history;
 
     /* Cursor within the current line */
-    unsigned long cursor;
+    size_t cursor;
 
     /* Members used for escape sequence parsing */
     char esc_seq[SHELL_ESC_SEQ_MAX_SIZE];
-    char *esc_seq_ptr;
+    size_t esc_seq_index;
 
     /*
      * Buffer used to store the current line during argument processing.

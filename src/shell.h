@@ -62,7 +62,7 @@ struct shell_cmd_set;
 /*
  * Type for command implementation callbacks.
  */
-typedef void (*shell_fn_t)(struct shell *shell, int argc, char *argv[]);
+typedef void (*shell_fn_t)(struct shell *shell, int argc, char **argv);
 
 #include "shell_i.h"
 
