@@ -516,7 +516,7 @@ shell_cb_help(struct shell *shell, int argc, char *argv[])
     shell_cmd_set_lock(cmd_set);
 
     for (cmd = cmd_set->cmd_list; cmd != NULL; cmd = cmd->ls_next) {
-        shell_printf(shell, "%13s  %s\n", cmd->name, cmd->short_desc);
+        shell_printf(shell, "%19s  %s\n", cmd->name, cmd->short_desc);
     }
 
     shell_cmd_set_unlock(cmd_set);
