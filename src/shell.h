@@ -132,9 +132,16 @@ void shell_init(struct shell *shell, struct shell_cmd_set *cmd_set,
 void shell_run(struct shell *shell);
 
 /*
- * Printf-like function specific to the given shell instance.
+ * Obtain the command set associated with a shell.
+ */
+struct shell_cmd_set * shell_get_cmd_set(struct shell *shell);
+
+/*
+ * Printf-like functions specific to the given shell instance.
  */
 void shell_printf(struct shell *shell, const char *format, ...)
     __attribute__((format(printf, 2, 3)));
+void shell_vprintf(struct shell *shell, const char *format, va_list ap)
+    __attribute__((format(printf, 2, 0)));
 
 #endif /* SHELL_H */

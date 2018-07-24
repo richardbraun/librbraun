@@ -316,7 +316,8 @@ shell_history_print(struct shell_history *history, struct shell *shell)
     /* Mind integer overflows */
     for (size_t i = history->oldest; i != history->newest; i++) {
         line = shell_history_get(history, i);
-        shell_printf(shell, "%6lu  %s\n", i - history->oldest,
+        shell_printf(shell, "%6lu  %s\n",
+                     (unsigned long)(i - history->oldest),
                      shell_line_str(line));
     }
 }
@@ -469,13 +470,25 @@ shell_cmd_set_complete(struct shell_cmd_set *cmd_set, const char *str,
     return EAGAIN;
 }
 
+struct shell_cmd_set *
+shell_get_cmd_set(struct shell *shell)
+{
+    return shell->cmd_set;
+}
+
+static struct shell_history *
+shell_get_history(struct shell *shell)
+{
+    return &shell->history;
+}
+
 static void
 shell_cb_help(struct shell *shell, int argc, char *argv[])
 {
     struct shell_cmd_set *cmd_set;
     const struct shell_cmd *cmd;
 
-    cmd_set = shell->cmd_set;
+    cmd_set = shell_get_cmd_set(shell);
 
     if (argc > 2) {
         argc = 2;
@@ -512,12 +525,10 @@ shell_cb_help(struct shell *shell, int argc, char *argv[])
 static void
 shell_cb_history(struct shell *shell, int argc, char *argv[])
 {
-    unsigned long i;
-
     (void)argc;
     (void)argv;
 
-    shell_history_print(&shell->history, shell);
+    shell_history_print(shell_get_history(shell), shell);
 }
 
 static struct shell_cmd shell_default_cmds[] = {
@@ -1163,6 +1174,12 @@ shell_printf(struct shell *shell, const char *format, ...)
     va_list ap;
 
     va_start(ap, format);
-    shell->vfprintf_fn(shell->io_object, format, ap);
+    shell_vprintf(shell, format, ap);
     va_end(ap);
+}
+
+void
+shell_vprintf(struct shell *shell, const char *format, va_list ap)
+{
+    shell->vfprintf_fn(shell->io_object, format, ap);
 }
