@@ -884,10 +884,10 @@ fmt_sscanf_state_skip_space(struct fmt_sscanf_state *state)
     fmt_skip(&state->str);
 }
 
-static char
+static int
 fmt_sscanf_state_consume_string(struct fmt_sscanf_state *state)
 {
-    char c;
+    int c;
 
     c = fmt_consume(&state->str);
 
@@ -1058,7 +1058,7 @@ fmt_sscanf_state_consume_specifier(struct fmt_sscanf_state *state)
 static int
 fmt_sscanf_state_discard_char(struct fmt_sscanf_state *state, char c)
 {
-    char c2;
+    int c2;
 
     if (fmt_isspace(c)) {
         fmt_sscanf_state_skip_space(state);
@@ -1113,9 +1113,10 @@ static int
 fmt_sscanf_state_produce_int(struct fmt_sscanf_state *state)
 {
     unsigned long long n, m, tmp;
-    char c, buf[FMT_MAX_NUM_SIZE];
+    char buf[FMT_MAX_NUM_SIZE];
     bool negative;
     size_t i;
+    int c;
 
     negative = 0;
 
@@ -1313,8 +1314,8 @@ fmt_sscanf_state_produce_int(struct fmt_sscanf_state *state)
 static int
 fmt_sscanf_state_produce_char(struct fmt_sscanf_state *state)
 {
-    char c, *dest;
-    int i, width;
+    int c, i, width;
+    char *dest;
 
     if (state->flags & FMT_FORMAT_DISCARD) {
         dest = NULL;
@@ -1356,7 +1357,8 @@ static int
 fmt_sscanf_state_produce_str(struct fmt_sscanf_state *state)
 {
     const char *orig;
-    char c, *dest;
+    char *dest;
+    int c;
 
     orig = state->str;
 
