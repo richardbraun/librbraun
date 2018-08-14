@@ -82,16 +82,13 @@ get_id(int i)
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
     struct rbtree tree;
     struct rbtree_node *node, *tmp;
     struct obj *obj, *prev;
     rbtree_slot_t slot;
     int i, id;
-
-    (void)argc;
-    (void)argv;
 
     rbtree_init(&tree);
 

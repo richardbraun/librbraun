@@ -79,13 +79,10 @@ print_list(const struct plist *list)
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
     struct obj *obj, *tmp;
     unsigned int prev_priority __attribute__((unused));
-
-    (void)argc;
-    (void)argv;
 
     add_obj(&obj_list, 1);
     add_obj(&obj_list, 3);

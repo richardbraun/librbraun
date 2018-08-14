@@ -97,16 +97,13 @@ get_id(int i)
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
     struct avltree tree;
     struct avltree_node *node, *tmp;
     struct obj *obj, *prev;
     avltree_slot_t slot;
     int i, id;
-
-    (void)argc;
-    (void)argv;
 
     avltree_init(&tree);
 

@@ -1038,11 +1038,8 @@ test_38(void)
 }
 
 int
-main(int argc, char *argv[])
+main(void)
 {
-    (void)argc;
-    (void)argv;
-
     test_1();
     test_2();
     test_3();

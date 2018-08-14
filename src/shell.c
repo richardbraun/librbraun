@@ -523,11 +523,8 @@ shell_cb_help(struct shell *shell, int argc, char *argv[])
 }
 
 static void
-shell_cb_history(struct shell *shell, int argc, char *argv[])
+shell_cb_history(struct shell *shell, int argc __unused, char *argv[] __unused)
 {
-    (void)argc;
-    (void)argv;
-
     shell_history_print(shell_get_history(shell), shell);
 }
 

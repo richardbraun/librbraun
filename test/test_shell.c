@@ -68,22 +68,16 @@ test_exit(void)
 }
 
 static void
-test_shell_exit(struct shell *shell, int argc, char *argv[])
+test_shell_exit(struct shell *shell __unused, int argc __unused,
+                char *argv[] __unused)
 {
-    (void)shell;
-    (void)argc;
-    (void)argv;
-
     test_exit();
 }
 
 static void
-test_shell_top(struct shell *shell, int argc, char *argv[])
+test_shell_top(struct shell *shell __unused, int argc __unused,
+               char *argv[] __unused)
 {
-    (void)shell;
-    (void)argc;
-    (void)argv;
-
     system("top");
 }
 
@@ -123,16 +117,13 @@ static struct shell_cmd test_shell_cmds[] = {
 };
 
 int
-main(int argc, char *argv[])
+main(void)
 {
     struct test_iodev iodev;
     struct termios termios;
     struct shell_cmd_set cmd_set;
     struct shell shell;
     int ret;
-
-    (void)argc;
-    (void)argv;
 
     test_iodev_init(&iodev, stdin, stdout);
     shell_cmd_set_init(&cmd_set);
