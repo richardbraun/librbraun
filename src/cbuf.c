@@ -172,8 +172,7 @@ cbuf_read(const struct cbuf *cbuf, size_t index, void *buf, size_t *sizep)
     const uint8_t *start, *end, *buf_end;
     size_t size;
 
-    /* At least one byte must be available */
-    if (!cbuf_range_valid(cbuf, index, index + 1)) {
+    if (!cbuf_index_valid(cbuf, index)) {
         return EINVAL;
     }
 

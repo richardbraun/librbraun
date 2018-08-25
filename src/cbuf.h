@@ -83,6 +83,13 @@ cbuf_clear(struct cbuf *cbuf)
 }
 
 static inline bool
+cbuf_index_valid(const struct cbuf *cbuf, size_t index)
+{
+    return ((index - cbuf->start) <= cbuf_size(cbuf))
+           && ((cbuf->end - index) <= cbuf_size(cbuf));
+}
+
+static inline bool
 cbuf_range_valid(const struct cbuf *cbuf, size_t start, size_t end)
 {
     return (((end - start) <= cbuf_size(cbuf))
