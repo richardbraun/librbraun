@@ -117,10 +117,13 @@ int cbuf_push(struct cbuf *cbuf, const void *buf, size_t size, bool erase);
  * Pop data from a circular buffer.
  *
  * On entry, the sizep argument points to the size of the output buffer.
- * On exit, it is updated to the number of bytes actually transferred.
+ * On return, it is updated to the number of bytes actually transferred.
  *
- * If the buffer is empty, EAGAIN is returned, and the size of the
- * output buffer is undefined.
+ * If the buffer is empty, EAGAIN is returned, and the size of the output
+ * buffer is unmodified.
+ *
+ * The output buffer may be NULL, in which case this function acts as if
+ * it wasn't, but without writing output data.
  */
 int cbuf_pop(struct cbuf *cbuf, void *buf, size_t *sizep);
 
@@ -136,6 +139,9 @@ int cbuf_pushb(struct cbuf *cbuf, uint8_t byte, bool erase);
  * Pop a byte from a circular buffer.
  *
  * If the buffer is empty, EAGAIN is returned.
+ *
+ * The output byte pointer may be NULL, in which case this function acts
+ * as if it wasn't, but without writing output data.
  */
 int cbuf_popb(struct cbuf *cbuf, void *bytep);
 
@@ -152,11 +158,14 @@ int cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size);
  * Read from a circular buffer at a specific location.
  *
  * On entry, the sizep argument points to the size of the output buffer.
- * On exit, it is updated to the number of bytes actually transferred.
+ * On return, it is updated to the number of bytes actually transferred.
  *
  * If the given index is outside buffer boundaries, EINVAL is returned.
  *
  * The circular buffer isn't changed by this operation.
+ *
+ * The output buffer may be NULL, in which case this function acts as if
+ * it wasn't, but without writing output data.
  */
 int cbuf_read(const struct cbuf *cbuf, size_t index, void *buf, size_t *sizep);
 

@@ -128,7 +128,11 @@ cbuf_popb(struct cbuf *cbuf, void *bytep)
     }
 
     ptr = bytep;
-    *ptr = cbuf->buf[cbuf_index(cbuf, cbuf->start)];
+
+    if (ptr) {
+        *ptr = cbuf->buf[cbuf_index(cbuf, cbuf->start)];
+    }
+
     cbuf->start++;
     return 0;
 }
@@ -197,13 +201,20 @@ cbuf_read(const struct cbuf *cbuf, size_t index, void *buf, size_t *sizep)
         size = *sizep;
     } else {
         size = buf_end - start;
-        memcpy(buf, start, size);
-        buf += size;
+
+        if (buf) {
+            memcpy(buf, start, size);
+            buf += size;
+        }
+
         start = cbuf->buf;
         size = *sizep - size;
     }
 
-    memcpy(buf, start, size);
+    if (buf) {
+        memcpy(buf, start, size);
+    }
+
     return 0;
 }
 
