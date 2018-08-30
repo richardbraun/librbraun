@@ -55,9 +55,16 @@ cbuf_index(const struct cbuf *cbuf, size_t abs_index)
 static void
 cbuf_update_start(struct cbuf *cbuf)
 {
-    /* Mind integer overflows */
     if (cbuf_size(cbuf) > cbuf->capacity) {
         cbuf->start = cbuf->end - cbuf->capacity;
+    }
+}
+
+static void
+cbuf_update_end(struct cbuf *cbuf)
+{
+    if (cbuf_size(cbuf) > cbuf->capacity) {
+        cbuf->end = cbuf->start + cbuf->capacity;
     }
 }
 
@@ -198,4 +205,18 @@ cbuf_read(const struct cbuf *cbuf, size_t index, void *buf, size_t *sizep)
 
     memcpy(buf, start, size);
     return 0;
+}
+
+void
+cbuf_set_start(struct cbuf *cbuf, size_t start)
+{
+    cbuf->start = start;
+    cbuf_update_start(cbuf);
+}
+
+void
+cbuf_set_end(struct cbuf *cbuf, size_t end)
+{
+    cbuf->end = end;
+    cbuf_update_end(cbuf);
 }

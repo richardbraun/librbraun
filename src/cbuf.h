@@ -23,7 +23,7 @@
  * http://git.sceen.net/rbraun/librbraun.git/
  *
  *
- * Circular byte buffer.
+ * FIFO circular byte buffer.
  */
 
 #ifndef CBUF_H
@@ -159,5 +159,17 @@ int cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size);
  * The circular buffer isn't changed by this operation.
  */
 int cbuf_read(const struct cbuf *cbuf, size_t index, void *buf, size_t *sizep);
+
+/*
+ * Set the value of the start/end index.
+ *
+ * These functions provide low level access to the circular buffer boundaries
+ * while making sure its size doesn't exceed its capacity.
+ *
+ * Users should try and find a higher level way to manipulate the circular
+ * buffer, and only resort to using these functions if there's no other choice.
+ */
+void cbuf_set_start(struct cbuf *cbuf, size_t start);
+void cbuf_set_end(struct cbuf *cbuf, size_t end);
 
 #endif /* CBUF_H */
