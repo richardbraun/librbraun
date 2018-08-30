@@ -34,6 +34,8 @@ librbraun_la_SOURCES = \
         src/list.c \
         src/list.h \
         src/macros.h \
+        src/mbuf.c \
+        src/mbuf.h \
         src/plist.c \
         src/plist.h \
         src/rbtree.c \
@@ -54,6 +56,7 @@ bin_PROGRAMS = \
         test_fmt_sprintf \
         test_fmt_sscanf \
         test_hlist \
+        test_mbuf \
         test_plist \
         test_rbtree \
         test_rdxtree \
@@ -74,6 +77,9 @@ test_fmt_sscanf_LDADD = librbraun.la
 
 test_hlist_SOURCES = test/test_hlist.c
 test_hlist_LDADD = librbraun.la
+
+test_mbuf_SOURCES = test/test_mbuf.c
+test_mbuf_LDADD = librbraun.la
 
 test_plist_SOURCES = test/test_plist.c
 test_plist_LDADD = librbraun.la
