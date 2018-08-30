@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "macros.h"
 #include "mbuf.h"
 
 /*
@@ -82,7 +83,7 @@ mbuf_clear_old_msgs(struct mbuf *mbuf, size_t total_size)
 {
     struct mbuf_hdr hdr;
     size_t size;
-    int error;
+    __unused int error;
 
     do {
         size = sizeof(hdr);
