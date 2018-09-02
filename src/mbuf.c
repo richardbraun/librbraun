@@ -164,3 +164,9 @@ out:
     *sizep = size;
     return error;
 }
+
+size_t
+mbuf_avail_size(const struct mbuf *mbuf)
+{
+    return cbuf_avail_size(&mbuf->cbuf);
+}

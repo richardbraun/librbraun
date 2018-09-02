@@ -84,4 +84,9 @@ int mbuf_push(struct mbuf *mbuf, const void *buf, size_t size, bool erase);
  */
 int mbuf_pop(struct mbuf *mbuf, void *buf, size_t *sizep);
 
+/*
+ * Get the number of availabe bytes in a message buffer.
+ */
+size_t mbuf_avail_size(const struct mbuf *mbuf);
+
 #endif /* MBUF_H */
