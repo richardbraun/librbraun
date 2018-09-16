@@ -164,7 +164,7 @@ cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size)
     end = start + size;
     buf_end = cbuf->buf + cbuf->capacity;
 
-    if ((end <= cbuf->buf) || (end > buf_end)) {
+    if ((end < cbuf->buf) || (end > buf_end)) {
         skip = buf_end - start;
         memcpy(start, buf, skip);
         buf += skip;
