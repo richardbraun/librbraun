@@ -222,12 +222,12 @@ void
 cbuf_set_start(struct cbuf *cbuf, size_t start)
 {
     cbuf->start = start;
-    cbuf_update_start(cbuf);
+    cbuf_update_end(cbuf);
 }
 
 void
 cbuf_set_end(struct cbuf *cbuf, size_t end)
 {
     cbuf->end = end;
-    cbuf_update_end(cbuf);
+    cbuf_update_start(cbuf);
 }
