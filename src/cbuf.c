@@ -143,13 +143,13 @@ cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size)
     uint8_t *start, *end, *buf_end;
     size_t new_end, skip;
 
-    if (!cbuf_range_valid(cbuf, index, cbuf->end)) {
+    if (!cbuf_index_valid(cbuf, index)) {
         return EINVAL;
     }
 
     new_end = index + size;
 
-    if (!cbuf_range_valid(cbuf, cbuf->start, new_end)) {
+    if (!cbuf_index_valid(cbuf, new_end)) {
         cbuf->end = new_end;
 
         if (size > cbuf_capacity(cbuf)) {
