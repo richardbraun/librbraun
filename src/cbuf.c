@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2017 Richard Braun.
+ * Copyright (c) 2015-2018 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -71,12 +71,12 @@ cbuf_update_end(struct cbuf *cbuf)
 int
 cbuf_push(struct cbuf *cbuf, const void *buf, size_t size, bool erase)
 {
-    size_t free_size;
-
     if (!erase) {
-        free_size = cbuf_capacity(cbuf) - cbuf_size(cbuf);
+        size_t avail_size;
 
-        if (size > free_size) {
+        avail_size = cbuf_avail_size(cbuf);
+
+        if (size > avail_size) {
             return EAGAIN;
         }
     }
@@ -87,7 +87,7 @@ cbuf_push(struct cbuf *cbuf, const void *buf, size_t size, bool erase)
 int
 cbuf_pop(struct cbuf *cbuf, void *buf, size_t *sizep)
 {
-    __unused int error;
+    int error __unused;
 
     if (cbuf_size(cbuf) == 0) {
         return EAGAIN;
@@ -102,12 +102,12 @@ cbuf_pop(struct cbuf *cbuf, void *buf, size_t *sizep)
 int
 cbuf_pushb(struct cbuf *cbuf, uint8_t byte, bool erase)
 {
-    size_t free_size;
-
     if (!erase) {
-        free_size = cbuf_capacity(cbuf) - cbuf_size(cbuf);
+        size_t avail_size;
 
-        if (free_size == 0) {
+        avail_size = cbuf_avail_size(cbuf);
+
+        if (avail_size == 0) {
             return EAGAIN;
         }
     }
@@ -153,11 +153,11 @@ cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size)
         cbuf->end = new_end;
         cbuf_update_start(cbuf);
 
-        if (size > cbuf_capacity(cbuf)) {
-            skip = size - cbuf_capacity(cbuf);
+        if (size > cbuf->capacity) {
+            skip = size - cbuf->capacity;
             buf += skip;
             index += skip;
-            size = cbuf_capacity(cbuf);
+            size = cbuf->capacity;
         }
     }
 
