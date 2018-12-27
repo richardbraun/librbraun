@@ -151,6 +151,7 @@ cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size)
 
     if (!cbuf_index_valid(cbuf, new_end)) {
         cbuf->end = new_end;
+        cbuf_update_start(cbuf);
 
         if (size > cbuf_capacity(cbuf)) {
             skip = size - cbuf_capacity(cbuf);
@@ -173,7 +174,6 @@ cbuf_write(struct cbuf *cbuf, size_t index, const void *buf, size_t size)
     }
 
     memcpy(start, buf, size);
-    cbuf_update_start(cbuf);
     return 0;
 }
 
