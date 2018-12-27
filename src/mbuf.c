@@ -39,7 +39,6 @@
  */
 struct mbuf_hdr {
     uint32_t size;
-    char data[];
 };
 
 static int
@@ -83,7 +82,7 @@ mbuf_clear_old_msgs(struct mbuf *mbuf, size_t total_size)
 {
     struct mbuf_hdr hdr;
     size_t size;
-    __unused int error;
+    int error __unused;
 
     do {
         size = sizeof(hdr);
