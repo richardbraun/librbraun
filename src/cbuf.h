@@ -89,6 +89,14 @@ cbuf_index_valid(const struct cbuf *cbuf, size_t index)
            && ((cbuf->end - index) <= cbuf_size(cbuf));
 }
 
+static inline bool
+cbuf_range_valid(const struct cbuf *cbuf, size_t start, size_t end)
+{
+    return (((end - start) <= cbuf_size(cbuf))
+            && ((start - cbuf->start) <= cbuf_size(cbuf))
+            && ((cbuf->end - end) <= cbuf_size(cbuf)));
+}
+
 /*
  * Initialize a circular buffer.
  *
