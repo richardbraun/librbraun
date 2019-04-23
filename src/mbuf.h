@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Richard Braun.
+ * Copyright (c) 2018-2019 Richard Braun.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -39,10 +39,27 @@
  *
  * Message buffers are built on top of circular byte buffers. They provide
  * discrete message transfer from a producer to a consumer.
+ *
+ * The order is computed from the maximum message size, and is used to
+ * determine a header size that can represent up to 2^order - 1 bytes.
  */
 struct mbuf {
     struct cbuf cbuf;
+    size_t max_msg_size;
+    unsigned int order;
 };
+
+static inline size_t
+mbuf_start(const struct mbuf *mbuf)
+{
+    return cbuf_start(&mbuf->cbuf);
+}
+
+static inline size_t
+mbuf_end(const struct mbuf *mbuf)
+{
+    return cbuf_end(&mbuf->cbuf);
+}
 
 /*
  * Initialize a message buffer.
@@ -50,7 +67,8 @@ struct mbuf {
  * The descriptor is set to use the given buffer for storage. Capacity
  * must be a power-of-two.
  */
-void mbuf_init(struct mbuf *mbuf, void *buf, size_t capacity);
+void mbuf_init(struct mbuf *mbuf, void *buf, size_t capacity,
+               size_t max_msg_size);
 
 /*
  * Clear a message buffer.
@@ -63,7 +81,8 @@ void mbuf_clear(struct mbuf *mbuf);
  * If the message doesn't fit in the message buffer, either because it is
  * larger than the capacity, or because the function isn't allowed to erase
  * old messages and the message buffer doesn't have enough available memory
- * for the new message, EMSGSIZE is returned.
+ * for the new message, EMSGSIZE is returned. If the message is larger than
+ * the maximum message size, EINVAL is returned.
  */
 int mbuf_push(struct mbuf *mbuf, const void *buf, size_t size, bool erase);
 
@@ -85,8 +104,27 @@ int mbuf_push(struct mbuf *mbuf, const void *buf, size_t size, bool erase);
 int mbuf_pop(struct mbuf *mbuf, void *buf, size_t *sizep);
 
 /*
- * Get the number of availabe bytes in a message buffer.
+ * Read a message from a message buffer.
+ *
+ * On entry, the indexp argument points to the index of the message to
+ * read in the message buffer, and the sizep argument points to the size
+ * of the output buffer. On return, if successful, indexp is updated
+ * to the index of the next message, and sizep to the size of the
+ * message read.
+ *
+ * If the message doesn't fit in the output buffer, it is not read,
+ * EMSGSIZE is returned, and the sizep argument is updated nonetheless
+ * to let the user know the message size, to potentially retry with a
+ * larger buffer.
+ *
+ * If the given index refers to the end of the buffer, then EAGAIN is
+ * returned. If it's outside buffer boundaries, EINVAL is returned.
+ * Otherwise, if it doesn't point to the beginning of a message, the
+ * behavior is undefined.
+ *
+ * The message buffer isn't changed by this operation.
  */
-size_t mbuf_avail_size(const struct mbuf *mbuf);
+int mbuf_read(const struct mbuf *mbuf, size_t *indexp,
+              void *buf, size_t *sizep);
 
 #endif /* MBUF_H */
